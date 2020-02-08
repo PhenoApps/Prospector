@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.stratio.linksquare.androidexample.MainActivity">
+
+    <ScrollView
+        android:layout_width="368dp"
+        android:layout_height="495dp"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="8dp">
+
+            <TextView
+                android:id="@+id/sample_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.23"
+                android:text="LinkSquareAPI"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.051"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.032" />
+
+            <Button
+                android:id="@+id/btnConnect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Connect"
+                tools:layout_editor_absoluteX="16dp"
+                tools:layout_editor_absoluteY="61dp" />
+
+            <TextView
+                android:id="@+id/tvConnect"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_weight="1.95"
+                android:text="Result:"
+                android:textSize="14sp"
+                tools:layout_editor_absoluteX="113dp"
+                tools:layout_editor_absoluteY="61dp" />
+
+            <Button
+                android:id="@+id/btnScan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Scan"
+                tools:layout_editor_absoluteX="16dp"
+                tools:layout_editor_absoluteY="143dp" />
+
+            <TextView
+                android:id="@+id/tvScan"
+                android:layout_width="match_parent"
+                android:layout_height="100sp"
+                android:text="Result:"
+                android:textSize="14sp"
+                tools:layout_editor_absoluteX="113dp"
+                tools:layout_editor_absoluteY="143dp" />
+
+            <Button
+                android:id="@+id/btnClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Close"
+                tools:layout_editor_absoluteX="16dp"
+                tools:layout_editor_absoluteY="231dp" />
+
+            <TextView
+                android:id="@+id/tvClose"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:text="Result:"
+                android:textSize="14sp"
+                tools:layout_editor_absoluteX="113dp"
+                tools:layout_editor_absoluteY="232dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

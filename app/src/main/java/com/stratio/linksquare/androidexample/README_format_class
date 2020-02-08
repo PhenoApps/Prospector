@@ -1,0 +1,32 @@
+packages
+
+imports
+
+class declaration {
+    // DECLARE DISPLAY OBJECTS
+
+    // DECLARE GLOBAL VARIABLES
+
+    onCreate {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_selection__study);
+
+         // INIT DISPLAY OBJECTS
+         button_buttonName = findViewById(R.id.button_buttonName);
+
+         // INIT GLOBAL VARIABLES
+
+         // CONFIGURE BUTTONS
+         configure_button_buttonName();
+    }
+
+    configure_button_buttonName {
+        button_buttonName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(currentActivityName.this, newActivityName.class);
+                        startActivity(i);
+                    }
+                });
+    }
+}

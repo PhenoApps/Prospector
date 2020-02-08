@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.stratio.linksquare.androidexample.Selection_Study">
+
+    <Button
+        android:id="@+id/button_moveSelectionStudy"
+        android:text="Move to Group Selection"
+        android:layout_width="150dp"
+        android:layout_height="75dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginBottom="17dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:id="@+id/button_moveBack"
+        android:text="Move back"
+        android:layout_width="150dp"
+        android:layout_height="75dp"
+        android:layout_marginLeft="17dp"
+        android:layout_alignBottom="@+id/button_moveSelectionStudy"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="15dp" />
+
+    <TextView
+        android:id="@+id/textView_deviceName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Device Name: "
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/textView_studyName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Study Name: "
+        android:layout_below="@id/textView_deviceName" />
+
+    <ListView
+        android:id="@+id/listView_items"
+        android:layout_width="200dp"
+        android:layout_height="500dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="23dp"
+        android:layout_below="@+id/textView_studyName"
+        android:layout_alignStart="@+id/button_moveBack"
+        android:layout_marginStart="10dp"
+        android:layout_alignRight="@+id/button_moveSelectionStudy" />
+
+    <Button
+        android:id="@+id/button_addStudy"
+        android:text="Add Study"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/listView_items"
+        android:layout_alignLeft="@+id/button_moveSelectionStudy" />
+
+    <EditText
+        android:id="@+id/editText_newStudy"
+        android:text="Study name..."
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_addStudy"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:layout_alignLeft="@+id/button_moveSelectionStudy"/>
+
+</RelativeLayout>
