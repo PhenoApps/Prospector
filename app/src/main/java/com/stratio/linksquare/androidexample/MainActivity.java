@@ -27,34 +27,50 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
         System.loadLibrary("LinkSquareAPI");
     }
 
-    final Context context = this;
-
-    Button btnConnect;
-    Button btnScan;
-    Button btnClose;
-
-    TextView tvConnect;
-    TextView tvScan;
-    TextView tvClose;
-
-    DatabaseManager myDb;
-
     // Get LinkSquareAPI Instance
     LinkSquareAPI linkSqaureAPI = LinkSquareAPI.getInstance();
+
+    // DECLARE DISPLAY OBJECTS
+    Button button_connect;
+    Button button_scan;
+    Button button_close;
+    TextView textView_connect;
+    TextView textView_scan;
+    TextView textView_close;
+
+    // DECLARE GLOBALS
+    final Context context = this;
+    DatabaseManager myDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // INIT DISPLAY OBJECTS
+        button_connect = (Button) findViewById(R.id.button_connect);
+        button_scan = (Button) findViewById(R.id.button_scan);
+        button_close = (Button) findViewById(R.id.button_close);
+        textView_connect = (TextView) findViewById(R.id.textView_connect);
+        textView_scan = (TextView) findViewById(R.id.textView_scan);
+        textView_close = (TextView) findViewById(R.id.textView_close);
+
+        // INIT GLOBALS
         myDb = new DatabaseManager(this);
 
-        btnConnect = (Button) findViewById(R.id.btnConnect);
-        btnConnect.setOnClickListener(new View.OnClickListener() {
+        // CONFIGURE BUTTONS
+        configure_button_connect();
+        configure_button_scan();
+        configure_button_close();
+    }
+
+    public void configure_button_connect() {
+        button_connect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 // Initialize
                 linkSqaureAPI.Initialize();
+
 
                 // Add Event Listener to Receive Device Button Event
                 linkSqaureAPI.SetEventListener(MainActivity.this);
@@ -66,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
 
                 int result = linkSqaureAPI.Connect(IP, 18630);
                 if (result != LinkSquareAPI.RET_OK) {
-                    tvConnect.setText("Result: " + linkSqaureAPI.GetLSError()); // Get Error Message
+                    textView_connect.setText("Result: " + linkSqaureAPI.GetLSError()); // Get Error Message
                 } else {
                     LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
 
@@ -76,13 +92,14 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                     strDesc += "HW Ver:" + deviceInfo.HWVersion + "\n";
                     strDesc += "DeviceID:" + deviceInfo.DeviceID + "\n";
                     strDesc += "OPMode:" + deviceInfo.OPMode + "\n";
-                    tvConnect.setText(strDesc);
+                    textView_connect.setText(strDesc);
                 }
             }
         });
+    }
 
-        btnScan = (Button) findViewById(R.id.btnScan);
-        btnScan.setOnClickListener(new View.OnClickListener() {
+    public void configure_button_scan() {
+        button_scan.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Scan Name");
@@ -105,11 +122,12 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                             // Scan
                             int result = linkSqaureAPI.Scan(3, 3, frames);
                             if (result != LinkSquareAPI.RET_OK) {
-                                tvScan.setText("Result: " + linkSqaureAPI.GetLSError());
+                                textView_scan.setText("Result: " + linkSqaureAPI.GetLSError());
                             } else {
                                 for (int i = 0; i < frames.size(); i++) {
                                     LSFrame frm = frames.get(i);
                                     StringBuilder str = new StringBuilder();
+
                                     /*
                                     str.append(String.format("Frame #%d, lightsource = %d\n", frm.frameNo, frm.lightSource));
                                     str.append(String.format("  Length = %d\n", frm.length));
@@ -133,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                                         Toast.makeText(getApplicationContext(), "Unsuccessful upload.", Toast.LENGTH_SHORT).show();
                                     }
                                 }
-                                tvScan.setText("Result: OK.");
+                                textView_scan.setText("Result: OK.");
                             }
                         }
                     }
@@ -148,22 +166,18 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 builder.show();
             }
         });
+    }
 
-        btnClose = (Button) findViewById(R.id.btnClose);
-        btnClose.setOnClickListener(new View.OnClickListener() {
+    public void configure_button_close() {
+        button_close.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 // Close
                 linkSqaureAPI.Close();
-                tvClose.setText("Result: OK.");
+                textView_close.setText("Result: OK.");
             }
         });
-
-        tvConnect = (TextView) findViewById(R.id.tvConnect);
-        tvScan = (TextView) findViewById(R.id.tvScan);
-        tvClose = (TextView) findViewById(R.id.tvClose);
     }
-
 
     // Implements LinkSquareAPIListener Interface.
     @Override

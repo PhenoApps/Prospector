@@ -33,7 +33,7 @@
                 app:layout_constraintVertical_bias="0.032" />
 
             <Button
-                android:id="@+id/btnConnect"
+                android:id="@+id/button_connect"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -42,7 +42,7 @@
                 tools:layout_editor_absoluteY="61dp" />
 
             <TextView
-                android:id="@+id/tvConnect"
+                android:id="@+id/textView_connect"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_weight="1.95"
@@ -52,7 +52,7 @@
                 tools:layout_editor_absoluteY="61dp" />
 
             <Button
-                android:id="@+id/btnScan"
+                android:id="@+id/button_scan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -61,7 +61,7 @@
                 tools:layout_editor_absoluteY="143dp" />
 
             <TextView
-                android:id="@+id/tvScan"
+                android:id="@+id/textView_scan"
                 android:layout_width="match_parent"
                 android:layout_height="100sp"
                 android:text="Result:"
@@ -70,7 +70,7 @@
                 tools:layout_editor_absoluteY="143dp" />
 
             <Button
-                android:id="@+id/btnClose"
+                android:id="@+id/button_close"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -79,7 +79,7 @@
                 tools:layout_editor_absoluteY="231dp" />
 
             <TextView
-                android:id="@+id/tvClose"
+                android:id="@+id/textView_close"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:layout_weight="1"
