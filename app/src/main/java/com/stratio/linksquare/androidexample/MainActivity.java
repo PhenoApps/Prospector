@@ -2,6 +2,8 @@ package com.stratio.linksquare.androidexample;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -67,6 +69,18 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     public void configure_button_connect() {
         button_connect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                // Check for the correct Wifi Network
+                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                if (!wifiInfo.getSSID().contains("LS1-0102315")) {
+                    Log.e("ERROR", "You are connected to the wrong WiFi network.\n You are connected to " + wifiInfo.getSSID());
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            "You are connected to the wrong WiFi network. You need to join LS1-0102315.",
+                            Toast.LENGTH_SHORT);
+
+                    toast.show();
+                    return;
+                }
 
                 // Initialize
                 linkSqaureAPI.Initialize();
@@ -120,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                             List<LSFrame> frames = new ArrayList<LSFrame>();
 
                             // Scan
-                            int result = linkSqaureAPI.Scan(3, 3, frames);
+                            int result = linkSqaureAPI.Scan(3, 3, frames); // (number of frames using light source 1, number of frames using light source 2, List to store frames in)
                             if (result != LinkSquareAPI.RET_OK) {
                                 textView_scan.setText("Result: " + linkSqaureAPI.GetLSError());
                             } else {
