@@ -5,7 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
@@ -133,5 +138,64 @@ public class DatabaseManager extends SQLiteOpenHelper {
         Log.d(TAG, "deleteName: query: " + query);
         Log.d(TAG, "deleteName: Deleting " + name + " from database.");
         db.execSQL(query);
+    }
+
+    public void exportToCSV() {
+        Cursor data = getData();
+        String data_string;
+        String output;
+
+        // TODO: improve and comment this
+        try{
+            // Create the directory and file
+            File sdCard = Environment.getExternalStorageDirectory();
+            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
+            dir.mkdirs();
+            File csv_file = new File(dir, "Log.csv");
+            csv_file.createNewFile();
+            FileOutputStream out = new FileOutputStream(csv_file);
+
+            // Write column names to output file
+            output = "";
+            for (int i = 0; i < data.getColumnCount(); i++) {
+                output += data.getColumnName(i);
+                output += ",";
+            }
+            output += "\n";
+            out.write(output.getBytes());
+
+            // Write data to output file
+            while (data.moveToNext()) {
+                output = "";
+                for(int i = 0; i < data.getColumnCount(); i++) {
+                    data_string = data.getString(i);
+                    if (data_string != null) {
+                        if (data.getColumnName(i).equals("spectralValues")) {
+
+                            // Break the spectralValues string into individual columns
+                            String[] spectralValuesArray = data_string.split(" ");
+                            for (int j = 0; j < spectralValuesArray.length; j++) {
+                                output += spectralValuesArray[j] + ",";
+                            }
+
+                        } else {
+                            output += data_string;
+                        }
+                    } else {
+                        output += " ";
+                    }
+                    output += ",";
+                }
+                output += "\n";
+
+                out.write(output.getBytes());
+            }
+
+            // Close the file
+            out.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
