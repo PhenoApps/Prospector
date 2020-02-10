@@ -158,8 +158,16 @@ public class DatabaseManager extends SQLiteOpenHelper {
             // Write column names to output file
             output = "";
             for (int i = 0; i < data.getColumnCount(); i++) {
-                output += data.getColumnName(i);
-                output += ",";
+                String column_name = data.getColumnName(i);
+                if (column_name.equals("spectralValues")) {
+                    for (int j=  0; j < 600; j++) { // TODO: change 600 (bandwidth) to variable
+                        output += Integer.toString(j + 400); // TODO: change 400 (starting wavelength) to a variable
+                        output += ",";
+                    }
+                } else {
+                    output += data.getColumnName(i);
+                    output += ",";
+                }
             }
             output += "\n";
             out.write(output.getBytes());
