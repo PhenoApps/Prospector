@@ -59,7 +59,7 @@ public class Selection_Main extends AppCompatActivity {
         button_exportCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                myDb.exportToCSV();
+                myDb.scanFile(Selection_Main.this, myDb.exportToCSV());
             }
         });
     }

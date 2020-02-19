@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.Log;
 
@@ -140,7 +141,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL(query);
     }
 
-    public void exportToCSV() {
+    public File exportToCSV() {
         Cursor data = getData();
         String data_string;
         String output;
@@ -201,9 +202,17 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
             // Close the file
             out.close();
+
+            return csv_file;
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        return null;
+    }
+
+    public static void scanFile(Context ctx, File filepath) {
+        MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
     }
 }
