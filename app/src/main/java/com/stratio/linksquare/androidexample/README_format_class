@@ -18,6 +18,8 @@ class declaration {
 
          // CONFIGURE BUTTONS
          configure_button_buttonName();
+
+         // OTHER FUNCTION CALLS
     }
 
     configure_button_buttonName {

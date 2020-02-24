@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +39,6 @@ public class View_QRScanner extends AppCompatActivity {
         codeScanner = new CodeScanner(this, scannerView);
         resultData = findViewById(R.id.textView_qrResult);
 
-        requestForCamera();
-
         codeScanner.setDecodeCallback(new DecodeCallback() {
             @Override
             public void onDecoded(@NonNull final Result result) {
@@ -57,24 +56,5 @@ public class View_QRScanner extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         codeScanner.startPreview();
-    }
-
-    private void requestForCamera() {
-        Dexter.withActivity(this).withPermission(Manifest.permission.CAMERA).withListener(new PermissionListener() {
-            @Override
-            public void onPermissionGranted(PermissionGrantedResponse response) {
-                codeScanner.startPreview();
-            }
-
-            @Override
-            public void onPermissionDenied(PermissionDeniedResponse response) {
-                finish();
-            }
-
-            @Override
-            public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-
-            }
-        });
     }
 }
