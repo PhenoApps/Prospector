@@ -2,6 +2,7 @@ package com.stratio.linksquare.androidexample;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
 
         // CONFIGURE BUTTONS
         configure_button_connect();
-        configure_button_scan();
+        configure_button_scan2();
         configure_button_close();
     }
 
@@ -108,6 +109,15 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                     strDesc += "OPMode:" + deviceInfo.OPMode + "\n";
                     textView_connect.setText(strDesc);
                 }
+            }
+        });
+    }
+
+    public void configure_button_scan2() {
+        button_scan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), View_QRScanner.class));
             }
         });
     }
