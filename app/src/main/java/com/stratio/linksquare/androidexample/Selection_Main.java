@@ -1,7 +1,9 @@
 package com.stratio.linksquare.androidexample;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.sip.SipSession;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,17 +11,8 @@ import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.MultiplePermissionsReport;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionDeniedResponse;
-import com.karumi.dexter.listener.PermissionGrantedResponse;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
-import com.karumi.dexter.listener.single.PermissionListener;
-
-import java.util.List;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class Selection_Main extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
@@ -29,6 +22,13 @@ public class Selection_Main extends AppCompatActivity {
 
     // DECLARE GLOBALS
     DatabaseManager myDb;
+
+    private final int REQUEST_PERMISSION_INTERNET = 1;
+    private final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 2;
+    private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 3;
+    private final int REQUEST_PERMISSION_ACCESS_NETWORK_STATE = 4;
+    private final int REQUEST_PERMISSION_ACCESS_WIFI_STATE = 5;
+    private final int REQUEST_PERMISSION_CAMERA = 6;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,9 @@ public class Selection_Main extends AppCompatActivity {
         configure_button_viewScan();
         configure_button_exportCSV();
 
-        get_permissions();
+        // GET AND CHECK REQUIRED PERMISSIONS
+        permissions_get();
+        permissions_check();
     }
 
     private void configure_button_newScan() {
@@ -80,25 +82,24 @@ public class Selection_Main extends AppCompatActivity {
         });
     }
 
-    private void get_permissions() {
+    private void permissions_get() {
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.INTERNET}, REQUEST_PERMISSION_INTERNET);
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.ACCESS_NETWORK_STATE}, REQUEST_PERMISSION_ACCESS_NETWORK_STATE);
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.ACCESS_WIFI_STATE}, REQUEST_PERMISSION_ACCESS_WIFI_STATE);
+        ActivityCompat.requestPermissions(this, new String [] {Manifest.permission.CAMERA}, REQUEST_PERMISSION_CAMERA);
+    }
 
-        Dexter.withActivity(this).withPermissions(
-                Manifest.permission.INTERNET,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.CAMERA
-                ).withListener(new MultiplePermissionsListener() {
-            @Override
-            public void onPermissionsChecked(MultiplePermissionsReport report) {
-                Log.d("DEBUG","yay!");
-            }
-
-            @Override
-            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                finish();
-            }
-        }).check();
+    private void permissions_check() {
+        // TODO: figure out why this closes the app even if the permissions are granted
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
+            finish();
+        }
     }
 }
