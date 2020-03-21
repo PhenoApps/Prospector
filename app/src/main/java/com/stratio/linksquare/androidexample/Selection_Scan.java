@@ -67,7 +67,6 @@ public class Selection_Scan extends AppCompatActivity {
             }
         });
     }
-
     private void configure_listView_items() {
         Cursor data = myDb.getData();
         ArrayList<String> listData = new ArrayList<>();

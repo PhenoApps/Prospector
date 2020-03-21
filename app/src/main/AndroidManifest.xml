@@ -27,8 +27,6 @@
         </activity>
         <activity android:name=".View_ScanGraph" />
         <activity android:name=".Selection_Scan" />
-        <activity android:name=".Selection_Group" />
-        <activity android:name=".Selection_Study" />
         <activity android:name=".MainActivity" />
     </application>
 

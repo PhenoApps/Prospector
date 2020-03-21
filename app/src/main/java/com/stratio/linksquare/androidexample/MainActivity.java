@@ -161,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     }
 
     public void saveScan(String localScanID) {
+        // TODO: add error messages for the user such as "Database cannot duplicate scan names."
+
         if (localScanID.contains(" ")) {
             Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
         }
