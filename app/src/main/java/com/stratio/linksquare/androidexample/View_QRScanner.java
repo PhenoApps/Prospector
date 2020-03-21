@@ -40,6 +40,9 @@ public class View_QRScanner extends AppCompatActivity {
                     @Override
                     public void run() {
                         resultData.setText(result.getText());
+                        getIntent().putExtra("qr_result", result.getText());
+                        setResult(RESULT_OK, getIntent());
+                        finish();
                     }
                 });
             }

@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
 
         // CONFIGURE BUTTONS
         configure_button_connect();
-        configure_button_scan2();
+        configure_button_scan();
         configure_button_close();
     }
 
@@ -113,15 +113,6 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
         });
     }
 
-    public void configure_button_scan2() {
-        button_scan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), View_QRScanner.class));
-            }
-        });
-    }
-
     public void configure_button_scan() {
         button_scan.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -137,47 +128,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                     public void onClick(DialogInterface dialog, int which) {
                         String localScanID = input.getText().toString();
                         dialog.cancel();
-
-                        if (localScanID.contains(" ")) {
-                            Toast.makeText(getApplicationContext(), "Name cannot contain spaces.", Toast.LENGTH_LONG).show();
-                        } else {
-                            List<LSFrame> frames = new ArrayList<LSFrame>();
-
-                            // Scan
-                            int result = linkSqaureAPI.Scan(3, 3, frames); // (number of frames using light source 1, number of frames using light source 2, List to store frames in)
-                            if (result != LinkSquareAPI.RET_OK) {
-                                textView_scan.setText("Result: " + linkSqaureAPI.GetLSError());
-                            } else {
-                                for (int i = 0; i < frames.size(); i++) {
-                                    LSFrame frm = frames.get(i);
-                                    StringBuilder str = new StringBuilder();
-
-                                    /*
-                                    str.append(String.format("Frame #%d, lightsource = %d\n", frm.frameNo, frm.lightSource));
-                                    str.append(String.format("  Length = %d\n", frm.length));
-                                    str.append(String.format("  raw_data = %f, %f, %f ...\n", frm.raw_data[0], frm.raw_data[1], frm.raw_data[2]));
-                                    str.append(String.format("  data = %.3f, %.3f, %.3f, ...\n", frm.data[0], frm.data[1], frm.data[2]));
-                                    */
-
-                                    str.append(localScanID + " " + frm.frameNo + " " + frm.lightSource + " " + frm.length + " ");
-                                    for (int j = 0; j < frm.length; j++) {
-                                        str.append(frm.raw_data[j] + " " + frm.data[i] + " ");
-                                    }
-                                    LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
-                                    str.append(deviceInfo.DeviceID);
-
-                                    String data = str.toString();
-                                    boolean upload_success = myDb.insertData(data);
-                                    if (upload_success) {
-                                        Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_LONG).show();
-                                        Log.d("Debug", data);
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "Unsuccessful upload.", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                                textView_scan.setText("Result: OK.");
-                            }
-                        }
+                        saveScan(localScanID);
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -186,16 +137,75 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                         dialogInterface.cancel();
                     }
                 });
+                builder.setNeutralButton("Scan QR Code", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        startActivityForResult(new Intent(getApplicationContext(), View_QRScanner.class), 0);
+                    }
+                });
 
                 builder.show();
             }
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
+        super.onActivityResult(requestCode, resultCode, dataIntent);
+
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                saveScan(dataIntent.getStringExtra("qr_result"));
+            }
+        }
+    }
+
+    public void saveScan(String localScanID) {
+        if (localScanID.contains(" ")) {
+            Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
+        }
+
+        List<LSFrame> frames = new ArrayList<LSFrame>();
+
+        // Scan
+        int result = linkSqaureAPI.Scan(3, 3, frames); // (number of frames using light source 1, number of frames using light source 2, List to store frames in)
+        if (result != LinkSquareAPI.RET_OK) {
+            textView_scan.setText("Result: " + linkSqaureAPI.GetLSError());
+        } else {
+            for (int i = 0; i < frames.size(); i++) {
+                LSFrame frm = frames.get(i);
+                StringBuilder str = new StringBuilder();
+
+                /*
+                str.append(String.format("Frame #%d, lightsource = %d\n", frm.frameNo, frm.lightSource));
+                str.append(String.format("  Length = %d\n", frm.length));
+                str.append(String.format("  raw_data = %f, %f, %f ...\n", frm.raw_data[0], frm.raw_data[1], frm.raw_data[2]));
+                str.append(String.format("  data = %.3f, %.3f, %.3f, ...\n", frm.data[0], frm.data[1], frm.data[2]));
+                */
+
+                str.append(localScanID + " " + frm.frameNo + " " + frm.lightSource + " " + frm.length + " ");
+                for (int j = 0; j < frm.length; j++) {
+                    str.append(frm.raw_data[j] + " " + frm.data[i] + " ");
+                }
+                LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
+                str.append(deviceInfo.DeviceID);
+
+                String data = str.toString();
+                boolean upload_success = myDb.insertData(data);
+                if (upload_success) {
+                    Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_SHORT).show();
+                    Log.d("Debug", data);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Unsuccessful upload.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            textView_scan.setText("Result: OK.");
+        }
+    }
+
     public void configure_button_close() {
         button_close.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
                 // Close
                 linkSqaureAPI.Close();
                 textView_close.setText("Result: OK.");
