@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -78,6 +79,7 @@ public class Selection_Main extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 myDb.scanFile(Selection_Main.this, myDb.exportToCSV());
+                Toast.makeText(getApplicationContext(), "Exported to CSV.", Toast.LENGTH_SHORT).show();
             }
         });
     }
