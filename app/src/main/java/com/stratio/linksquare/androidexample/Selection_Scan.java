@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 public class Selection_Scan extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
-    Button button_moveBack;
     ListView listView_items;
 
     // DECLARE GLOBALS
@@ -30,24 +29,13 @@ public class Selection_Scan extends AppCompatActivity {
         setContentView(R.layout.activity_selection__scan);
 
         // INIT DISPLAY OBJECTS
-        button_moveBack = findViewById(R.id.button_moveBack);
         listView_items = findViewById(R.id.listView_items);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
 
         // CONFIGURE BUTTONS
-        configure_button_moveBack();
         configure_listView_items();
-    }
-
-    private void configure_button_moveBack() {
-        button_moveBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
     }
 
     private void configure_listView_items() {
