@@ -42,10 +42,6 @@ public class Selection_Scan extends AppCompatActivity {
         Cursor data = myDb.getData();
         final ArrayList<String> listData = new ArrayList<>();
 
-        StringBuilder s = new StringBuilder("testy1_asdfisf_asdfoijs_Frame6");
-        Log.d("DEBUG", Integer.toString(s.lastIndexOf("_")));
-        Log.d("DEBUG", s.substring(0,s.lastIndexOf("_")));
-
         String lastScanName = "";
         String nextScanName;
 
