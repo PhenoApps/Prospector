@@ -4,6 +4,8 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,9 +16,11 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 public class View_ScanGraph extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     GraphView graph;
+    Button button_deleteScan;
 
     // DECLARE GLOBAL VARIABLES
     DatabaseManager myDb;
+    String localScanID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,14 +29,30 @@ public class View_ScanGraph extends AppCompatActivity {
 
         // INIT DISPLAY OBJECTS
         graph = findViewById(R.id.graph);
+        button_deleteScan = findViewById(R.id.button_deleteScan);
 
         // INIT GLOBAL VARIABLES
         myDb = new DatabaseManager(this);
+        localScanID = getIntent().getStringExtra("localScanID");
 
-        String localScanID = getIntent().getStringExtra("localScanID");
-        Log.d("DEBUG", localScanID);
+        // CONFIGURE BUTTONS
+        configure_button_deleteScan();
 
-        int frame = 1;
+        // OTHER FUNCTION CALLS
+        initGraph();
+    }
+
+    private void configure_button_deleteScan() {
+        button_deleteScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myDb.deleteLocalScanID(localScanID);
+            }
+        });
+    }
+
+    private void initGraph() {
+        int frame = 1; // this var keeps track of what frame of each scan is about to be added to graph
         while (true) {
             Cursor spectralValues = myDb.getSpectralValues(localScanID + "_Frame" + frame);
 

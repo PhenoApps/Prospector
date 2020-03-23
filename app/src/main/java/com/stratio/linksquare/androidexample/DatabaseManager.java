@@ -113,6 +113,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
+    public void deleteLocalScanID (String localScanID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE "
+                + COl6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with localScanID_Frame
+        Log.d(TAG, "deleteName: query: " + query);
+        Log.d(TAG, "deleteName: Deleting " + localScanID + " from database.");
+        db.execSQL(query);
+    }
+
     /**
      * Updates the name field
      * @param newName
@@ -126,21 +135,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 " AND " + COL2 + " = '" + oldName + "'";
         Log.d(TAG, "updateName: query: " + query);
         Log.d(TAG, "updateName: Setting name to " + newName);
-        db.execSQL(query);
-    }
-
-    /**
-     * Delete from database
-     * @param id
-     * @param name
-     */
-    public void deleteName(int id, String name){
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + TABLE_NAME + " WHERE "
-                + COL1 + " = '" + id + "'" +
-                " AND " + COL2 + " = '" + name + "'";
-        Log.d(TAG, "deleteName: query: " + query);
-        Log.d(TAG, "deleteName: Deleting " + name + " from database.");
         db.execSQL(query);
     }
 
