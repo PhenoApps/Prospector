@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 // Check for the correct Wifi Network
                 WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                if (!wifiInfo.getSSID().contains("LS1")) {
+                if (!wifiInfo.getSSID().contains("LS1-")) {
                     Log.e("ERROR", "You may be connected to the wrong WiFi network.\n You are connected to " + wifiInfo.getSSID());
                     Toast toast = Toast.makeText(getApplicationContext(),
                             "You may be connected to the wrong WiFi network. You need to join LS1-0102315.",
