@@ -3,6 +3,7 @@ package com.stratio.linksquare.androidexample;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -161,10 +162,24 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     }
 
     public void saveScan(String localScanID) {
-        // TODO: add error messages for the user such as "Database cannot duplicate scan names."
-
+        // check to see if new localScanID contains any invalid characters
         if (localScanID.contains(" ")) {
             Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check to see if new localScanID is unique
+        Cursor allLocalScanID = myDb.getAllLocalScanID();
+        boolean isUnique = true;
+        while (allLocalScanID.moveToNext()) {
+            if (allLocalScanID.getString(0).contains(localScanID + "_Frame")) {
+                isUnique = false;
+                break;
+            }
+        }
+        if (isUnique == false) {
+            Toast.makeText(getApplicationContext(), "Scan name is not unique. All scan names must be unique.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         List<LSFrame> frames = new ArrayList<LSFrame>();
@@ -185,6 +200,9 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 str.append(String.format("  data = %.3f, %.3f, %.3f, ...\n", frm.data[0], frm.data[1], frm.data[2]));
                 */
 
+                // Data is passed to DB in the following format
+                // NOTE: this format should NOT CHANGE!!
+                // The DatabaseManager parser is dependant on correctly formatted data!!
                 str.append(localScanID + " " + frm.frameNo + " " + frm.lightSource + " " + frm.length + " ");
                 for (int j = 0; j < frm.length; j++) {
                     str.append(frm.raw_data[j] + " " + frm.data[i] + " ");
@@ -193,10 +211,12 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 str.append(deviceInfo.DeviceID);
 
                 String data = str.toString();
+                //Log.d("Debug", data);
+
                 boolean upload_success = myDb.insertData(data);
                 if (upload_success) {
                     Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_SHORT).show();
-                    Log.d("Debug", data);
+
                 } else {
                     Toast.makeText(getApplicationContext(), "Unsuccessful upload.", Toast.LENGTH_SHORT).show();
                 }

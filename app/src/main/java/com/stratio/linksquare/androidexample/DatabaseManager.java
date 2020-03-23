@@ -59,6 +59,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     public boolean insertData(String item) {
         // parse the incoming String item
+        // NOTE: this parse method is dependant on data being passed in the correct order
+        // TODO: implement a method that is not dependant
         String[] parts = item.split("\\s+");
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -88,7 +90,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     /**
      * Returns all the data from database
-     * @return
      */
     public Cursor getData() {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -97,15 +98,17 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    /**
-     * Returns only the ID that matches the name passed in
-     * @param localScanID
-     * @return
-     */
     public Cursor getSpectralValues(String localScanID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT " + COL8 + " FROM " + TABLE_NAME +
                 " WHERE " + COl6 + " = '" + localScanID + "'";
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
+    public Cursor getAllLocalScanID() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COl6 + " FROM " + TABLE_NAME;
         Cursor data = db.rawQuery(query, null);
         return data;
     }
@@ -215,4 +218,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public static void scanFile(Context ctx, File filepath) {
         MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
     }
+
+
 }
