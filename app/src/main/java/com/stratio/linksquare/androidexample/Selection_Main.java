@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
+
 public class Selection_Main extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     Button button_newScan;
@@ -78,8 +80,9 @@ public class Selection_Main extends AppCompatActivity {
         button_exportCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                myDb.scanFile(Selection_Main.this, myDb.exportToCSV());
-                Toast.makeText(getApplicationContext(), "Exported to CSV.", Toast.LENGTH_SHORT).show();
+                File csv_file = myDb.exportToCSV();
+                myDb.scanFile(Selection_Main.this, csv_file);
+                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
             }
         });
     }
