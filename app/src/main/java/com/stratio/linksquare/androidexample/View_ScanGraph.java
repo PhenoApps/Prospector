@@ -47,6 +47,7 @@ public class View_ScanGraph extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 myDb.deleteLocalScanID(localScanID);
+                finish();
             }
         });
     }

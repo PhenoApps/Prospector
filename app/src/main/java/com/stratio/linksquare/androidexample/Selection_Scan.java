@@ -48,7 +48,7 @@ public class Selection_Scan extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        listView_items_populate();
+        listView_items_populate(); // used to make sure that the list displayed is actually the current database data
     }
 
     private ArrayList<String> listView_items_populate() {
