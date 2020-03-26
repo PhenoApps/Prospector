@@ -27,6 +27,7 @@ public class Selection_Scan extends AppCompatActivity {
 
     // DECLARE GLOBALS
     DatabaseManager myDb;
+    ArrayList<String> listData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,16 +40,17 @@ public class Selection_Scan extends AppCompatActivity {
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
+        listData = listView_items_populate();
 
         // CONFIGURE BUTTONS
         configure_listView_items();
-        configure_button_DeleteScanAll();
+        configure_button_deleteScanAll();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        listView_items_populate(); // used to make sure that the list displayed is actually the current database data
+        listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
     }
 
     private ArrayList<String> listView_items_populate() {
@@ -74,19 +76,18 @@ public class Selection_Scan extends AppCompatActivity {
     }
 
     private void configure_listView_items() {
-        final ArrayList<String> listData = listView_items_populate();
-
         listView_items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getBaseContext(), View_ScanGraph.class);
                 intent.putExtra("localScanID", listData.get(i));
+                Log.d("DEBUG", listData.get(i) + ", Integer: " + i);
                 startActivity(intent);
             }
         });
     }
 
-    private void configure_button_DeleteScanAll() {
+    private void configure_button_deleteScanAll() {
         button_deleteScanAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

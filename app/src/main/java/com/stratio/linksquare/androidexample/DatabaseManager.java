@@ -24,7 +24,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COL3 = "observationUnitID";
     private static final String COL4 = "observationUnitName";
     private static final String COL5 = "observationUnitBarcode";
-    private static final String COl6 = "localScanID"; // in the form name_Frame#
+    private static final String COL6 = "localScanID"; // in the form name_Frame#
     private static final String COL7 = "serverScanID";
     private static final String COL8 = "spectralValues";
 
@@ -42,7 +42,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 COL3 + " TEXT, "+
                 COL4 + " TEXT, "+
                 COL5 + " TEXT, "+
-                COl6 + " TEXT UNIQUE, "+
+                COL6 + " TEXT UNIQUE, "+
                 COL7 + " TEXT UNIQUE, "+
                 COL8 + " TEXT)";
         db.execSQL(createTable);
@@ -64,7 +64,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL1, item);
-        contentValues.put(COl6, parts[0] + "_Frame" + parts[1]);
+        contentValues.put(COL6, parts[0] + "_Frame" + parts[1]);
 
         int length = Integer.parseInt(parts[3]);
         String spectralValues = "";
@@ -98,14 +98,14 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public Cursor getSpectralValues(String localScanID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT " + COL8 + " FROM " + TABLE_NAME +
-                " WHERE " + COl6 + " = '" + localScanID + "'";
+                " WHERE " + COL6 + " = '" + localScanID + "'";
         Cursor data = db.rawQuery(query, null);
         return data;
     }
 
     public Cursor getAllLocalScanID() {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COl6 + " FROM " + TABLE_NAME;
+        String query = "SELECT " + COL6 + " FROM " + TABLE_NAME;
         Cursor data = db.rawQuery(query, null);
         return data;
     }
@@ -113,15 +113,26 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void deleteLocalScanID (String localScanID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME + " WHERE "
-                + COl6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with *localScanID*_Frame
+                + COL6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with *localScanID*_Frame
         Log.d(TAG, "deleteName: query: " + query);
-        Log.d(TAG, "deleteName: Deleting " + localScanID + " from database.");
         db.execSQL(query);
     }
 
     public void deleteScanAll () {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME;
+        db.execSQL(query);
+    }
+
+    public void updateLocalScanID (String oldLocalScanID, String newLocalScanID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String subquery = "SELECT " + COL6 + " FROM " + TABLE_NAME + " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
+        db.rawQuery(subquery, null);
+
+        String query = "UPDATE " + TABLE_NAME +
+                " SET " + COL6 + " = REPLACE((" + COL6 + ")," + "'" + oldLocalScanID + "','" + newLocalScanID + "')" +
+                " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
+        Log.d("DEBUG", "updateName: query: " + query);
         db.execSQL(query);
     }
 
@@ -136,7 +147,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
         String query = "UPDATE " + TABLE_NAME + " SET " + COL2 +
                 " = '" + newName + "' WHERE " + COL1 + " = '" + id + "'" +
                 " AND " + COL2 + " = '" + oldName + "'";
-        Log.d(TAG, "updateName: query: " + query);
         Log.d(TAG, "updateName: Setting name to " + newName);
         db.execSQL(query);
     }

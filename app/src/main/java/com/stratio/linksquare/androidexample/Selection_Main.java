@@ -77,6 +77,7 @@ public class Selection_Main extends AppCompatActivity {
     }
 
     private void configure_button_exportCSV() {
+        // TODO: figure out why this sometimes doesn't show all of the scans
         button_exportCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
