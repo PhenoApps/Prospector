@@ -28,14 +28,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COL7 = "serverScanID";
     private static final String COL8 = "spectralValues";
 
-    public int currentScans; // I have no idea if this value is actually reliable
-
     public DatabaseManager(Context context) {
         super(context, TABLE_NAME, null, 9);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // does this get called in each instance or only once?
         String createTable = "CREATE TABLE " + TABLE_NAME + " (" +
                 COL0 + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
                 COL1 + " TEXT, "+
@@ -47,8 +46,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 COL7 + " TEXT UNIQUE, "+
                 COL8 + " TEXT)";
         db.execSQL(createTable);
-
-        currentScans = 0;
     }
 
     @Override
@@ -116,9 +113,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void deleteLocalScanID (String localScanID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME + " WHERE "
-                + COl6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with localScanID_Frame
+                + COl6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with *localScanID*_Frame
         Log.d(TAG, "deleteName: query: " + query);
         Log.d(TAG, "deleteName: Deleting " + localScanID + " from database.");
+        db.execSQL(query);
+    }
+
+    public void deleteScanAll () {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME;
         db.execSQL(query);
     }
 
