@@ -17,7 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat">
         <activity android:name=".View_QRScanner"></activity>
-        <activity android:name=".View_ScanInfo" />
         <activity android:name=".Selection_Main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
