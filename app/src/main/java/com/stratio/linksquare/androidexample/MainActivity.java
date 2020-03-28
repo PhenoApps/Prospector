@@ -167,15 +167,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
             return;
         }
 
-        // Check to see if new localScanID is unique
-        Cursor allLocalScanID = myDb.getAllLocalScanID();
-        boolean isUnique = true;
-        while (allLocalScanID.moveToNext()) {
-            if (allLocalScanID.getString(0).contains(localScanID + "_Frame")) {
-                isUnique = false;
-                break;
-            }
-        }
+        boolean isUnique = myDb.isValidLocalScanID(localScanID);
         if (isUnique == false) {
             Toast.makeText(getApplicationContext(), "Scan name is not unique. All scan names must be unique.", Toast.LENGTH_SHORT).show();
             return;

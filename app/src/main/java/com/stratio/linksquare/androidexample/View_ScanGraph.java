@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -75,7 +76,12 @@ public class View_ScanGraph extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String newLocalScanID = input.getText().toString();
-                        myDb.updateLocalScanID(localScanID, newLocalScanID);
+                        boolean isUnique = myDb.isValidLocalScanID(newLocalScanID);
+                        if (isUnique == false) {
+                            Toast.makeText(getApplicationContext(), "Scan name is not unique. All scan names must be unique.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            myDb.updateLocalScanID(localScanID, newLocalScanID);
+                        }
                         dialog.cancel();
                     }
                 });

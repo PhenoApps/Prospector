@@ -110,6 +110,17 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
+    public boolean isValidLocalScanID(String localScanID) {
+        // Check to see if new localScanID is unique
+        Cursor allLocalScanID = getAllLocalScanID();
+        while (allLocalScanID.moveToNext()) {
+            if (allLocalScanID.getString(0).contains(localScanID + "_Frame") && allLocalScanID.getString(0).startsWith(localScanID)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void deleteLocalScanID (String localScanID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME + " WHERE "
@@ -125,12 +136,21 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public void updateLocalScanID (String oldLocalScanID, String newLocalScanID) {
+        // TODO: fix case where localScanID = "a"
+        // TODO: do i actually need localScanID to be unqiue?
         SQLiteDatabase db = this.getWritableDatabase();
+
         String subquery = "SELECT " + COL6 + " FROM " + TABLE_NAME + " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
-        db.rawQuery(subquery, null);
+        Cursor result = db.rawQuery(subquery, null);
+        while (result.moveToNext()) {
+            Log.d("DEBUG", result.getString(0));
+        }
 
         String query = "UPDATE " + TABLE_NAME +
-                " SET " + COL6 + " = REPLACE((" + COL6 + ")," + "'" + oldLocalScanID + "','" + newLocalScanID + "')" +
+                " SET " + COL6 + " = REPLACE(" +
+                    "(SELECT SUBSTR(" + oldLocalScanID + ", 1, (SELECT INSTR('_Frame', " + oldLocalScanID + "))))" +
+                    ",'" + oldLocalScanID +
+                    "','" + newLocalScanID + "')" +
                 " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
         Log.d("DEBUG", "updateName: query: " + query);
         db.execSQL(query);
