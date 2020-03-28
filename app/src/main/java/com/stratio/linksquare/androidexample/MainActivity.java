@@ -3,7 +3,6 @@ package com.stratio.linksquare.androidexample;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -167,12 +166,6 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
             return;
         }
 
-        boolean isUnique = myDb.isValidLocalScanID(localScanID);
-        if (isUnique == false) {
-            Toast.makeText(getApplicationContext(), "Scan name is not unique. All scan names must be unique.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         List<LSFrame> frames = new ArrayList<LSFrame>();
 
         // Scan
@@ -184,25 +177,51 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 LSFrame frm = frames.get(i);
                 StringBuilder str = new StringBuilder();
 
-                /*
-                str.append(String.format("Frame #%d, lightsource = %d\n", frm.frameNo, frm.lightSource));
-                str.append(String.format("  Length = %d\n", frm.length));
-                str.append(String.format("  raw_data = %f, %f, %f ...\n", frm.raw_data[0], frm.raw_data[1], frm.raw_data[2]));
-                str.append(String.format("  data = %.3f, %.3f, %.3f, ...\n", frm.data[0], frm.data[1], frm.data[2]));
-                */
+                /**
+                 * Data is passed to DB in the following format:
+                 *     COL2 = "deviceID";
+                 *     COL3 = "observationUnitID";
+                 *     COL4 = "observationUnitName";
+                 *     COL5 = "observationUnitBarcode";
+                 *     COL6 = "frameNumber";
+                 *     COL7 = "lightSource";
+                 *     COL8 = "spectralValuesCount";
+                 *     COL9 = "spectralValues";
+                 *
+                 *     NOTE: this format should NOT CHANGE!!
+                 *     The DatabaseManager parser is dependant on correctly formatted data!!
+                 */
 
-                // Data is passed to DB in the following format
-                // NOTE: this format should NOT CHANGE!!
-                // The DatabaseManager parser is dependant on correctly formatted data!!
-                str.append(localScanID + " " + frm.frameNo + " " + frm.lightSource + " " + frm.length + " ");
-                for (int j = 0; j < frm.length; j++) {
-                    str.append(frm.raw_data[j] + " " + frm.data[i] + " ");
-                }
+                // Append "deviceID"
                 LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
-                str.append(deviceInfo.DeviceID);
+                str.append(deviceInfo.DeviceID + " ");
+
+                // Append "observationUnitID"
+                str.append(0 + " ");
+
+                // Append "observationUnitName"
+                str.append(localScanID + " ");
+
+                // Append "observationUnitBarcode"
+                str.append(0 + " ");
+
+                // Append "frameNumber"
+                str.append(frm.frameNo + " ");
+
+                // Append "lightSource"
+                str.append(frm.lightSource + " ");
+
+                // Append "spectralValuesCount"
+                str.append(frm.length + " ");
+
+                // Append "spectralValues"
+                for (int j = 0; j < frm.length; j++) {
+                    str.append(frm.raw_data[j] + " ");
+                    // str.append(frm.data[i] + " ");
+                }
 
                 String data = str.toString();
-                //Log.d("Debug", data);
+                Log.d("DEBUG", data);
 
                 boolean upload_success = myDb.insertData(data);
                 if (upload_success) {

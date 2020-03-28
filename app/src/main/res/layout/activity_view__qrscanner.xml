@@ -29,13 +29,14 @@
         android:id="@+id/textView_qrResult"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Scan Text"
+        android:text="Result"
         android:textAlignment="center"
         android:textColor="#FFEE58"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.85"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/codeScannerView_qrScanner" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

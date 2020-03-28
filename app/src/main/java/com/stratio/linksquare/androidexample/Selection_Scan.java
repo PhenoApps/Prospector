@@ -54,18 +54,13 @@ public class Selection_Scan extends AppCompatActivity {
     }
 
     private ArrayList<String> listView_items_populate() {
-        Cursor data = myDb.getData();
+        Cursor data = myDb.getAll_observationUnitName();
         final ArrayList<String> listData = new ArrayList<>();
-
-        String lastScanName = "";
-        String nextScanName;
-
+        String observationUnitName;
         while (data.moveToNext()) {
-            nextScanName = data.getString(6).substring(0, data.getString(6).lastIndexOf("_"));
-
-            if (! nextScanName.equals(lastScanName)) {
-                listData.add(nextScanName);
-                lastScanName = nextScanName;
+            observationUnitName = data.getString(0);
+            if (!listData.contains(observationUnitName)) {
+                listData.add(observationUnitName);
             }
         }
 
@@ -80,7 +75,7 @@ public class Selection_Scan extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getBaseContext(), View_ScanGraph.class);
-                intent.putExtra("localScanID", listData.get(i));
+                intent.putExtra("observationUnitName", listData.get(i));
                 Log.d("DEBUG", listData.get(i) + ", Integer: " + i);
                 startActivity(intent);
             }
@@ -97,7 +92,7 @@ public class Selection_Scan extends AppCompatActivity {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        myDb.deleteScanAll();
+                        myDb.deleteAll();
                         listView_items_populate();
                     }
                 });

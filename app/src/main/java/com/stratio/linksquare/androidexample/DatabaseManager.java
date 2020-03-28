@@ -19,17 +19,19 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     private static final String TABLE_NAME = "CassavaBase";
     private static final String COL0 = "ID";
-    private static final String COL1 = "deviceID";
-    private static final String COL2 = "scanTime";
+    private static final String COL1 = "scanTime";
+    private static final String COL2 = "deviceID";
     private static final String COL3 = "observationUnitID";
     private static final String COL4 = "observationUnitName";
     private static final String COL5 = "observationUnitBarcode";
-    private static final String COL6 = "localScanID"; // in the form name_Frame#
-    private static final String COL7 = "serverScanID";
-    private static final String COL8 = "spectralValues";
+    private static final String COL6 = "frameNumber";
+    private static final String COL7 = "lightSource";
+    private static final String COL8 = "spectralValuesCount";
+    private static final String COL9 = "spectralValues";
+    private static final String COL10 = "serverScanID";
 
     public DatabaseManager(Context context) {
-        super(context, TABLE_NAME, null, 9);
+        super(context, TABLE_NAME, null, 10);
     }
 
     @Override
@@ -37,14 +39,16 @@ public class DatabaseManager extends SQLiteOpenHelper {
         // does this get called in each instance or only once?
         String createTable = "CREATE TABLE " + TABLE_NAME + " (" +
                 COL0 + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                COL1 + " TEXT, "+
-                COL2 + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
+                COL1 + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
+                COL2 + " TEXT, "+
                 COL3 + " TEXT, "+
                 COL4 + " TEXT, "+
                 COL5 + " TEXT, "+
-                COL6 + " TEXT UNIQUE, "+
-                COL7 + " TEXT UNIQUE, "+
-                COL8 + " TEXT)";
+                COL6 + " TEXT, "+
+                COL7 + " TEXT, "+
+                COL8 + " TEXT, "+
+                COL9 + " TEXT, "+
+                COL10 + " TEXT)";
         db.execSQL(createTable);
     }
 
@@ -55,29 +59,57 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insertData(String item) {
-        // parse the incoming String item
-        // NOTE: this parse method is dependant on data being passed in the correct order
-        // TODO: implement a method that is not dependant
+        /**
+         * Data is passed to DB in the following format:
+         *     COL2 = "deviceID";
+         *     COL3 = "observationUnitID";
+         *     COL4 = "observationUnitName";
+         *     COL5 = "observationUnitBarcode";
+         *     COL6 = "frameNumber";
+         *     COL7 = "lightSource";
+         *     COL8 = "spectralValuesCount";
+         *     COL9 = "spectralValues";
+         *
+         *     NOTE: this format should NOT CHANGE!!
+         *     The DatabaseManager parser is dependant on correctly formatted data!!
+         */
+
         String[] parts = item.split("\\s+");
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(COL1, item);
-        contentValues.put(COL6, parts[0] + "_Frame" + parts[1]);
+        // insert "deviceID"
+        contentValues.put(COL2, parts[0]);
 
-        int length = Integer.parseInt(parts[3]);
+        // insert "observationUnitID"
+        contentValues.put(COL3, parts[1]);
+
+        // insert "observationUnitName"
+        contentValues.put(COL4, parts[2]);
+
+        // insert "observationUnitBarcode"
+        contentValues.put(COL5, parts[3]);
+
+        // insert "frameNumber"
+        contentValues.put(COL6, parts[4]);
+
+        // insert "lightSource"
+        contentValues.put(COL7, parts[5]);
+
+        // insert "spectralValuesCount"
+        contentValues.put(COL8, parts[6]);
+
+        // insert "spectralValues"
         String spectralValues = "";
-        for (int i = 0; i < length; i++ ) {
-            spectralValues += (parts[4 + i * 2] + " ");
+        for (int i = 0; i < Integer.parseInt(parts[6]); i++) {
+            spectralValues += (parts[7 + i] + " ");
         }
-        contentValues.put(COL8, spectralValues);
-        contentValues.put(COL1, parts[4 + length*2]);
+        contentValues.put(COL9, spectralValues);
 
         Log.d(TAG, "addData: Adding " + item + " to " + TABLE_NAME);
 
         long result = db.insert(TABLE_NAME, null, contentValues);
-
         if (result == -1) {
             return false;
         } else {
@@ -85,53 +117,112 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Returns all the data from database
-     */
-    public Cursor getData() {
+    public Cursor getAll() {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_NAME;
         Cursor data = db.rawQuery(query, null);
         return data;
     }
 
-    public Cursor getSpectralValues(String localScanID) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COL8 + " FROM " + TABLE_NAME +
-                " WHERE " + COL6 + " = '" + localScanID + "'";
-        Cursor data = db.rawQuery(query, null);
-        return data;
+    public static void scanFile(Context ctx, File filepath) {
+        MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
     }
 
-    public Cursor getAllLocalScanID() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COL6 + " FROM " + TABLE_NAME;
-        Cursor data = db.rawQuery(query, null);
-        return data;
-    }
+    public File export_toCSV() {
+        Cursor data = getAll();
+        String data_string;
+        String output;
 
-    public boolean isValidLocalScanID(String localScanID) {
-        // Check to see if new localScanID is unique
-        Cursor allLocalScanID = getAllLocalScanID();
-        while (allLocalScanID.moveToNext()) {
-            if (allLocalScanID.getString(0).contains(localScanID + "_Frame") && allLocalScanID.getString(0).startsWith(localScanID)) {
-                return false;
+        try{
+            // Create the directory and file
+            File sdCard = Environment.getExternalStorageDirectory();
+            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
+            dir.mkdirs();
+            File csv_file = new File(dir, "Log.csv");
+            csv_file.createNewFile();
+            FileOutputStream out = new FileOutputStream(csv_file);
+
+            // Store column names into output
+            output = "";
+            for (int i = 0; i < data.getColumnCount(); i++) {
+                output += data.getColumnName(i);
+                output += ",";
             }
+            output += "\n";
+
+            // Store column data into output
+            while (data.moveToNext()) {
+                for(int i = 0; i < data.getColumnCount(); i++) {
+                    data_string = data.getString(i);
+                    if (data_string != null) {
+                        output += data_string;
+                    } else {
+                        output += " ";
+                    }
+                    output += ",";
+                }
+                output += "\n";
+            }
+
+            // Write data to output file
+            out.write(output.getBytes()); // NOTE: this is most efficient if done as few times as possible
+
+            // Close the file
+            out.close();
+
+            return csv_file;
         }
-        return true;
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
-    public void deleteLocalScanID (String localScanID) {
+    public Cursor get_spectralValues(String observationUnitName) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + TABLE_NAME + " WHERE "
-                + COL6 + " LIKE '" + localScanID + "_Frame%'"; // removes all database entries whose name begins with *localScanID*_Frame
+        String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
+                " WHERE " + COL4 + " = '" + observationUnitName + "'";
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
+    public Cursor getAll_observationUnitName() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COL4 + " FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
+    public void delete_observationUnitName (String observationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE " + COL4 + " = '" + observationUnitName + "'";
         Log.d(TAG, "deleteName: query: " + query);
         db.execSQL(query);
     }
 
-    public void deleteScanAll () {
+    public void deleteAll () {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME;
+        db.execSQL(query);
+    }
+
+    public void update_observationUnitName(String oldObservationUnitName, String newObservationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + TABLE_NAME + " SET " + COL4 + " = '" +
+            newObservationUnitName + "' WHERE " + COL4 + " = '" + oldObservationUnitName +"'";
+        db.execSQL(query);
+    }
+
+    /**************************************************************************************************************************************
+     * OBSOLETE FUNCTIONS
+     */
+    public void updateName(String newName, int id, String oldName){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + TABLE_NAME + " SET " + COL2 +
+                " = '" + newName + "' WHERE " + COL1 + " = '" + id + "'" +
+                " AND " + COL2 + " = '" + oldName + "'";
+        Log.d(TAG, "updateName: Setting name to " + newName);
         db.execSQL(query);
     }
 
@@ -148,103 +239,22 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         String query = "UPDATE " + TABLE_NAME +
                 " SET " + COL6 + " = REPLACE(" +
-                    "(SELECT SUBSTR(" + oldLocalScanID + ", 1, (SELECT INSTR('_Frame', " + oldLocalScanID + "))))" +
-                    ",'" + oldLocalScanID +
-                    "','" + newLocalScanID + "')" +
+                "(SELECT SUBSTR(" + oldLocalScanID + ", 1, (SELECT INSTR('_Frame', " + oldLocalScanID + "))))" +
+                ",'" + oldLocalScanID +
+                "','" + newLocalScanID + "')" +
                 " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
         Log.d("DEBUG", "updateName: query: " + query);
         db.execSQL(query);
     }
 
-    /**
-     * Updates the name field
-     * @param newName
-     * @param id
-     * @param oldName
-     */
-    public void updateName(String newName, int id, String oldName){
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "UPDATE " + TABLE_NAME + " SET " + COL2 +
-                " = '" + newName + "' WHERE " + COL1 + " = '" + id + "'" +
-                " AND " + COL2 + " = '" + oldName + "'";
-        Log.d(TAG, "updateName: Setting name to " + newName);
-        db.execSQL(query);
-    }
-
-    public File exportToCSV() {
-        Cursor data = getData();
-        String data_string;
-        String output;
-
-        // TODO: improve and comment this
-        try{
-            // Create the directory and file
-            File sdCard = Environment.getExternalStorageDirectory();
-            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
-            dir.mkdirs();
-            File csv_file = new File(dir, "Log.csv");
-            csv_file.createNewFile();
-            FileOutputStream out = new FileOutputStream(csv_file);
-
-            // Write column names to output file
-            output = "";
-            for (int i = 0; i < data.getColumnCount(); i++) {
-                String column_name = data.getColumnName(i);
-                if (column_name.equals("spectralValues")) {
-                    for (int j=  0; j < 600; j++) { // TODO: change 600 (bandwidth) to variable
-                        output += "X" + Integer.toString(j + 400); // TODO: change 400 (starting wavelength) to a variable
-                        output += ",";
-                    }
-                } else {
-                    output += data.getColumnName(i);
-                    output += ",";
-                }
+    public boolean isValidLocalScanID(String localScanID) {
+        // Check to see if new localScanID is unique
+        Cursor allLocalScanID = getAll_observationUnitName();
+        while (allLocalScanID.moveToNext()) {
+            if (allLocalScanID.getString(0).contains(localScanID + "_Frame") && allLocalScanID.getString(0).startsWith(localScanID)) {
+                return false;
             }
-            output += "\n";
-            out.write(output.getBytes());
-
-            // Write data to output file
-            while (data.moveToNext()) {
-                output = "";
-                for(int i = 0; i < data.getColumnCount(); i++) {
-                    data_string = data.getString(i);
-                    if (data_string != null) {
-                        if (data.getColumnName(i).equals("spectralValues")) {
-
-                            // Break the spectralValues string into individual columns
-                            String[] spectralValuesArray = data_string.split(" ");
-                            for (int j = 0; j < spectralValuesArray.length; j++) {
-                                output += spectralValuesArray[j] + ",";
-                            }
-
-                        } else {
-                            output += data_string;
-                        }
-                    } else {
-                        output += " ";
-                    }
-                    output += ",";
-                }
-                output += "\n";
-
-                out.write(output.getBytes());
-            }
-
-            // Close the file
-            out.close();
-
-            return csv_file;
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return true;
     }
-
-    public static void scanFile(Context ctx, File filepath) {
-        MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
-    }
-
-
 }

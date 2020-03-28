@@ -19,6 +19,8 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.util.Random;
+
 public class View_ScanGraph extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     GraphView graph;
@@ -27,7 +29,7 @@ public class View_ScanGraph extends AppCompatActivity {
 
     // DECLARE GLOBAL VARIABLES
     DatabaseManager myDb;
-    String localScanID;
+    String observationUnitName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,7 @@ public class View_ScanGraph extends AppCompatActivity {
 
         // INIT GLOBAL VARIABLES
         myDb = new DatabaseManager(this);
-        localScanID = getIntent().getStringExtra("localScanID");
+        observationUnitName = getIntent().getStringExtra("observationUnitName");
 
         // CONFIGURE BUTTONS
         configure_button_deleteScan();
@@ -55,7 +57,7 @@ public class View_ScanGraph extends AppCompatActivity {
         button_deleteScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                myDb.deleteLocalScanID(localScanID);
+                myDb.delete_observationUnitName(observationUnitName);
                 finish();
             }
         });
@@ -75,13 +77,8 @@ public class View_ScanGraph extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String newLocalScanID = input.getText().toString();
-                        boolean isUnique = myDb.isValidLocalScanID(newLocalScanID);
-                        if (isUnique == false) {
-                            Toast.makeText(getApplicationContext(), "Scan name is not unique. All scan names must be unique.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            myDb.updateLocalScanID(localScanID, newLocalScanID);
-                        }
+                        String newObservationUnitName = input.getText().toString();
+                        myDb.update_observationUnitName(observationUnitName, newObservationUnitName);
                         dialog.cancel();
                     }
                 });
@@ -99,27 +96,21 @@ public class View_ScanGraph extends AppCompatActivity {
     }
 
     private void initGraph() {
-        int frame = 1; // this var keeps track of what frame of each scan is about to be added to graph
-        while (true) {
-            Cursor spectralValues = myDb.getSpectralValues(localScanID + "_Frame" + frame);
+        Cursor spectralValues = myDb.get_spectralValues(observationUnitName);
 
-            // Log.d("DEBUG", localScanID + "_Frame" + Integer.toString(frame));
-
-            if (spectralValues.moveToFirst()) {
+        while (spectralValues.moveToNext()) {
+            if (!spectralValues.getString(0).isEmpty()) {
+                // parse data
                 String[] data = spectralValues.getString(0).split(" ");
                 DataPoint[] dataPoints = new DataPoint[data.length];
                 for (int i = 0; i < data.length; i++) {
                     dataPoints[i] = new DataPoint(i, Math.round(Float.parseFloat(data[i])));
                 }
                 LineGraphSeries<DataPoint> plot = new LineGraphSeries<>(dataPoints);
-                // TODO: make each color more distinct
-                // TODO: ensure that color values <= 255
-                plot.setColor(Color.rgb(12*frame, 24*frame, 36*frame));
-                graph.addSeries(plot);
 
-                frame++;
-            } else {
-                break;
+                // give line a unique color
+                plot.setColor(Color.rgb(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255)));
+                graph.addSeries(plot);
             }
         }
     }

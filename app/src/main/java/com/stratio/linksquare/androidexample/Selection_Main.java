@@ -26,13 +26,6 @@ public class Selection_Main extends AppCompatActivity {
     // DECLARE GLOBALS
     DatabaseManager myDb;
 
-    private final int REQUEST_PERMISSION_INTERNET = 1;
-    private final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 2;
-    private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 3;
-    private final int REQUEST_PERMISSION_ACCESS_NETWORK_STATE = 4;
-    private final int REQUEST_PERMISSION_ACCESS_WIFI_STATE = 5;
-    private final int REQUEST_PERMISSION_CAMERA = 6;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +74,8 @@ public class Selection_Main extends AppCompatActivity {
         button_exportCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                File csv_file = myDb.exportToCSV();
-                myDb.scanFile(Selection_Main.this, csv_file);
+                File csv_file = myDb.export_toCSV();
+                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
                 Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
             }
         });
