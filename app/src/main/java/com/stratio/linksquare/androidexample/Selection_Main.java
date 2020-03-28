@@ -2,12 +2,16 @@ package com.stratio.linksquare.androidexample;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.sip.SipSession;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -34,7 +38,7 @@ public class Selection_Main extends AppCompatActivity {
         // INIT DISPLAY OBJECTS
         button_newScan = findViewById(R.id.button_newScan);
         button_viewScan = findViewById(R.id.button_viewScan);
-        button_exportCSV = findViewById(R.id.button_exportCSV);
+        button_exportCSV = findViewById(R.id.button_export);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
@@ -42,7 +46,7 @@ public class Selection_Main extends AppCompatActivity {
         // CONFIGURE BUTTONS
         configure_button_newScan();
         configure_button_viewScan();
-        configure_button_exportCSV();
+        configure_button_export();
 
         // GET AND CHECK REQUIRED PERMISSIONS
         permissions_get();
@@ -69,14 +73,51 @@ public class Selection_Main extends AppCompatActivity {
         });
     }
 
-    private void configure_button_exportCSV() {
-        // TODO: figure out why this sometimes doesn't show all of the scans
+    private void configure_button_export() {
         button_exportCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                File csv_file = myDb.export_toCSV();
-                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
-                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Main.this);
+                builder.setTitle("Select Output Format");
+
+                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Main.this, android.R.layout.select_dialog_singlechoice);
+                arrayAdapter.add("Simple CSV");
+                arrayAdapter.add("SCiO Format");
+                arrayAdapter.add("BrAPI Format");
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(i) {
+                            case 0: // user clicked "Simple CSV"
+                                File csv_file = myDb.export_toCSV();
+                                // TODO: figure out why this sometimes doesn't show all of the scans
+                                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
+                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            case 1: // user clicked "SCiO Format"
+                                File scio_file = myDb.export_toSCiO();
+                                myDb.scanFile(Selection_Main.this, scio_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            case 2: // user clicked "BrAPI Format"
+                                break;
+
+                            default:
+                                break;
+                        }
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
             }
         });
     }

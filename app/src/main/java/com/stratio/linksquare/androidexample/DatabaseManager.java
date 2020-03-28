@@ -11,7 +11,6 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
@@ -29,6 +28,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COL8 = "spectralValuesCount";
     private static final String COL9 = "spectralValues";
     private static final String COL10 = "serverScanID";
+
+    private static final int CURRENT_LINKSQURE_LENGTH = 600; // TODO: remove dependance on this
+    private static final int CURRENT_LINKSQURE_START = 400;
 
     public DatabaseManager(Context context) {
         super(context, TABLE_NAME, null, 10);
@@ -177,6 +179,97 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+
+    public File export_toSCiO() {
+        Cursor data = getAll();
+        StringBuilder output = new StringBuilder(); // TODO: figure out if storing all data in one string is okay procedure
+
+        try{
+            // Create the directory and file
+            File sdCard = Environment.getExternalStorageDirectory();
+            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
+            dir.mkdirs();
+            File csv_file = new File(dir, "Log_SCiO.csv");
+            csv_file.createNewFile();
+            FileOutputStream out = new FileOutputStream(csv_file);
+
+            // add metadata
+            output.append("name," + "testName" + "\n");
+            output.append("user," + "testUser" + "\n");
+            output.append("description," + "dummyData" + "\n");
+            output.append("num_records," + getCount_id() + "\n");
+            output.append("num_samples," + getCount_observationScanName() + "\n");
+            output.append("num_auto_attributes," + "0" + "\n");
+            output.append("num_custom_attributes," + "0" + "\n");
+            output.append("num_wavelengths," + CURRENT_LINKSQURE_LENGTH + "\n");
+            output.append("wavelengths_start," + CURRENT_LINKSQURE_START + "\n");
+            output.append("wavelengths_resolution," + "1" + "\n");
+
+            // add column names
+            output.append("id,sample_id,sampling_time,User_input_id,device_id,comment,temperature,location,outlier,");
+            for (int i = 0; i < CURRENT_LINKSQURE_LENGTH; i++) {
+                output.append("spectrum_" + i + " + " + CURRENT_LINKSQURE_START + ",");
+            }
+            output.append("\n");
+
+            // add column types
+            output.append("int,unicode,datetime,unicode,unicode,NoneType,float,NoneType,str,");
+            for (int i = 0; i < CURRENT_LINKSQURE_LENGTH; i++) {
+                output.append("float,");
+            }
+            output.append("\n");
+
+            // add data
+            while (data.moveToNext()) {
+                output.append(data.getString(0) + ","); // id
+                output.append(data.getString(0) + ","); // sample_id
+                output.append(data.getString(1) + ","); // sampling_time
+                output.append(data.getString(4) + ","); // User_input_id
+                output.append(data.getString(2) + ","); // device_id
+                output.append("None,"); // comment
+                output.append("0,"); // temperature
+                output.append("None,"); // location
+                output.append("no,"); // outlier
+
+                // spectral values
+                String[] spectralValues = data.getString(9).split(" ");
+                for (int i = 0; i < spectralValues.length; i++) {
+                    output.append(spectralValues[i] + ",");
+                }
+
+                output.append("\n");
+            }
+
+            // Write data to output file
+            out.write(output.toString().getBytes()); // NOTE: this is most efficient if done as few times as possible
+
+            // Close the file
+            out.close();
+
+            return csv_file;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public int getCount_id() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT COUNT(" + COL0 + ") FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        data.moveToNext();
+        return data.getInt(0);
+    }
+
+    public int getCount_observationScanName() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT COUNT(DISTINCT " + COL4 + ") FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        data.moveToNext();
+        return data.getInt(0);
     }
 
     public Cursor get_spectralValues(String observationUnitName) {
