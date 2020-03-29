@@ -98,9 +98,24 @@ public class View_ScanGraph extends AppCompatActivity {
     private void initGraph() {
         Cursor spectralValues = myDb.get_spectralValues(observationUnitName);
 
+        // TODO: make sure these values work with other spectrometers as well
+        // Set manual X bounds on the graph
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(600);
+
+        // Set manual Y bounds on the graph
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(25);
+
+        // Enable scaling
+        graph.getViewport().setScalable(true);
+        graph.getViewport().setScalableY(true);
+
         while (spectralValues.moveToNext()) {
             if (!spectralValues.getString(0).isEmpty()) {
-                // parse data
+                // parse spectralValues
                 String[] data = spectralValues.getString(0).split(" ");
                 DataPoint[] dataPoints = new DataPoint[data.length];
                 for (int i = 0; i < data.length; i++) {
