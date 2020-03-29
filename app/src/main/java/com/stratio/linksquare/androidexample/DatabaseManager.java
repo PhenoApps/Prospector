@@ -182,6 +182,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public File export_toSCiO() {
+        // Based on: https://cassava-test.sgn.cornell.edu/breeders/nirs/
         Cursor data = getAll();
         StringBuilder output = new StringBuilder(); // TODO: figure out if storing all data in one string is okay procedure
 
@@ -257,6 +258,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public File export_toBrAPI() {
+        // Based on: https://github.com/plantbreeding/API/issues/399
         Cursor data = getAll();
         StringBuilder output = new StringBuilder();
 
