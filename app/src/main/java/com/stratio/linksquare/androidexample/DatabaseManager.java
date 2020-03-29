@@ -126,8 +126,65 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    public static void scanFile(Context ctx, File filepath) {
-        MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
+    public void deleteAll () {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME;
+        db.execSQL(query);
+    }
+
+    public int getCount_id() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT COUNT(" + COL0 + ") FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        data.moveToNext();
+        return data.getInt(0);
+    }
+
+    public int getCount_observationScanName() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT COUNT(DISTINCT " + COL4 + ") FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        data.moveToNext();
+        return data.getInt(0);
+    }
+
+    public Cursor getAll_observationUnitName() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COL4 + " FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
+    public void update_observationUnitName(String oldObservationUnitName, String newObservationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + TABLE_NAME + " SET " + COL4 + " = '" +
+                newObservationUnitName + "' WHERE " + COL4 + " = '" + oldObservationUnitName +"'";
+        db.execSQL(query);
+    }
+
+    public void delete_observationUnitName (String observationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE " + COL4 + " = '" + observationUnitName + "'";
+        Log.d(TAG, "deleteName: query: " + query);
+        db.execSQL(query);
+    }
+
+    public boolean isUnique_observationUnitName (String observationUnitName) {
+        Cursor observationUnitNames = getAll_observationUnitName();
+        while (observationUnitNames.moveToNext()) {
+            if (observationUnitNames.getString(0).equals(observationUnitName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Cursor get_spectralValues(String observationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
+                " WHERE " + COL4 + " = '" + observationUnitName + "'";
+        Cursor data = db.rawQuery(query, null);
+        return data;
     }
 
     public File export_toCSV() {
@@ -311,98 +368,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
-    public int getCount_id() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT COUNT(" + COL0 + ") FROM " + TABLE_NAME;
-        Cursor data = db.rawQuery(query, null);
-        data.moveToNext();
-        return data.getInt(0);
-    }
-
-    public int getCount_observationScanName() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT COUNT(DISTINCT " + COL4 + ") FROM " + TABLE_NAME;
-        Cursor data = db.rawQuery(query, null);
-        data.moveToNext();
-        return data.getInt(0);
-    }
-
-    public Cursor get_spectralValues(String observationUnitName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
-                " WHERE " + COL4 + " = '" + observationUnitName + "'";
-        Cursor data = db.rawQuery(query, null);
-        return data;
-    }
-
-    public Cursor getAll_observationUnitName() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COL4 + " FROM " + TABLE_NAME;
-        Cursor data = db.rawQuery(query, null);
-        return data;
-    }
-
-    public void delete_observationUnitName (String observationUnitName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + TABLE_NAME + " WHERE " + COL4 + " = '" + observationUnitName + "'";
-        Log.d(TAG, "deleteName: query: " + query);
-        db.execSQL(query);
-    }
-
-    public void deleteAll () {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "DELETE FROM " + TABLE_NAME;
-        db.execSQL(query);
-    }
-
-    public void update_observationUnitName(String oldObservationUnitName, String newObservationUnitName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "UPDATE " + TABLE_NAME + " SET " + COL4 + " = '" +
-            newObservationUnitName + "' WHERE " + COL4 + " = '" + oldObservationUnitName +"'";
-        db.execSQL(query);
-    }
-
-    /**************************************************************************************************************************************
-     * OBSOLETE FUNCTIONS
-     */
-    public void updateName(String newName, int id, String oldName){
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "UPDATE " + TABLE_NAME + " SET " + COL2 +
-                " = '" + newName + "' WHERE " + COL1 + " = '" + id + "'" +
-                " AND " + COL2 + " = '" + oldName + "'";
-        Log.d(TAG, "updateName: Setting name to " + newName);
-        db.execSQL(query);
-    }
-
-    public void updateLocalScanID (String oldLocalScanID, String newLocalScanID) {
-        // TODO: fix case where localScanID = "a"
-        // TODO: do i actually need localScanID to be unqiue?
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String subquery = "SELECT " + COL6 + " FROM " + TABLE_NAME + " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
-        Cursor result = db.rawQuery(subquery, null);
-        while (result.moveToNext()) {
-            Log.d("DEBUG", result.getString(0));
-        }
-
-        String query = "UPDATE " + TABLE_NAME +
-                " SET " + COL6 + " = REPLACE(" +
-                "(SELECT SUBSTR(" + oldLocalScanID + ", 1, (SELECT INSTR('_Frame', " + oldLocalScanID + "))))" +
-                ",'" + oldLocalScanID +
-                "','" + newLocalScanID + "')" +
-                " WHERE " + COL6 + " LIKE '" + oldLocalScanID + "_Frame%'";
-        Log.d("DEBUG", "updateName: query: " + query);
-        db.execSQL(query);
-    }
-
-    public boolean isValidLocalScanID(String localScanID) {
-        // Check to see if new localScanID is unique
-        Cursor allLocalScanID = getAll_observationUnitName();
-        while (allLocalScanID.moveToNext()) {
-            if (allLocalScanID.getString(0).contains(localScanID + "_Frame") && allLocalScanID.getString(0).startsWith(localScanID)) {
-                return false;
-            }
-        }
-        return true;
+    public static void scanFile(Context ctx, File filepath) {
+        MediaScannerConnection.scanFile(ctx, new  String[] {filepath.getAbsolutePath()}, null, null);
     }
 }

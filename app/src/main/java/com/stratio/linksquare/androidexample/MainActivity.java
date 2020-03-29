@@ -117,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Scan Name");
-
                 final EditText input = new EditText(MainActivity.this);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 builder.setView(input);
@@ -125,9 +124,28 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String localScanID = input.getText().toString();
+                        final String observationUnitName = input.getText().toString();
+                        if (myDb.isUnique_observationUnitName(observationUnitName)) {
+                            saveScan(observationUnitName);
+                        } else {
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity.this);
+                            builder2.setTitle("Duplicate Scan Name");
+                            builder2.setMessage("Add this scan to the existing sample?");
+                            builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    saveScan(observationUnitName);
+                                }
+                            });
+                            builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.dismiss();
+                                }
+                            });
+                            builder2.show();
+                        }
                         dialog.cancel();
-                        saveScan(localScanID);
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
