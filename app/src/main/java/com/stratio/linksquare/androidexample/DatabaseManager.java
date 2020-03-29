@@ -256,6 +256,59 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
+    public File export_toBrAPI() {
+        Cursor data = getAll();
+        StringBuilder output = new StringBuilder();
+
+        try{
+            // Create the directory and file
+            File sdCard = Environment.getExternalStorageDirectory();
+            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
+            dir.mkdirs();
+            File csv_file = new File(dir, "Log_BrAPI.json");
+            csv_file.createNewFile();
+            FileOutputStream out = new FileOutputStream(csv_file);
+
+            // open Json object
+            output.append("\"log\": [\n");
+
+            // formatting looks bad here so that it looks nice after export
+            while (data.moveToNext()) {
+                output.append("{\n");
+                output.append("\t\"deviceID\": \"" + data.getString(2) + "\",\n"); // deviceID
+                output.append("\t\"timestamp\": \"" + data.getString(1) + "\",\n"); // timestamp
+                output.append("\t\"observationUnitID\": \"" + data.getString(3) + "\",\n"); // observationUnitID
+                output.append("\t\"observationUnitName\": \"" + data.getString(4) + "\",\n"); // observationUnitName
+                output.append("\t\"observationUnitBarcode\": \"" + data.getString(5) + "\",\n"); // observationUnitBarcode
+                output.append("\t\"scanDbID\": \"" + data.getString(10) + "\",\n"); // scanDbID
+                output.append("\t\"scanPUI\": \"" + data.getString(0) + "\",\n"); // scanPUI
+
+                // spectralValues
+                output.append("\t\"spectralValues\": [\n\t\t");
+                String[] spectralValues = data.getString(9).split(" ");
+                for (int i = 0; i < 5; i++) {
+                    output.append("{\n\t\t\t\"wavelength\": " + (CURRENT_LINKSQURE_START + i) + ",\n");
+                    output.append("\t\t\t\"spectralValue\": " + spectralValues[i] + "\n\t\t},\n\t\t");
+                }
+                output.append("]\n\t},\n");
+            }
+            output.append("]");
+
+            // Write data to output file
+            out.write(output.toString().getBytes()); // NOTE: this is most efficient if done as few times as possible
+
+            // Close the file
+            out.close();
+
+            return csv_file;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public int getCount_id() {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT COUNT(" + COL0 + ") FROM " + TABLE_NAME;

@@ -109,6 +109,9 @@ public class Selection_Main extends AppCompatActivity {
                                 break;
 
                             case 2: // user clicked "BrAPI Format"
+                                File brapi_file = myDb.export_toBrAPI();
+                                myDb.scanFile(Selection_Main.this, brapi_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
                                 break;
 
                             default:
