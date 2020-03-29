@@ -124,7 +124,7 @@ public class View_ScanGraph extends AppCompatActivity {
                 LineGraphSeries<DataPoint> plot = new LineGraphSeries<>(dataPoints);
 
                 // give line a unique color
-                plot.setColor(Color.rgb(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255)));
+                plot.setColor(Color.rgb(new Random().nextInt(10) * 25, new Random().nextInt(10) * 25, new Random().nextInt(10) * 25));
                 graph.addSeries(plot);
             }
         }
