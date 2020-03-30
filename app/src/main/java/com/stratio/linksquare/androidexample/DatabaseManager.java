@@ -187,6 +187,22 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
+    public Cursor get_spectralValues(int ID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
+                " WHERE " + COL0 + " = '" + ID + "'";
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
+    public Cursor get_ID(String observationUnitName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COL0 + " FROM " + TABLE_NAME +
+                " WHERE " + COL4 + " = '" + observationUnitName + "'";
+        Cursor data = db.rawQuery(query, null);
+        return data;
+    }
+
     public File export_toCSV() {
         Cursor data = getAll();
         String data_string;
