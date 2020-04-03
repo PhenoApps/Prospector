@@ -65,7 +65,7 @@ public class View_ScanGraph extends AppCompatActivity {
     }
 
     private void populate_items() {
-        Cursor observationUnitIDs = myDb.get_ID(observationUnitName); // TODO: make this dependant on observationUnitID
+        Cursor observationUnitIDs = myDb.get_ID_byObservationUnitName(observationUnitName); // TODO: make this dependant on observationUnitID
         items = new String[observationUnitIDs.getCount()];
         itemsChecked = new boolean[observationUnitIDs.getCount()];
         for (int i = 0; i < observationUnitIDs.getCount(); i++) {
@@ -150,7 +150,7 @@ public class View_ScanGraph extends AppCompatActivity {
             id = Integer.parseInt(items[i]);
 
             if (itemsChecked[i]) {
-                spectralValues = myDb.get_spectralValues(id);
+                spectralValues = myDb.get_spectralValues_byID(id);
                 while (spectralValues.moveToNext()) {
                     if (!spectralValues.getString(0).isEmpty()) {
                         // parse spectralValues
@@ -191,7 +191,7 @@ public class View_ScanGraph extends AppCompatActivity {
         graph.getViewport().setScalableY(true);
 
         // Add data to graph
-        Cursor spectralValues = myDb.get_spectralValues(observationUnitName);
+        Cursor spectralValues = myDb.get_spectralValues_byObservationUnitName(observationUnitName);
         while (spectralValues.moveToNext()) {
             if (!spectralValues.getString(0).isEmpty()) {
                 // parse spectralValues

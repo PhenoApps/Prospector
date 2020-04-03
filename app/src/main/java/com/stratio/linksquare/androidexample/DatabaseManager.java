@@ -179,7 +179,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return true;
     }
 
-    public Cursor get_spectralValues(String observationUnitName) {
+    public Cursor get_spectralValues_byObservationUnitName(String observationUnitName) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
                 " WHERE " + COL4 + " = '" + observationUnitName + "'";
@@ -187,7 +187,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    public Cursor get_spectralValues(int ID) {
+    public Cursor get_spectralValues_byID(int ID) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT " + COL9 + " FROM " + TABLE_NAME +
                 " WHERE " + COL0 + " = '" + ID + "'";
@@ -195,7 +195,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    public Cursor get_ID(String observationUnitName) {
+    public Cursor get_ID_byObservationUnitName(String observationUnitName) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "SELECT " + COL0 + " FROM " + TABLE_NAME +
                 " WHERE " + COL4 + " = '" + observationUnitName + "'";
