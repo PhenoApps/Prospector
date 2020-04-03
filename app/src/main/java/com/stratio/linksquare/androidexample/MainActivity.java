@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
         button_scan.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Scan Name");
+                builder.setTitle("Sample Name");
                 final EditText input = new EditText(MainActivity.this);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 builder.setView(input);
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                             saveScan(observationUnitName);
                         } else {
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity.this);
-                            builder2.setTitle("Duplicate Scan Name");
+                            builder2.setTitle("Duplicate Sample Name");
                             builder2.setMessage("Add this scan to the existing sample?");
                             builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
