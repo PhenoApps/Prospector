@@ -2,6 +2,7 @@ package com.stratio.linksquare.androidexample;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -11,6 +12,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
@@ -60,7 +62,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertData(String item) {
+    public boolean insertData_fromLinkSquare(String item) {
         /**
          * Data is passed to DB in the following format:
          *     COL2 = "deviceID";
@@ -111,6 +113,44 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         Log.d(TAG, "addData: Adding " + item + " to " + TABLE_NAME);
 
+        long result = db.insert(TABLE_NAME, null, contentValues);
+        if (result == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean insertData_fromSimpleCSV(String data) {
+        String[] parts = data.split(",");
+        ContentValues contentValues = new ContentValues();
+
+        /**
+         * NOTE: data is already in db format
+         * parts[0] = "ID"
+         * parts[1] = "scanTime"
+         * parts[2] = "deviceID"
+         * parts[3] = "observationUnitID"
+         * parts[4] = "observationUnitName"
+         * parts[5] = "observationUnitBarcode"
+         * parts[6] = "frameNumber"
+         * parts[7] = "lightSource"
+         * parts[8] = "spectralValuesCount"
+         * parts[9] = "spectralValues"
+         * parts[10] = "serverScanID"
+         */
+        contentValues.put(COL1, parts[1]);
+        contentValues.put(COL2, parts[2]);
+        contentValues.put(COL3, parts[3]);
+        contentValues.put(COL4, parts[4]);
+        contentValues.put(COL5, parts[5]);
+        contentValues.put(COL6, parts[6]);
+        contentValues.put(COL7, parts[7]);
+        contentValues.put(COL8, parts[8]);
+        contentValues.put(COL9, parts[9]);
+        contentValues.put(COL10, parts[10]);
+
+        SQLiteDatabase db = this.getWritableDatabase();
         long result = db.insert(TABLE_NAME, null, contentValues);
         if (result == -1) {
             return false;
@@ -203,7 +243,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    public File export_toCSV() {
+    public File export_toSimpleCSV() {
         Cursor data = getAll();
         String data_string;
         String output;

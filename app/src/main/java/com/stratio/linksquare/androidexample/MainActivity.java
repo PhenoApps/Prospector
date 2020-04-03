@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 String data = str.toString();
                 Log.d("DEBUG", data);
 
-                boolean upload_success = myDb.insertData(data);
+                boolean upload_success = myDb.insertData_fromLinkSquare(data);
                 if (upload_success) {
                     // TODO: figure out why this message lasts so long
                     Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_SHORT).show();

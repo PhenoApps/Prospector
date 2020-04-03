@@ -19,13 +19,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class Selection_Main extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     Button button_newScan;
     Button button_viewScan;
-    Button button_exportCSV;
+    Button button_export;
+    Button button_import;
 
     // DECLARE GLOBALS
     DatabaseManager myDb;
@@ -38,7 +43,8 @@ public class Selection_Main extends AppCompatActivity {
         // INIT DISPLAY OBJECTS
         button_newScan = findViewById(R.id.button_newScan);
         button_viewScan = findViewById(R.id.button_viewScan);
-        button_exportCSV = findViewById(R.id.button_export);
+        button_export = findViewById(R.id.button_export);
+        button_import = findViewById(R.id.button_import);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
@@ -47,6 +53,7 @@ public class Selection_Main extends AppCompatActivity {
         configure_button_newScan();
         configure_button_viewScan();
         configure_button_export();
+        configure_button_import();
 
         // GET AND CHECK REQUIRED PERMISSIONS
         permissions_get();
@@ -74,7 +81,7 @@ public class Selection_Main extends AppCompatActivity {
     }
 
     private void configure_button_export() {
-        button_exportCSV.setOnClickListener(new View.OnClickListener() {
+        button_export.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Main.this);
@@ -96,7 +103,7 @@ public class Selection_Main extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         switch(i) {
                             case 0: // user clicked "Simple CSV"
-                                File csv_file = myDb.export_toCSV();
+                                File csv_file = myDb.export_toSimpleCSV();
                                 // TODO: figure out why this sometimes doesn't show all of the scans
                                 myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
                                 Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
@@ -112,6 +119,67 @@ public class Selection_Main extends AppCompatActivity {
                                 File brapi_file = myDb.export_toBrAPI();
                                 myDb.scanFile(Selection_Main.this, brapi_file);
                                 Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            default:
+                                break;
+                        }
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    private void configure_button_import() {
+        button_import.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Main.this);
+                builder.setTitle("Select Import Method");
+
+                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Main.this, android.R.layout.select_dialog_singlechoice);
+                arrayAdapter.add("Example Data");
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(i) {
+                            case 0: // user clicked "Example Data"
+                                try {
+                                    if (myDb.isUnique_observationUnitName("sample_1") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else if (myDb.isUnique_observationUnitName("samle_2") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else if (myDb.isUnique_observationUnitName("sample_3") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
+                                        String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
+                                        while ((line = reader.readLine()) != null) {
+                                            myDb.insertData_fromSimpleCSV(line);
+                                        }
+                                        Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+
+                            case 1: // user clicked "Simple CSV"
+                                break;
+
+                            case 2: // user clicked "SCiO Format"
+                                break;
+
+                            case 3: // user clicked "BrAPI Format"
                                 break;
 
                             default:

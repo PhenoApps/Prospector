@@ -76,7 +76,7 @@ public class Selection_Scan extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getBaseContext(), View_ScanGraph.class);
                 intent.putExtra("observationUnitName", listData.get(i));
-                Log.d("DEBUG", listData.get(i) + ", Integer: " + i);
+                // Log.d("DEBUG", listData.get(i) + ", Integer: " + i);
                 startActivity(intent);
             }
         });
