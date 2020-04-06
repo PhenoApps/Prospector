@@ -1,4 +1,4 @@
-package com.stratio.linksquare.androidexample;
+package org.phenoapps.prospector;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;

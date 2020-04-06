@@ -1,4 +1,4 @@
-package com.stratio.linksquare.androidexample;
+package org.phenoapps.prospector;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
