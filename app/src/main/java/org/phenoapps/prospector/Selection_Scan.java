@@ -11,10 +11,15 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class Selection_Scan extends AppCompatActivity {
@@ -48,6 +53,9 @@ public class Selection_Scan extends AppCompatActivity {
         // CONFIGURE BUTTONS
         configure_listView_items();
         configure_button_deleteScanAll();
+        configure_toolbarImageButton_import();
+        configure_toolbarImageButton_export();
+        configure_toolbarImageButton_add();
     }
 
     @Override
@@ -107,6 +115,129 @@ public class Selection_Scan extends AppCompatActivity {
                 });
 
                 builder.show();
+            }
+        });
+    }
+
+    private void configure_toolbarImageButton_import() {
+        toolbarImageButton_import.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
+                builder.setTitle("Select Import Method");
+
+                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
+                arrayAdapter.add("Example Data");
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(i) {
+                            case 0: // user clicked "Example Data"
+                                try {
+                                    if (myDb.isUnique_observationUnitName("sample_1") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else if (myDb.isUnique_observationUnitName("samle_2") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else if (myDb.isUnique_observationUnitName("sample_3") == false) {
+                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
+                                        String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
+                                        while ((line = reader.readLine()) != null) {
+                                            myDb.insertData_fromSimpleCSV(line);
+                                        }
+                                        Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+
+                            case 1: // user clicked "Simple CSV"
+                                break;
+
+                            case 2: // user clicked "SCiO Format"
+                                break;
+
+                            case 3: // user clicked "BrAPI Format"
+                                break;
+
+                            default:
+                                break;
+                        }
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    private void configure_toolbarImageButton_export() {
+        toolbarImageButton_export.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
+                builder.setTitle("Select Output Format");
+
+                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
+                arrayAdapter.add("Simple CSV");
+                arrayAdapter.add("SCiO Format");
+                arrayAdapter.add("BrAPI Format");
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(i) {
+                            case 0: // user clicked "Simple CSV"
+                                File csv_file = myDb.export_toSimpleCSV();
+                                // TODO: figure out why this sometimes doesn't show all of the scans
+                                myDb.scanFile(Selection_Scan.this, csv_file); // TODO: figure out how to move this into export_toCSV()
+                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            case 1: // user clicked "SCiO Format"
+                                File scio_file = myDb.export_toSCiO();
+                                myDb.scanFile(Selection_Scan.this, scio_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            case 2: // user clicked "BrAPI Format"
+                                File brapi_file = myDb.export_toBrAPI();
+                                myDb.scanFile(Selection_Scan.this, brapi_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
+
+                            default:
+                                break;
+                        }
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    private void configure_toolbarImageButton_add() {
+        toolbarImageButton_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(i);
             }
         });
     }
