@@ -1,7 +1,9 @@
 package org.phenoapps.prospector;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,29 +61,15 @@ public class Selection_Scan extends AppCompatActivity {
         configure_toolbarImageButton_import();
         configure_toolbarImageButton_export();
         configure_toolbarImageButton_add();
+
+        // OTHER FUNCTION CALLS
+        permissions_check();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
-    }
-
-    private ArrayList<String> listView_items_populate() {
-        Cursor data = myDb.getAll_observationUnitName();
-        final ArrayList<String> listData = new ArrayList<>();
-        String observationUnitName;
-        while (data.moveToNext()) {
-            observationUnitName = data.getString(0);
-            if (!listData.contains(observationUnitName)) {
-                listData.add(observationUnitName);
-            }
-        }
-
-        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
-        listView_items.setAdapter(adapter);
-
-        return listData;
     }
 
     private void configure_listView_items() {
@@ -243,5 +233,43 @@ public class Selection_Scan extends AppCompatActivity {
                 startActivity(i);
             }
         });
+    }
+
+    private void permissions_get() {
+        ActivityCompat.requestPermissions(this, new String[] {
+                Manifest.permission.INTERNET,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.CAMERA}, 0);
+    }
+
+    private void permissions_check() {
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
+            permissions_get();
+        }
+    }
+
+    private ArrayList<String> listView_items_populate() {
+        Cursor data = myDb.getAll_observationUnitName();
+        final ArrayList<String> listData = new ArrayList<>();
+        String observationUnitName;
+        while (data.moveToNext()) {
+            observationUnitName = data.getString(0);
+            if (!listData.contains(observationUnitName)) {
+                listData.add(observationUnitName);
+            }
+        }
+
+        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
+        listView_items.setAdapter(adapter);
+
+        return listData;
     }
 }

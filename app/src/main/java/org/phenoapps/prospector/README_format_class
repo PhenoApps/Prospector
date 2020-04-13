@@ -26,8 +26,6 @@ class declaration {
     // OVERRIDE FUNCTIONS
     @Override
 
-    // MISC. FUNCTIONS
-
     // CONFIGURE FUNCTIONS
     configure_button_buttonName {
         button_buttonName.setOnClickListener(new View.OnClickListener() {
@@ -38,4 +36,6 @@ class declaration {
                     }
                 });
     }
+
+    // MISC. FUNCTIONS
 }
