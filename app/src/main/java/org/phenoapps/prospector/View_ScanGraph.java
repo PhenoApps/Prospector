@@ -1,10 +1,14 @@
 package org.phenoapps.prospector;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -21,9 +25,6 @@ import java.util.Random;
 public class View_ScanGraph extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     GraphView graph;
-    ImageButton toolbarImageButton_rename;
-    ImageButton toolbarImageButton_edit;
-    ImageButton toolbarImageButton_delete;
 
     // DECLARE GLOBAL VARIABLES
     DatabaseManager myDb;
@@ -36,21 +37,21 @@ public class View_ScanGraph extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view__scan);
 
+        // INIT TOOLBAR
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(null);
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+
         // INIT DISPLAY OBJECTS
         graph = findViewById(R.id.graph);
-        toolbarImageButton_rename = findViewById(R.id.toolbarImageButton_rename);
-        toolbarImageButton_edit = findViewById(R.id.toolbarImageButton_edit);
-        toolbarImageButton_delete = findViewById(R.id.toolbarImageButton_delete);
 
         // INIT GLOBAL VARIABLES
         myDb = new DatabaseManager(this);
         observationUnitName = getIntent().getStringExtra("observationUnitName");
         populate_items();
-
-        // CONFIGURE BUTTONS
-        configure_toolbarImageButton_rename();
-        configure_toolbarImageButton_edit();
-        configure_toolbarImageButton_delete();
 
         // OTHER FUNCTION CALLS
         initGraph();
@@ -89,15 +90,14 @@ public class View_ScanGraph extends AppCompatActivity {
 
                         // set line color to a value that remains consistent for easier comparison
                         plot.setColor(Color.rgb(
-                                Math.round(255 * ((float)i / items.length)),
+                                Math.round(255 * ((float) i / items.length)),
                                 0,
-                                Math.round(255 - (255 * ((float)i / items.length)))));
+                                Math.round(255 - (255 * ((float) i / items.length)))));
                         graph.addSeries(plot);
                     }
                 }
             }
         }
-
     }
 
     private void initGraph() {
@@ -135,69 +135,80 @@ public class View_ScanGraph extends AppCompatActivity {
         }
     }
 
-    private void configure_toolbarImageButton_rename() {
-        toolbarImageButton_rename.setOnClickListener(new View.OnClickListener() {
+    private void renameScan() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
+        builder.setTitle("Updated Scan Name");
+
+        final EditText input = new EditText(View_ScanGraph.this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-                builder.setTitle("Updated Scan Name");
-
-                final EditText input = new EditText(View_ScanGraph.this);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String newObservationUnitName = input.getText().toString();
-                        myDb.update_observationUnitName(observationUnitName, newObservationUnitName);
-                        dialog.cancel();
-                    }
-                });
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-
-                builder.show();
+            public void onClick(DialogInterface dialog, int which) {
+                String newObservationUnitName = input.getText().toString();
+                myDb.update_observationUnitName(observationUnitName, newObservationUnitName);
+                dialog.cancel();
             }
         });
-    }
 
-    private void configure_toolbarImageButton_edit() {
-        toolbarImageButton_edit.setOnClickListener(new View.OnClickListener() {
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-                builder.setTitle("Choose Scans to Display");
-                builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        itemsChecked[which] = isChecked;
-                    }
-                });
-                builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        updateGraph();
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.show();
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
             }
         });
+
+        builder.show();
     }
 
-    private void configure_toolbarImageButton_delete() {
-        toolbarImageButton_delete.setOnClickListener(new View.OnClickListener() {
+    private void editScan() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
+        builder.setTitle("Choose Scans to Display");
+        builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
-            public void onClick(View view) {
-                myDb.delete_observationUnitName(observationUnitName);
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                itemsChecked[which] = isChecked;
+            }
+        });
+        builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                updateGraph();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    private void deleteScan() {
+        myDb.delete_observationUnitName(observationUnitName);
+        finish();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        new MenuInflater(View_ScanGraph.this).inflate(R.menu.scangraph, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
                 finish();
-            }
-        });
+                break;
+            case R.id.scan_rename:
+                renameScan();
+                break;
+            case R.id.scan_edit:
+                editScan();
+                break;
+            case R.id.scan_delete:
+                deleteScan();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
+
 }

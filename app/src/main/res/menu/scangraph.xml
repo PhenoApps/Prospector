@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/scan_rename"
+        android:icon="@drawable/ic_rename_scan"
+        android:showAsAction="always"
+        android:title="Rename Scan" />
+    <item
+        android:id="@+id/scan_edit"
+        android:icon="@drawable/ic_edit_scan"
+        android:showAsAction="always"
+        android:title="Edit Scan" />
+    <item
+        android:id="@+id/scan_delete"
+        android:icon="@drawable/ic_delete_scan"
+        android:showAsAction="always"
+        android:title="Delete Scan" />
+</menu>

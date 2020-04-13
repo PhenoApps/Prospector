@@ -6,7 +6,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.Selection;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,9 +35,6 @@ public class Selection_Scan extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     ListView listView_items;
     Button button_deleteScanAll;
-    ImageButton toolbarImageButton_import;
-    ImageButton toolbarImageButton_export;
-    ImageButton toolbarImageButton_add;
 
     // DECLARE GLOBALS
     DatabaseManager myDb;
@@ -44,12 +45,15 @@ public class Selection_Scan extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection__scan);
 
+        // INIT TOOLBAR
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Prospector");
+            getSupportActionBar().getThemedContext();
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+
         // INIT DISPLAY OBJECTS
         listView_items = findViewById(R.id.listView_items);
-        button_deleteScanAll = findViewById(R.id.button_deleteScanAll);
-        toolbarImageButton_import = findViewById(R.id.toolbarImageButton_import);
-        toolbarImageButton_export = findViewById(R.id.toolbarImageButton_export);
-        toolbarImageButton_add = findViewById(R.id.toolbarImageButton_add);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
@@ -57,10 +61,6 @@ public class Selection_Scan extends AppCompatActivity {
 
         // CONFIGURE BUTTONS
         configure_listView_items();
-        configure_button_deleteScanAll();
-        configure_toolbarImageButton_import();
-        configure_toolbarImageButton_export();
-        configure_toolbarImageButton_add();
 
         // OTHER FUNCTION CALLS
         permissions_check();
@@ -84,159 +84,139 @@ public class Selection_Scan extends AppCompatActivity {
         });
     }
 
-    private void configure_button_deleteScanAll() {
-        button_deleteScanAll.setOnClickListener(new View.OnClickListener() {
+    private void deleteAllScans() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Scan.this);
+        builder.setTitle("Are you sure you want to delete all scans?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Scan.this);
-                builder.setTitle("Are you sure you want to delete all scans?");
-
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        myDb.deleteAll();
-                        listView_items_populate();
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-
-                builder.show();
+            public void onClick(DialogInterface dialog, int which) {
+                myDb.deleteAll();
+                listView_items_populate();
             }
         });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        builder.show();
     }
 
-    private void configure_toolbarImageButton_import() {
-        toolbarImageButton_import.setOnClickListener(new View.OnClickListener() {
+    private void importSampleScans() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
+        builder.setTitle("Select Import Method");
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.add("Example Data");
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
-                builder.setTitle("Select Import Method");
-
-                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("Example Data");
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch(i) {
-                            case 0: // user clicked "Example Data"
-                                try {
-                                    if (!myDb.isUnique_observationUnitName("sample_1")) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
-                                    } else if (!myDb.isUnique_observationUnitName("sample_2")) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
-                                    } else if (!myDb.isUnique_observationUnitName("sample_3")) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
-                                        String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
-                                        while ((line = reader.readLine()) != null) {
-                                            myDb.insertData_fromSimpleCSV(line);
-                                        }
-                                        Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-
-                            case 1: // user clicked "Simple CSV"
-                                break;
-
-                            case 2: // user clicked "SCiO Format"
-                                break;
-
-                            case 3: // user clicked "BrAPI Format"
-                                break;
-
-                            default:
-                                break;
-                        }
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.show();
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
             }
         });
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i) {
+                    case 0: // user clicked "Example Data"
+                        try {
+                            if (!myDb.isUnique_observationUnitName("sample_1")) {
+                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                            } else if (!myDb.isUnique_observationUnitName("sample_2")) {
+                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                            } else if (!myDb.isUnique_observationUnitName("sample_3")) {
+                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
+                                String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
+                                while ((line = reader.readLine()) != null) {
+                                    myDb.insertData_fromSimpleCSV(line);
+                                }
+                                Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case 1: // user clicked "Simple CSV"
+                        break;
+
+                    case 2: // user clicked "SCiO Format"
+                        break;
+
+                    case 3: // user clicked "BrAPI Format"
+                        break;
+
+                    default:
+                        break;
+                }
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
 
         listData = listView_items_populate();
     }
 
-    private void configure_toolbarImageButton_export() {
-        toolbarImageButton_export.setOnClickListener(new View.OnClickListener() {
+    private void exportScans() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
+        builder.setTitle("Select Output Format");
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.add("Simple CSV");
+        arrayAdapter.add("SCiO Format");
+        arrayAdapter.add("BrAPI Format");
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
-                builder.setTitle("Select Output Format");
-
-                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("Simple CSV");
-                arrayAdapter.add("SCiO Format");
-                arrayAdapter.add("BrAPI Format");
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch(i) {
-                            case 0: // user clicked "Simple CSV"
-                                File csv_file = myDb.export_toSimpleCSV();
-                                // TODO: figure out why this sometimes doesn't show all of the scans
-                                myDb.scanFile(Selection_Scan.this, csv_file); // TODO: figure out how to move this into export_toCSV()
-                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
-                                break;
-
-                            case 1: // user clicked "SCiO Format"
-                                File scio_file = myDb.export_toSCiO();
-                                myDb.scanFile(Selection_Scan.this, scio_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
-                                break;
-
-                            case 2: // user clicked "BrAPI Format"
-                                File brapi_file = myDb.export_toBrAPI();
-                                myDb.scanFile(Selection_Scan.this, brapi_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
-                                break;
-
-                            default:
-                                break;
-                        }
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.show();
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
             }
         });
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i) {
+                    case 0: // user clicked "Simple CSV"
+                        File csv_file = myDb.export_toSimpleCSV();
+                        // TODO: figure out why this sometimes doesn't show all of the scans
+                        myDb.scanFile(Selection_Scan.this, csv_file); // TODO: figure out how to move this into export_toCSV()
+                        Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                        break;
+
+                    case 1: // user clicked "SCiO Format"
+                        File scio_file = myDb.export_toSCiO();
+                        myDb.scanFile(Selection_Scan.this, scio_file);
+                        Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                        break;
+
+                    case 2: // user clicked "BrAPI Format"
+                        File brapi_file = myDb.export_toBrAPI();
+                        myDb.scanFile(Selection_Scan.this, brapi_file);
+                        Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                        break;
+
+                    default:
+                        break;
+                }
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
     }
 
-    private void configure_toolbarImageButton_add() {
-        toolbarImageButton_add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(i);
-            }
-        });
+    private void newScan() {
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(i);
     }
 
     private void permissions_get() {
-        ActivityCompat.requestPermissions(this, new String[] {
+        ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.INTERNET,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -271,5 +251,30 @@ public class Selection_Scan extends AppCompatActivity {
         listView_items.setAdapter(adapter);
 
         return listData;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        new MenuInflater(Selection_Scan.this).inflate(R.menu.selection_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete_scnas:
+                deleteAllScans();
+                break;
+            case R.id.import_scans:
+                importSampleScans();
+                break;
+            case R.id.export_scans:
+                exportScans();
+                break;
+            case R.id.new_scan:
+                newScan();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

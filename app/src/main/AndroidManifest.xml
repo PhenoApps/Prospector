@@ -15,16 +15,16 @@
         android:label="Prospector"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".View_QRScanner"/>
-        <activity android:name=".Selection_Main"/>
-        <activity android:name=".View_ScanGraph"/>
+        android:theme="@style/AppTheme">
         <activity android:name=".Selection_Scan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".View_QRScanner" />
+        <activity android:name=".Selection_Main" />
+        <activity android:name=".View_ScanGraph" />
         <activity android:name=".MainActivity" />
     </application>
 

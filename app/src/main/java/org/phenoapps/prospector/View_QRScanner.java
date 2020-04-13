@@ -29,6 +29,11 @@ public class View_QRScanner extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view__qrscanner);
 
+        // INIT TOOLBAR
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         scannerView = findViewById(R.id.codeScannerView_qrScanner);
         codeScanner = new CodeScanner(this, scannerView);
         resultData = findViewById(R.id.textView_qrResult);

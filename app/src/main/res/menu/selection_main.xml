@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/delete_scnas"
+        android:icon="@drawable/ic_delete_scans"
+        android:showAsAction="always"
+        android:title="Delete All" />
+    <item
+        android:id="@+id/import_scans"
+        android:icon="@drawable/ic_import_scans"
+        android:showAsAction="always"
+        android:title="Import" />
+    <item
+        android:id="@+id/export_scans"
+        android:icon="@drawable/ic_export_scans"
+        android:showAsAction="always"
+        android:title="Export" />
+    <item
+        android:id="@+id/new_scan"
+        android:icon="@drawable/ic_new_scan"
+        android:showAsAction="always"
+        android:title="New Scan" />
+</menu>

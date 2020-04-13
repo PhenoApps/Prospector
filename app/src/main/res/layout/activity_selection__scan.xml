@@ -6,74 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".Selection_Scan">
 
-    <Toolbar
-        android:id="@+id/toolbar_Selection_Scan"
-        android:layout_width="match_parent"
-        android:layout_height="30pt"
-        android:layout_marginBottom="28dp"
-        android:background="@android:color/holo_green_light"
-        app:layout_constraintBottom_toTopOf="@+id/listView_items"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:layout_editor_absoluteX="56dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/toolbarTextView_appName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:text="Prospector"
-                android:textSize="10pt"
-                android:textStyle="bold" />
-
-            <ImageButton
-                android:id="@+id/toolbarImageButton_import"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_upload"
-                android:layout_toLeftOf="@+id/toolbarImageButton_export"
-                android:layout_centerVertical="true" />
-
-            <ImageButton
-                android:id="@+id/toolbarImageButton_export"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_send"
-                android:layout_toLeftOf="@+id/toolbarImageButton_add"
-                android:layout_centerVertical="true" />
-
-            <ImageButton
-                android:id="@+id/toolbarImageButton_add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_add"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true" />
-
-        </RelativeLayout>
-    </Toolbar>
-
     <ListView
         android:id="@+id/listView_items"
-        android:layout_width="368dp"
-        android:layout_height="500dp"
-        app:layout_constraintBottom_toTopOf="@+id/button_deleteScanAll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
-
-    <Button
-        android:id="@+id/button_deleteScanAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete All Scans"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
