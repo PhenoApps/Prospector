@@ -1,56 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".View_ScanGraph">
 
-    <Button
-        android:id="@+id/button_deleteScan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete Scan"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
-        app:layout_constraintStart_toStartOf="parent"
+    <Toolbar
+        android:id="@+id/toolbar_View_ScanGraph"
+        android:layout_width="match_parent"
+        android:layout_height="30pt"
+        android:layout_marginBottom="28dp"
+        android:background="@android:color/holo_green_light"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.9" />
+        app:layout_constraintVertical_bias="0.0">
 
-    <Button
-        android:id="@+id/button_renameScan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Rename Scan"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.9" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/button_editGraph"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Graph"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.807"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.78" />
+            <TextView
+                android:id="@+id/toolbarTextView_appName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:text="Prospector"
+                android:textSize="10pt"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/toolbarImageButton_rename"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_set_as"
+                android:layout_toLeftOf="@+id/toolbarImageButton_edit"
+                android:layout_centerVertical="true" />
+
+            <ImageButton
+                android:id="@+id/toolbarImageButton_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_edit"
+                android:layout_toLeftOf="@+id/toolbarImageButton_delete"
+                android:layout_centerVertical="true" />
+
+            <ImageButton
+                android:id="@+id/toolbarImageButton_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_delete"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true" />
+
+        </RelativeLayout>
+    </Toolbar>
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        app:layout_constraintBottom_toTopOf="@+id/button_deleteScan"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        android:layout_below="@+id/toolbar_View_ScanGraph" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

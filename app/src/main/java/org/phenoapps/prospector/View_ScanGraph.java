@@ -6,8 +6,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,9 +21,9 @@ import java.util.Random;
 public class View_ScanGraph extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     GraphView graph;
-    Button button_deleteScan;
-    Button button_renameScan;
-    Button button_editGraph;
+    ImageButton toolbarImageButton_rename;
+    ImageButton toolbarImageButton_edit;
+    ImageButton toolbarImageButton_delete;
 
     // DECLARE GLOBAL VARIABLES
     DatabaseManager myDb;
@@ -38,9 +38,9 @@ public class View_ScanGraph extends AppCompatActivity {
 
         // INIT DISPLAY OBJECTS
         graph = findViewById(R.id.graph);
-        button_deleteScan = findViewById(R.id.button_deleteScan);
-        button_renameScan = findViewById(R.id.button_renameScan);
-        button_editGraph = findViewById(R.id.button_editGraph);
+        toolbarImageButton_rename = findViewById(R.id.toolbarImageButton_rename);
+        toolbarImageButton_edit = findViewById(R.id.toolbarImageButton_edit);
+        toolbarImageButton_delete = findViewById(R.id.toolbarImageButton_delete);
 
         // INIT GLOBAL VARIABLES
         myDb = new DatabaseManager(this);
@@ -48,9 +48,9 @@ public class View_ScanGraph extends AppCompatActivity {
         populate_items();
 
         // CONFIGURE BUTTONS
-        configure_button_deleteScan();
-        configure_button_renameScan();
-        configure_button_editGraph();
+        configure_toolbarImageButton_rename();
+        configure_toolbarImageButton_edit();
+        configure_toolbarImageButton_delete();
 
         // OTHER FUNCTION CALLS
         initGraph();
@@ -65,72 +65,6 @@ public class View_ScanGraph extends AppCompatActivity {
             items[i] = observationUnitIDs.getString(0);
             itemsChecked[i] = true; // initally all true because Prospector will automatically display all plots
         }
-    }
-
-    private void configure_button_deleteScan() {
-        button_deleteScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                myDb.delete_observationUnitName(observationUnitName);
-                finish();
-            }
-        });
-    }
-
-    private void configure_button_renameScan() {
-        button_renameScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-                builder.setTitle("Updated Scan Name");
-
-                final EditText input = new EditText(View_ScanGraph.this);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String newObservationUnitName = input.getText().toString();
-                        myDb.update_observationUnitName(observationUnitName, newObservationUnitName);
-                        dialog.cancel();
-                    }
-                });
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-
-                builder.show();
-            }
-        });
-    }
-
-    private void configure_button_editGraph() {
-        button_editGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-                builder.setTitle("Choose Scans to Display");
-                builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        itemsChecked[which] = isChecked;
-                    }
-                });
-                builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        updateGraph();
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.show();
-            }
-        });
     }
 
     private void updateGraph() {
@@ -199,5 +133,71 @@ public class View_ScanGraph extends AppCompatActivity {
                 graph.addSeries(plot);
             }
         }
+    }
+
+    private void configure_toolbarImageButton_rename() {
+        toolbarImageButton_rename.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
+                builder.setTitle("Updated Scan Name");
+
+                final EditText input = new EditText(View_ScanGraph.this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String newObservationUnitName = input.getText().toString();
+                        myDb.update_observationUnitName(observationUnitName, newObservationUnitName);
+                        dialog.cancel();
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+
+                builder.show();
+            }
+        });
+    }
+
+    private void configure_toolbarImageButton_edit() {
+        toolbarImageButton_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
+                builder.setTitle("Choose Scans to Display");
+                builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        itemsChecked[which] = isChecked;
+                    }
+                });
+                builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        updateGraph();
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    private void configure_toolbarImageButton_delete() {
+        toolbarImageButton_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myDb.delete_observationUnitName(observationUnitName);
+                finish();
+            }
+        });
     }
 }
