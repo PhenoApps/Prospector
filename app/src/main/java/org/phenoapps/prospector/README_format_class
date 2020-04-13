@@ -7,6 +7,7 @@ class declaration {
 
     // DECLARE GLOBAL VARIABLES
 
+    // onCreate FUNCTION
     onCreate {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection__study);

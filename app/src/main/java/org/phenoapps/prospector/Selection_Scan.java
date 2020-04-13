@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -141,11 +142,11 @@ public class Selection_Scan extends AppCompatActivity {
                         switch(i) {
                             case 0: // user clicked "Example Data"
                                 try {
-                                    if (myDb.isUnique_observationUnitName("sample_1") == false) {
+                                    if (!myDb.isUnique_observationUnitName("sample_1")) {
                                         Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
-                                    } else if (myDb.isUnique_observationUnitName("samle_2") == false) {
+                                    } else if (!myDb.isUnique_observationUnitName("sample_2")) {
                                         Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
-                                    } else if (myDb.isUnique_observationUnitName("sample_3") == false) {
+                                    } else if (!myDb.isUnique_observationUnitName("sample_3")) {
                                         Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
                                     } else {
                                         BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
@@ -178,6 +179,8 @@ public class Selection_Scan extends AppCompatActivity {
                 builder.show();
             }
         });
+
+        listData = listView_items_populate();
     }
 
     private void configure_toolbarImageButton_export() {
