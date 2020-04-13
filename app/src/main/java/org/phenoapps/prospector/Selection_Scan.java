@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -20,6 +21,9 @@ public class Selection_Scan extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
     ListView listView_items;
     Button button_deleteScanAll;
+    ImageButton toolbarImageButton_import;
+    ImageButton toolbarImageButton_export;
+    ImageButton toolbarImageButton_add;
 
     // DECLARE GLOBALS
     DatabaseManager myDb;
@@ -33,6 +37,9 @@ public class Selection_Scan extends AppCompatActivity {
         // INIT DISPLAY OBJECTS
         listView_items = findViewById(R.id.listView_items);
         button_deleteScanAll = findViewById(R.id.button_deleteScanAll);
+        toolbarImageButton_import = findViewById(R.id.toolbarImageButton_import);
+        toolbarImageButton_export = findViewById(R.id.toolbarImageButton_export);
+        toolbarImageButton_add = findViewById(R.id.toolbarImageButton_add);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
