@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.stratiotechnology.linksquareapi.LSFrame;
 import com.stratiotechnology.linksquareapi.LinkSquareAPI;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,18 +118,27 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     public void configure_button_scan() {
         button_scan.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                LinearLayout layout_newScan = new LinearLayout(MainActivity.this);
+                layout_newScan.setOrientation(LinearLayout.VERTICAL);
+                final EditText input_sampleName = new EditText(MainActivity.this);
+                layout_newScan.addView(input_sampleName);
+                final TextView text1 = new TextView(MainActivity.this);
+                text1.setText("Additional Samples Notes");
+                layout_newScan.addView(text1);
+                final EditText input_sampleNotes = new EditText(MainActivity.this);
+                layout_newScan.addView(input_sampleNotes);
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Sample Name");
-                final EditText input = new EditText(MainActivity.this);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
+                builder.setView(layout_newScan);
 
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        final String observationUnitName = input.getText().toString();
+                        final String observationUnitName = input_sampleName.getText().toString();
+                        final String sampleNotes = input_sampleNotes.getText().toString();
                         if (myDb.isUnique_observationUnitName(observationUnitName)) {
-                            saveScan(observationUnitName);
+                            saveScan(observationUnitName, sampleNotes);
                         } else {
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity.this);
                             builder2.setTitle("Duplicate Sample Name");
@@ -134,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                             builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    saveScan(observationUnitName);
+                                    saveScan(observationUnitName, sampleNotes);
                                 }
                             });
                             builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -170,14 +182,14 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
         super.onActivityResult(requestCode, resultCode, dataIntent);
 
-        if (requestCode == 0) {
+        if (requestCode == 0) { // Called when View_QRScanner activity is closed
             if (resultCode == RESULT_OK) {
-                saveScan(dataIntent.getStringExtra("qr_result"));
+                saveScan(dataIntent.getStringExtra("qr_result"), ""); // TODO: figure out a better option for scanNotes
             }
         }
     }
 
-    public void saveScan(String localScanID) {
+    public void saveScan(String localScanID, String scanNotes) {
         // check to see if new localScanID contains any invalid characters
         if (localScanID.contains(" ")) {
             Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
