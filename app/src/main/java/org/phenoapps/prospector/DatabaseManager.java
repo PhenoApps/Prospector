@@ -19,7 +19,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseManager";
 
     private static final String TABLE_NAME = "CassavaBase";
-    private static final String COL0 = "ID";
+    private static final String COL0 = "localDatabaseID";
     private static final String COL1 = "scanTime";
     private static final String COL2 = "deviceID";
     private static final String COL3 = "observationUnitID";
@@ -29,13 +29,14 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COL7 = "lightSource";
     private static final String COL8 = "spectralValuesCount";
     private static final String COL9 = "spectralValues";
-    private static final String COL10 = "serverScanID";
+    private static final String COL10 = "serverDatabaseID";
+    private static final String COL11 = "scanNote";
 
     private static final int CURRENT_LINKSQURE_LENGTH = 600; // TODO: remove dependance on this
     private static final int CURRENT_LINKSQURE_START = 400;
 
     public DatabaseManager(Context context) {
-        super(context, TABLE_NAME, null, 10);
+        super(context, TABLE_NAME, null, 11);
     }
 
     @Override
@@ -52,7 +53,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 COL7 + " TEXT, "+
                 COL8 + " TEXT, "+
                 COL9 + " TEXT, "+
-                COL10 + " TEXT)";
+                COL10 + " TEXT, "+
+                COL11 + " TEXT)";
         db.execSQL(createTable);
     }
 
@@ -78,7 +80,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
          *     The DatabaseManager parser is dependant on correctly formatted data!!
          */
 
-        String[] parts = item.split("\\s+");
+        String[] parts = item.split("~");
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -105,11 +107,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
         contentValues.put(COL8, parts[6]);
 
         // insert "spectralValues"
-        String spectralValues = "";
-        for (int i = 0; i < Integer.parseInt(parts[6]); i++) {
-            spectralValues += (parts[7 + i] + " ");
-        }
-        contentValues.put(COL9, spectralValues);
+        contentValues.put(COL9, parts[7]);
+
+        // insert "scanNote"
+        contentValues.put(COL11, parts[8]);
 
         Log.d(TAG, "addData: Adding " + item + " to " + TABLE_NAME);
 
@@ -125,20 +126,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
         String[] parts = data.split(",");
         ContentValues contentValues = new ContentValues();
 
-        /**
-         * NOTE: data is already in db format
-         * parts[0] = "ID"
-         * parts[1] = "scanTime"
-         * parts[2] = "deviceID"
-         * parts[3] = "observationUnitID"
-         * parts[4] = "observationUnitName"
-         * parts[5] = "observationUnitBarcode"
-         * parts[6] = "frameNumber"
-         * parts[7] = "lightSource"
-         * parts[8] = "spectralValuesCount"
-         * parts[9] = "spectralValues"
-         * parts[10] = "serverScanID"
-         */
         contentValues.put(COL1, parts[1]);
         contentValues.put(COL2, parts[2]);
         contentValues.put(COL3, parts[3]);
@@ -149,6 +136,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         contentValues.put(COL8, parts[8]);
         contentValues.put(COL9, parts[9]);
         contentValues.put(COL10, parts[10]);
+        contentValues.put(COL11, parts[11]);
 
         SQLiteDatabase db = this.getWritableDatabase();
         long result = db.insert(TABLE_NAME, null, contentValues);

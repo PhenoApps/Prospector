@@ -123,10 +123,10 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 final EditText input_sampleName = new EditText(MainActivity.this);
                 layout_newScan.addView(input_sampleName);
                 final TextView text1 = new TextView(MainActivity.this);
-                text1.setText("Additional Samples Notes");
+                text1.setText("Additional Scan Notes");
                 layout_newScan.addView(text1);
-                final EditText input_sampleNotes = new EditText(MainActivity.this);
-                layout_newScan.addView(input_sampleNotes);
+                final EditText input_sampleNote = new EditText(MainActivity.this);
+                layout_newScan.addView(input_sampleNote);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Sample Name");
@@ -136,9 +136,9 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         final String observationUnitName = input_sampleName.getText().toString();
-                        final String sampleNotes = input_sampleNotes.getText().toString();
+                        final String scanNote = input_sampleNote.getText().toString();
                         if (myDb.isUnique_observationUnitName(observationUnitName)) {
-                            saveScan(observationUnitName, sampleNotes);
+                            saveScan(observationUnitName, scanNote);
                         } else {
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity.this);
                             builder2.setTitle("Duplicate Sample Name");
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                             builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    saveScan(observationUnitName, sampleNotes);
+                                    saveScan(observationUnitName, scanNote);
                                 }
                             });
                             builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -189,11 +189,16 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
         }
     }
 
-    public void saveScan(String localScanID, String scanNotes) {
+    public void saveScan(String localScanID, String scanNote) {
         // check to see if new localScanID contains any invalid characters
-        if (localScanID.contains(" ")) {
+        // commas and tildas are used as delimiters in the database
+        if (localScanID.contains(",") || localScanID.contains("~")) {
             Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (scanNote.equals("")) {
+            scanNote = " ";
         }
 
         List<LSFrame> frames = new ArrayList<LSFrame>();
@@ -222,33 +227,39 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                  *     The DatabaseManager parser is dependant on correctly formatted data!!
                  */
 
+                // This StringBuilder uses a "~" as the delimiter
+
                 // Append "deviceID"
                 LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
-                str.append(deviceInfo.DeviceID + " ");
+                str.append(deviceInfo.DeviceID + "~");
 
                 // Append "observationUnitID"
-                str.append(0 + " ");
+                str.append(0 + "~");
 
                 // Append "observationUnitName"
-                str.append(localScanID + " ");
+                str.append(localScanID + "~");
 
                 // Append "observationUnitBarcode"
-                str.append(0 + " ");
+                str.append(0 + "~");
 
                 // Append "frameNumber"
-                str.append(frm.frameNo + " ");
+                str.append(frm.frameNo + "~");
 
                 // Append "lightSource"
-                str.append(frm.lightSource + " ");
+                str.append(frm.lightSource + "~");
 
                 // Append "spectralValuesCount"
-                str.append(frm.length + " ");
+                str.append(frm.length + "~");
 
                 // Append "spectralValues"
                 for (int j = 0; j < frm.length; j++) {
                     str.append(frm.raw_data[j] + " ");
                     // str.append(frm.data[i] + " ");
                 }
+                str.append("~");
+
+                // Append "scanNote"
+                str.append(scanNote);
 
                 String data = str.toString();
                 Log.d("DEBUG", data);
