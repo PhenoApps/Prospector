@@ -137,7 +137,7 @@ public class View_ScanGraph extends AppCompatActivity {
 
     private void renameScan() {
         AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-        builder.setTitle("Updated Scan Name");
+        builder.setTitle("Updated Sample Name");
 
         final EditText input = new EditText(View_ScanGraph.this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
