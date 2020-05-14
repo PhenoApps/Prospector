@@ -69,7 +69,8 @@ public class Selection_Scan extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
+        // listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
+        // not actually sure that this ever gets called in a useful case
     }
 
     private void configure_listView_items() {
@@ -137,6 +138,7 @@ public class Selection_Scan extends AppCompatActivity {
                                     myDb.insertData_fromSimpleCSV(line);
                                 }
                                 Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                                listData = listView_items_populate(); // NOTE: this should not move. I tried moving it to the end of the function, but the view does not appear to update if called then
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -159,8 +161,6 @@ public class Selection_Scan extends AppCompatActivity {
             }
         });
         builder.show();
-
-        listData = listView_items_populate();
     }
 
     private void exportScans() {
@@ -247,7 +247,7 @@ public class Selection_Scan extends AppCompatActivity {
             }
         }
 
-        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
+        final ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
         listView_items.setAdapter(adapter);
 
         return listData;
