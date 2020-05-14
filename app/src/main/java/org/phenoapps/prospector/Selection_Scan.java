@@ -69,8 +69,8 @@ public class Selection_Scan extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
-        // not actually sure that this ever gets called in a useful case
+        listData = listView_items_populate(); // used to make sure that the list displayed is actually the current database data
+        // NOTE: this function is used when "deleteScan" is called in View_ScanGraph activity
     }
 
     private void configure_listView_items() {
