@@ -182,8 +182,24 @@ public class View_ScanGraph extends AppCompatActivity {
     }
 
     private void deleteScan() {
-        myDb.delete_observationUnitName(observationUnitName);
-        finish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
+        builder.setTitle("Are you sure you want to delete this scan?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                myDb.delete_observationUnitName(observationUnitName);
+                finish();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     @Override
