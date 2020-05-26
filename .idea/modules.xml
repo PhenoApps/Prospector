@@ -5,8 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/LinkSquareAPI/LinkSquareAPI.iml" filepath="$PROJECT_DIR$/LinkSquareAPI/LinkSquareAPI.iml" />
       <module fileurl="file://$PROJECT_DIR$/Prospector.iml" filepath="$PROJECT_DIR$/Prospector.iml" />
       <module fileurl="file://$PROJECT_DIR$/SCiOSDK_Android/SCiOSDK_Android.iml" filepath="$PROJECT_DIR$/SCiOSDK_Android/SCiOSDK_Android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/SCiOSDK_Android-v1.1.1.1-20190113/SCiOSDK_Android-v1.1.1.1-20190113.iml" filepath="$PROJECT_DIR$/SCiOSDK_Android-v1.1.1.1-20190113/SCiOSDK_Android-v1.1.1.1-20190113.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sciosdk/sciosdk.iml" filepath="$PROJECT_DIR$/sciosdk/sciosdk.iml" />
     </modules>
   </component>
 </project>
