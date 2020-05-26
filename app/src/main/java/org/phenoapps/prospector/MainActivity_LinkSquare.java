@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,12 +20,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.stratiotechnology.linksquareapi.LSFrame;
 import com.stratiotechnology.linksquareapi.LinkSquareAPI;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LinkSquareAPI.LinkSquareAPIListener {
+public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSquareAPI.LinkSquareAPIListener {
 
     // Dynamic Loading LinkSqaureAPI Library
     static {
@@ -90,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
 
 
                 // Add Event Listener to Receive Device Button Event
-                linkSqaureAPI.SetEventListener(MainActivity.this);
+                linkSqaureAPI.SetEventListener(MainActivity_LinkSquare.this);
 
 
                 // Connect to LinkSquare
@@ -118,17 +115,17 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
     public void configure_button_scan() {
         button_scan.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                LinearLayout layout_newScan = new LinearLayout(MainActivity.this);
+                LinearLayout layout_newScan = new LinearLayout(MainActivity_LinkSquare.this);
                 layout_newScan.setOrientation(LinearLayout.VERTICAL);
-                final EditText input_sampleName = new EditText(MainActivity.this);
+                final EditText input_sampleName = new EditText(MainActivity_LinkSquare.this);
                 layout_newScan.addView(input_sampleName);
-                final TextView text1 = new TextView(MainActivity.this);
+                final TextView text1 = new TextView(MainActivity_LinkSquare.this);
                 text1.setText("Additional Scan Notes");
                 layout_newScan.addView(text1);
-                final EditText input_sampleNote = new EditText(MainActivity.this);
+                final EditText input_sampleNote = new EditText(MainActivity_LinkSquare.this);
                 layout_newScan.addView(input_sampleNote);
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity_LinkSquare.this);
                 builder.setTitle("Sample Name");
                 builder.setView(layout_newScan);
 
@@ -140,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                         if (myDb.isUnique_observationUnitName(observationUnitName)) {
                             saveScan(observationUnitName, scanNote);
                         } else {
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity.this);
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity_LinkSquare.this);
                             builder2.setTitle("Duplicate Sample Name");
                             builder2.setMessage("Add this scan to the existing sample?");
                             builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -299,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
                         alertDialog.setTitle("Alert");
                         alertDialog.setMessage("LinkSquare Device Button!");
                         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -318,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
                     alertDialog.setTitle("Alert");
                     alertDialog.setMessage("LinkSquare Network Timeout!");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -336,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements LinkSquareAPI.Lin
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
                     alertDialog.setTitle("Alert");
                     alertDialog.setMessage("LinkSquare Network Closed!");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",

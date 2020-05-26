@@ -25,7 +25,7 @@
         <activity android:name=".View_QRScanner" />
         <activity android:name=".Selection_Main" />
         <activity android:name=".View_ScanGraph" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity_LinkSquare" />
     </application>
 
 </manifest>

@@ -59,7 +59,7 @@ public class Selection_Main extends AppCompatActivity {
         button_newScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(Selection_Main.this, MainActivity.class);
+                Intent i = new Intent(Selection_Main.this, MainActivity_LinkSquare.class);
                 startActivity(i);
             }
         });
