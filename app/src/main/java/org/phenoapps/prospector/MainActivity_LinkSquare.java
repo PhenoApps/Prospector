@@ -48,7 +48,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_linksquare);
 
         // INIT DISPLAY OBJECTS
         button_connect = (Button) findViewById(R.id.button_connect);
