@@ -26,7 +26,7 @@ import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
 import org.phenoapps.prospector.R;
-import consumerphysics.com.myscioapplication.config.Constants;
+import org.phenoapps.prospector.config.Constants;
 
 public class ModelActivity extends BaseScioActivity {
 

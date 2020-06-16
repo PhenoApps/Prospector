@@ -28,7 +28,7 @@ import java.util.Map;
 
 //import consumerphysics.com.myscioapplication.R;
 import org.phenoapps.prospector.R;
-import consumerphysics.com.myscioapplication.config.Constants;
+import org.phenoapps.prospector.config.Constants;
 
 public final class DiscoverActivity extends Activity {
 

@@ -13,9 +13,9 @@ import com.consumerphysics.android.sdk.sciosdk.ScioCloud;
 import com.consumerphysics.android.sdk.sciosdk.ScioDevice;
 import com.consumerphysics.android.sdk.sciosdk.ScioSensor;
 
-import consumerphysics.com.myscioapplication.config.Constants;
-import consumerphysics.com.myscioapplication.interfaces.IScioDevice;
-import consumerphysics.com.myscioapplication.utils.StringUtils;
+import org.phenoapps.prospector.config.Constants;
+import org.phenoapps.prospector.interfaces.IScioDevice;
+import org.phenoapps.prospector.utils.StringUtils;
 
 /**
  * Created by nadavg on 19/07/2016.

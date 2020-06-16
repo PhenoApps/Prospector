@@ -25,8 +25,8 @@ import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
 import org.phenoapps.prospector.R;
-import consumerphysics.com.myscioapplication.config.Constants;
-import consumerphysics.com.myscioapplication.storage.ScanStorage;
+import org.phenoapps.prospector.config.Constants;
+import org.phenoapps.prospector.storage.ScanStorage;
 
 /**
  * Created by nadavg on 19/07/2016.

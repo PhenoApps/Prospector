@@ -42,9 +42,9 @@ import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
 import org.phenoapps.prospector.R;
-import consumerphysics.com.myscioapplication.adapter.ScioModelAdapter;
-import consumerphysics.com.myscioapplication.config.Constants;
-import consumerphysics.com.myscioapplication.utils.StringUtils;
+import org.phenoapps.prospector.adapter.ScioModelAdapter;
+import org.phenoapps.prospector.config.Constants;
+import org.phenoapps.prospector.utils.StringUtils;
 
 public final class MainActivity extends BaseScioActivity {
 
