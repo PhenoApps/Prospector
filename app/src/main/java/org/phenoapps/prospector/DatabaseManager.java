@@ -289,15 +289,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
         String output;
 
         try{
-            // Create the directory and file
-//            File sdCard = Environment.getExternalStorageDirectory();
-//            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
-//            dir.mkdirs();
-//            File csv_file = new File(dir, "Log.csv");
-//            csv_file.createNewFile();
-//            Log.d("DEBUG", csv_file.getAbsolutePath());
-//            FileOutputStream out = new FileOutputStream(csv_file);
-
             // Store column names into output
             output = "";
             for (int i = 0; i < data.getColumnCount(); i++) {
@@ -321,7 +312,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
             }
 
             // Write data to output file
-//            out.write(output.getBytes()); // NOTE: this is most efficient if done as few times as possible
             outputStream.write(output.getBytes());
 
             // Close the file
