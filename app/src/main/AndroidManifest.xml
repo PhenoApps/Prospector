@@ -28,6 +28,7 @@
         <activity android:name=".Selection_Main" />
         <activity android:name=".View_ScanGraph" />
         <activity android:name=".MainActivity_LinkSquare" />
+        <activity android:name=".View_FileExplorer" />
 
         <activity android:name="com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity" />
         <activity android:name=".activities.MainActivity"/>

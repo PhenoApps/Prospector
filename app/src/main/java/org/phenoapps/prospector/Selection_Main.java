@@ -97,12 +97,12 @@ public class Selection_Main extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         switch(i) {
-                            case 0: // user clicked "Simple CSV"
-                                File csv_file = myDb.export_toSimpleCSV();
-                                // TODO: figure out why this sometimes doesn't show all of the scans
-                                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
-                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
-                                break;
+//                            case 0: // user clicked "Simple CSV"
+//                                File csv_file = myDb.export_toSimpleCSV();
+//                                // TODO: figure out why this sometimes doesn't show all of the scans
+//                                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
+//                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+//                                break;
 
                             case 1: // user clicked "SCiO Format"
                                 File scio_file = myDb.export_toSCiO();

@@ -13,6 +13,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
@@ -280,6 +281,56 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+
+    public void export_toSimpleCSV_withOutputStream(OutputStream outputStream) {
+        Cursor data = getAll();
+        String data_string;
+        String output;
+
+        try{
+            // Create the directory and file
+//            File sdCard = Environment.getExternalStorageDirectory();
+//            File dir = new File (sdCard.getAbsoluteFile() + "/Download");
+//            dir.mkdirs();
+//            File csv_file = new File(dir, "Log.csv");
+//            csv_file.createNewFile();
+//            Log.d("DEBUG", csv_file.getAbsolutePath());
+//            FileOutputStream out = new FileOutputStream(csv_file);
+
+            // Store column names into output
+            output = "";
+            for (int i = 0; i < data.getColumnCount(); i++) {
+                output += data.getColumnName(i);
+                output += ",";
+            }
+            output += "\n";
+
+            // Store column data into output
+            while (data.moveToNext()) {
+                for(int i = 0; i < data.getColumnCount(); i++) {
+                    data_string = data.getString(i);
+                    if (data_string != null) {
+                        output += data_string;
+                    } else {
+                        output += " ";
+                    }
+                    output += ",";
+                }
+                output += "\n";
+            }
+
+            // Write data to output file
+//            out.write(output.getBytes()); // NOTE: this is most efficient if done as few times as possible
+            outputStream.write(output.getBytes());
+
+            // Close the file
+            outputStream.flush();
+            outputStream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public File export_toSCiO() {

@@ -3,6 +3,8 @@ package org.phenoapps.prospector;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -21,10 +23,14 @@ public class View_FileExplorer extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view__fileexplorer);
 
-        // User the current directory as the title
+        File sdCard = Environment.getExternalStorageDirectory();
+        File dir2 = new File (sdCard.getAbsoluteFile() + "/Download");
+
+        // Use the current directory as the title
         path = "/";
         if (getIntent().hasExtra("path")) {
             path = getIntent().getStringExtra("path");
+            path = dir2.getPath();
         }
         setTitle(path);
 
@@ -34,6 +40,7 @@ public class View_FileExplorer extends ListActivity {
         if (!dir.canRead()) {
             setTitle(getTitle() + " (inaccessible)");
         }
+        Log.d("DEBUG", getTitle().toString());
         String[] list = dir.list();
         if (list != null) {
             for (String file : list) {
@@ -45,8 +52,7 @@ public class View_FileExplorer extends ListActivity {
         Collections.sort(values);
 
         // Put the data into the list
-        ArrayAdapter adapter = new ArrayAdapter(this,
-                android.R.layout.simple_list_item_2, android.R.id.text1, values);
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_2, android.R.id.text1, values);
         setListAdapter(adapter);
     }
 
