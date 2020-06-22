@@ -123,7 +123,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
-    public boolean insertData_fromSimpleCSV(String data) {
+    public boolean insertData_fromDatabaseCSV(String data) {
         String[] parts = data.split(",");
         ContentValues contentValues = new ContentValues();
 
@@ -232,7 +232,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    public File export_toSimpleCSV() {
+    public File export_toDatabaseCSV() {
         Cursor data = getAll();
         String data_string;
         String output;
@@ -283,7 +283,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
-    public void export_toSimpleCSV_withOutputStream(OutputStream outputStream) {
+    public void export_toDatabaseCSV_withOutputStream(OutputStream outputStream) {
         Cursor data = getAll();
         String data_string;
         String output;

@@ -83,7 +83,7 @@ public class Selection_Main extends AppCompatActivity {
                 builder.setTitle("Select Output Format");
 
                 final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Main.this, android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("Simple CSV");
+                arrayAdapter.add("Database CSV");
                 arrayAdapter.add("SCiO Format");
                 arrayAdapter.add("BrAPI Format");
 
@@ -97,12 +97,12 @@ public class Selection_Main extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         switch(i) {
-//                            case 0: // user clicked "Simple CSV"
-//                                File csv_file = myDb.export_toSimpleCSV();
-//                                // TODO: figure out why this sometimes doesn't show all of the scans
-//                                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
-//                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
-//                                break;
+                            case 0: // user clicked "Database CSV"
+                                File csv_file = myDb.export_toDatabaseCSV();
+                                // TODO: figure out why this sometimes doesn't show all of the scans
+                                myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
+                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                break;
 
                             case 1: // user clicked "SCiO Format"
                                 File scio_file = myDb.export_toSCiO();
@@ -159,7 +159,7 @@ public class Selection_Main extends AppCompatActivity {
                                         BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
                                         String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
                                         while ((line = reader.readLine()) != null) {
-                                            myDb.insertData_fromSimpleCSV(line);
+                                            myDb.insertData_fromDatabaseCSV(line);
                                         }
                                         Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
                                     }
@@ -168,7 +168,7 @@ public class Selection_Main extends AppCompatActivity {
                                 }
                                 break;
 
-                            case 1: // user clicked "Simple CSV"
+                            case 1: // user clicked "Database CSV"
                                 break;
 
                             case 2: // user clicked "SCiO Format"

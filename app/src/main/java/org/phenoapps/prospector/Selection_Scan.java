@@ -78,10 +78,10 @@ public class Selection_Scan extends AppCompatActivity {
 
         // TODO: make the requestCode a global variable
         if (resultCode == RESULT_OK && dataIntent != null ) {
-            if (requestCode == 0) { // user clicked "Simple CSV"
+            if (requestCode == 0) { // user clicked "Database CSV"
                 try {
                     OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
-                    myDb.export_toSimpleCSV_withOutputStream(outputStream);
+                    myDb.export_toDatabaseCSV_withOutputStream(outputStream);
                     Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
@@ -171,7 +171,7 @@ public class Selection_Scan extends AppCompatActivity {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
                                 String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
                                 while ((line = reader.readLine()) != null) {
-                                    myDb.insertData_fromSimpleCSV(line);
+                                    myDb.insertData_fromDatabaseCSV(line);
                                 }
                                 Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
                                 listData = listView_items_populate(); // NOTE: this should not move. I tried moving it to the end of the function, but the view does not appear to update if called then
@@ -181,7 +181,7 @@ public class Selection_Scan extends AppCompatActivity {
                         }
                         break;
 
-                    case 1: // user clicked "Simple CSV"
+                    case 1: // user clicked "Database CSV"
                         break;
 
                     case 2: // user clicked "SCiO Format"
@@ -207,7 +207,7 @@ public class Selection_Scan extends AppCompatActivity {
         builder.setTitle("Select Output Format");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
-        arrayAdapter.add("Simple CSV");
+        arrayAdapter.add("Database CSV");
         arrayAdapter.add("SCiO Format");
         arrayAdapter.add("BrAPI Format");
 
@@ -221,12 +221,12 @@ public class Selection_Scan extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 switch (i) {
-                    case 0: // user clicked "Simple CSV"
+                    case 0: // user clicked "Database CSV"
 
                         builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                File csv_file = myDb.export_toSimpleCSV();
+                                File csv_file = myDb.export_toDatabaseCSV();
                                 myDb.scanFile(Selection_Scan.this, csv_file);
                                 Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
                                 dialogInterface.dismiss();
