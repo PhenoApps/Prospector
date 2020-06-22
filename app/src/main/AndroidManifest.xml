@@ -25,17 +25,16 @@
             </intent-filter>
         </activity>
         <activity android:name=".View_QRScanner" />
-        <activity android:name=".Selection_Main" />
         <activity android:name=".View_ScanGraph" />
         <activity android:name=".MainActivity_LinkSquare" />
-        <activity android:name=".View_FileExplorer" />
 
-        <activity android:name="com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity" />
-        <activity android:name=".activities.MainActivity"/>
-        <activity android:name=".activities.DiscoverActivity"/>
-        <activity android:name=".activities.MultiScanningActivity"/>
-        <activity android:name=".activities.ModelActivity"/>
+        <activity android:name=".activities.BaseScioActivity"/>
         <activity android:name=".activities.CPModelActivity"/>
+        <activity android:name=".activities.DiscoverActivity"/>
+        <activity android:name=".activities.MainActivity"/>
+        <activity android:name=".activities.ModelActivity"/>
+        <activity android:name=".activities.MultiScanningActivity"/>
+        <activity android:name="com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity" />
     </application>
 
 </manifest>
