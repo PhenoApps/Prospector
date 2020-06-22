@@ -399,6 +399,71 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
+    public void export_toSCiO_withOutputStream(OutputStream outputStream) {
+        // Based on: https://cassava-test.sgn.cornell.edu/breeders/nirs/
+        Cursor data = getAll();
+        StringBuilder output = new StringBuilder(); // TODO: figure out if storing all data in one string is okay procedure
+
+        try{
+            // add metadata
+            output.append("name," + "testName" + "\n");
+            output.append("user," + "testUser" + "\n");
+            output.append("description," + "dummyData" + "\n");
+            output.append("num_records," + getCount_id() + "\n");
+            output.append("num_samples," + getCount_observationScanName() + "\n");
+            output.append("num_auto_attributes," + "0" + "\n");
+            output.append("num_custom_attributes," + "0" + "\n");
+            output.append("num_wavelengths," + CURRENT_LINKSQURE_LENGTH + "\n");
+            output.append("wavelengths_start," + CURRENT_LINKSQURE_START + "\n");
+            output.append("wavelengths_resolution," + "1" + "\n");
+
+            // add column names
+            output.append("id,sample_id,sampling_time,User_input_id,device_id,comment,temperature,location,outlier,");
+            for (int i = 0; i < CURRENT_LINKSQURE_LENGTH; i++) {
+                output.append("spectrum_" + i + " + " + CURRENT_LINKSQURE_START + ",");
+            }
+            output.append("\n");
+
+            // add column types
+            output.append("int,unicode,datetime,unicode,unicode,NoneType,float,NoneType,str,");
+            for (int i = 0; i < CURRENT_LINKSQURE_LENGTH; i++) {
+                output.append("float,");
+            }
+            output.append("\n");
+
+            // add data
+            while (data.moveToNext()) {
+                output.append(data.getString(0) + ","); // id
+                output.append(data.getString(0) + ","); // sample_id
+                output.append(data.getString(1) + ","); // sampling_time
+                output.append(data.getString(4) + ","); // User_input_id
+                output.append(data.getString(2) + ","); // device_id
+                output.append("None,"); // comment
+                output.append("0,"); // temperature
+                output.append("None,"); // location
+                output.append("no,"); // outlier
+
+                // spectral values
+                String[] spectralValues = data.getString(9).split(" ");
+                for (int i = 0; i < spectralValues.length; i++) {
+                    output.append(spectralValues[i] + ",");
+                }
+
+                output.append("\n");
+            }
+
+            // Write data to output file
+            outputStream.write(output.toString().getBytes()); // NOTE: this is most efficient if done as few times as possible
+
+            // Close the file
+            outputStream.flush();
+            outputStream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public File export_toBrAPI() {
         // Based on: https://github.com/plantbreeding/API/issues/399
         Cursor data = getAll();
@@ -451,6 +516,48 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+
+    public void export_toBrAPI_withOutputStream(OutputStream outputStream) {
+        // Based on: https://github.com/plantbreeding/API/issues/399
+        Cursor data = getAll();
+        StringBuilder output = new StringBuilder();
+
+        try{
+            // open Json object
+            output.append("\"log\": [\n");
+
+            // formatting looks bad here so that it looks nice after export
+            while (data.moveToNext()) {
+                output.append("{\n");
+                output.append("\t\"deviceID\": \"" + data.getString(2) + "\",\n"); // deviceID
+                output.append("\t\"timestamp\": \"" + data.getString(1) + "\",\n"); // timestamp
+                output.append("\t\"observationUnitID\": \"" + data.getString(3) + "\",\n"); // observationUnitID
+                output.append("\t\"observationUnitName\": \"" + data.getString(4) + "\",\n"); // observationUnitName
+                output.append("\t\"observationUnitBarcode\": \"" + data.getString(5) + "\",\n"); // observationUnitBarcode
+                output.append("\t\"scanDbID\": \"" + data.getString(10) + "\",\n"); // scanDbID
+                output.append("\t\"scanPUI\": \"" + data.getString(0) + "\",\n"); // scanPUI
+
+                // spectralValues
+                output.append("\t\"spectralValues\": [\n\t\t");
+                String[] spectralValues = data.getString(9).split(" ");
+                for (int i = 0; i < 5; i++) {
+                    output.append("{\n\t\t\t\"wavelength\": " + (CURRENT_LINKSQURE_START + i) + ",\n");
+                    output.append("\t\t\t\"spectralValue\": " + spectralValues[i] + "\n\t\t},\n\t\t");
+                }
+                output.append("]\n\t},\n");
+            }
+            output.append("]");
+
+            // Write data to output file
+            outputStream.write(output.toString().getBytes()); // NOTE: this is most efficient if done as few times as possible
+
+            // Close the file
+            outputStream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void scanFile(Context ctx, File filepath) {

@@ -76,13 +76,31 @@ public class Selection_Scan extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
         super.onActivityResult(requestCode, resultCode, dataIntent);
 
-        if (requestCode == 0 && dataIntent != null) { // Called when View_FileScan activity is closed
-            if (resultCode == RESULT_OK) {
-                Log.d("DEBUG", dataIntent.toString());
-
+        // TODO: make the requestCode a global variable
+        if (resultCode == RESULT_OK && dataIntent != null ) {
+            if (requestCode == 0) { // user clicked "Simple CSV"
                 try {
                     OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
-                    exportScans(outputStream);
+                    myDb.export_toSimpleCSV_withOutputStream(outputStream);
+                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            } else if (requestCode == 1) { // user clicked "SCiO Format"
+                try {
+                    OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
+                    myDb.export_toSCiO_withOutputStream(outputStream);
+                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            } else if (requestCode == 2) { // user clicked "BrAPI Format"
+                try {
+                    OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
+                    myDb.export_toBrAPI_withOutputStream(outputStream);
+                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
@@ -181,7 +199,10 @@ public class Selection_Scan extends AppCompatActivity {
         builder.show();
     }
 
-    private void exportScans(final OutputStream outputStream) {
+    private void exportScans() {
+        final android.app.AlertDialog.Builder builder2 = new android.app.AlertDialog.Builder(Selection_Scan.this);
+        builder2.setTitle("Export to Default Location?");
+
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
         builder.setTitle("Select Output Format");
 
@@ -201,19 +222,78 @@ public class Selection_Scan extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 switch (i) {
                     case 0: // user clicked "Simple CSV"
-                        myDb.export_toSimpleCSV_withOutputStream(outputStream);
+
+                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                File csv_file = myDb.export_toSimpleCSV();
+                                myDb.scanFile(Selection_Scan.this, csv_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                intent.setType("*/*"); // TODO: enforce .CSV filetype
+                                startActivityForResult(intent, 0);
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.show();
+
                         break;
 
                     case 1: // user clicked "SCiO Format"
-                        File scio_file = myDb.export_toSCiO();
-                        myDb.scanFile(Selection_Scan.this, scio_file);
-                        Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+
+                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                File scio_file = myDb.export_toSCiO();
+                                myDb.scanFile(Selection_Scan.this, scio_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                intent.setType("*/*"); // TODO: enforce .CSV filetype
+                                startActivityForResult(intent, 1);
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.show();
+
                         break;
 
                     case 2: // user clicked "BrAPI Format"
-                        File brapi_file = myDb.export_toBrAPI();
-                        myDb.scanFile(Selection_Scan.this, brapi_file);
-                        Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+
+                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                File brapi_file = myDb.export_toBrAPI();
+                                myDb.scanFile(Selection_Scan.this, brapi_file);
+                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                intent.setType("*/*"); // TODO: enforce .CSV filetype
+                                startActivityForResult(intent, 2);
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        builder2.show();
+
                         break;
 
                     default:
@@ -284,11 +364,7 @@ public class Selection_Scan extends AppCompatActivity {
                 importSampleScans();
                 break;
             case R.id.export_scans:
-                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("*/*"); // TODO: enforce .CSV filetype
-                startActivityForResult(i, 0);
-
+                exportScans();
                 break;
             case R.id.new_scan:
                 newScan();
