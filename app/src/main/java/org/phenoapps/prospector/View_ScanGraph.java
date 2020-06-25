@@ -161,7 +161,7 @@ public class View_ScanGraph extends AppCompatActivity {
 
     private void editScan() {
         AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-        builder.setTitle("Choose Scans to Display");
+        builder.setTitle("Choose Frames to Display");
         builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
