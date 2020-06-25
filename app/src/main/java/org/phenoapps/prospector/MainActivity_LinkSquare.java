@@ -76,7 +76,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                 if (!wifiInfo.getSSID().contains("LS1-")) {
                     Log.e("ERROR", "You may be connected to the wrong WiFi network.\n You are connected to " + wifiInfo.getSSID());
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            "You may be connected to the wrong WiFi network. You need to join LS1-0102315.",
+                            "You may be connected to the wrong WiFi network. You need to join LS1-XXXXXXX where X can be any number from 0-9.",
                             Toast.LENGTH_SHORT);
 
                     toast.show();
