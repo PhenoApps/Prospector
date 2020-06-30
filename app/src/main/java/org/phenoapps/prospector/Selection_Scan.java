@@ -29,6 +29,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+
+enum SortStyle {
+    Alphabetical,
+    Date
+}
 
 public class Selection_Scan extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
@@ -38,6 +44,7 @@ public class Selection_Scan extends AppCompatActivity {
     // DECLARE GLOBALS
     DatabaseManager myDb;
     ArrayList<String> listData;
+    SortStyle sampleSortStyle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +64,7 @@ public class Selection_Scan extends AppCompatActivity {
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
         listData = listView_items_populate();
+        sampleSortStyle = SortStyle.Date;
 
         // CONFIGURE BUTTONS
         configure_listView_items();
@@ -340,6 +348,10 @@ public class Selection_Scan extends AppCompatActivity {
             if (!listData.contains(observationUnitName)) {
                 listData.add(observationUnitName);
             }
+        }
+
+        if (sampleSortStyle == SortStyle.Alphabetical) {
+            Collections.sort(listData);
         }
 
         final ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
