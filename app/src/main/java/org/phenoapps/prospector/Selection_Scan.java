@@ -381,6 +381,13 @@ public class Selection_Scan extends AppCompatActivity {
             case R.id.new_scan:
                 newScan();
                 break;
+            case R.id.sort:
+                if (sampleSortStyle == SortStyle.Alphabetical)
+                    sampleSortStyle = SortStyle.Date;
+                else if (sampleSortStyle == SortStyle.Date)
+                    sampleSortStyle = SortStyle.Alphabetical;
+                listView_items_populate();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
