@@ -20,13 +20,14 @@ import com.consumerphysics.android.sdk.callback.device.ScioDeviceScanHandler;
 import com.consumerphysics.android.sdk.model.ScioModel;
 import com.consumerphysics.android.sdk.model.ScioReading;
 
+import org.phenoapps.prospector.R;
+import org.phenoapps.prospector.config.Constants;
+import org.phenoapps.prospector.storage.ScanStorage;
+
 import java.util.Date;
 import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
-import org.phenoapps.prospector.R;
-import org.phenoapps.prospector.config.Constants;
-import org.phenoapps.prospector.storage.ScanStorage;
 
 /**
  * Created by nadavg on 19/07/2016.
@@ -136,7 +137,7 @@ public class MultiScanningActivity extends BaseScioActivity {
             listString += s + "\n";
         }
 
-        explain.setText(explain.getText().toString() + "\n\n" + "Will analyze the following model/s: " + listString);
+        explain.setText(explain.getText().toString() + "\n\n" + getString(R.string.will_analyze_models) + listString);
     }
 
     private void handleScanClicked(final int position) {

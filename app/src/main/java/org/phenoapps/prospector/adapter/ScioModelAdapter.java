@@ -8,16 +8,19 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.consumerphysics.android.sdk.model.ScioModel;
 import com.consumerphysics.android.sdk.model.attribute.ScioAttribute;
 import com.consumerphysics.android.sdk.model.attribute.ScioDatetimeAttribute;
 import com.consumerphysics.android.sdk.model.attribute.ScioNumericAttribute;
 import com.consumerphysics.android.sdk.model.attribute.ScioStringAttribute;
 
+import org.phenoapps.prospector.R;
+
 import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
-import org.phenoapps.prospector.R;
 
 /**
  * Created by nadavg on 16/02/2016.
@@ -27,15 +30,15 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
         super(context, 0, models);
     }
 
-    @Override
-    public View getView(final int position, View convertView, final ViewGroup parent) {
+    @Override @NonNull
+    public View getView(final int position, View convertView, @NonNull final ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.results_item, parent, false);
         }
 
-        final TextView remainingScans = (TextView) convertView.findViewById(R.id.remaining);
-        final TextView attributeName = (TextView) convertView.findViewById(R.id.attribute_name);
-        final TextView attributeValue = (TextView) convertView.findViewById(R.id.attribute_value);
+        final TextView remainingScans = convertView.findViewById(R.id.remaining);
+        final TextView attributeName = convertView.findViewById(R.id.attribute_name);
+        final TextView attributeValue = convertView.findViewById(R.id.attribute_value);
         attributeValue.setText("");
 
 
@@ -51,9 +54,9 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
         else {
             int numberOfScansLeft = model.getRequiredScans() - model.getStoredScans();
             if (numberOfScansLeft > 0) {
-                remainingScans.setText("Scan " + String.valueOf(numberOfScansLeft) + " more times");
+                remainingScans.setText(String.format("%s%d%s", getContext().getString(R.string.scan_without_space), numberOfScansLeft, getContext().getString(R.string.more_times)));
             } else {
-                remainingScans.setText("Scan session complete");
+                remainingScans.setText(R.string.scan_session_complete);
             }
         }
 
@@ -62,7 +65,7 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
                 String value;
                 String unit = null;
 
-                /**
+                /*
                  * Classification model will return a STRING value.
                  * Estimation will return the NUMERIC value.
                  */
@@ -112,7 +115,7 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
         }
 
         if(model.isUnknownMaterial()){
-            attributeValue.setText("Unknown Material");
+            attributeValue.setText(R.string.unknown_material);
         }
 
         return convertView;

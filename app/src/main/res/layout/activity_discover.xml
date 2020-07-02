@@ -14,7 +14,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
-        android:text="Connection"
+        android:text="@string/connection"
         android:textColor="#000"
         android:textSize="12sp"
         android:textStyle="bold" />
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="3dp"
-            android:text="Which device would you like to connect to?"
+            android:text="@string/ask_which_device"
             android:textColor="#000" />
 
         <ListView
@@ -46,7 +46,7 @@
             android:divider="#000"
             android:dividerHeight="1dp"
             android:footerDividersEnabled="true"
-            android:headerDividersEnabled="true"></ListView>
+            android:headerDividersEnabled="true" />
 
     </LinearLayout>
 

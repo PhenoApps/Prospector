@@ -51,12 +51,12 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
         setContentView(R.layout.activity_main_linksquare);
 
         // INIT DISPLAY OBJECTS
-        button_connect = (Button) findViewById(R.id.button_connect);
-        button_scan = (Button) findViewById(R.id.button_scan);
-        button_close = (Button) findViewById(R.id.button_close);
-        textView_connect = (TextView) findViewById(R.id.textView_connect);
-        textView_scan = (TextView) findViewById(R.id.textView_scan);
-        textView_close = (TextView) findViewById(R.id.textView_close);
+        button_connect = findViewById(R.id.button_connect);
+        button_scan = findViewById(R.id.button_scan);
+        button_close = findViewById(R.id.button_close);
+        textView_connect = findViewById(R.id.textView_connect);
+        textView_scan = findViewById(R.id.textView_scan);
+        textView_close = findViewById(R.id.textView_close);
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
@@ -70,17 +70,21 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
     public void configure_button_connect() {
         button_connect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                String connectionError = context.getString(R.string.connection_wifi_error);
                 // Check for the correct Wifi Network
-                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
+                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                 if (!wifiInfo.getSSID().contains("LS1-")) {
                     Log.e("ERROR", "You may be connected to the wrong WiFi network.\n You are connected to " + wifiInfo.getSSID());
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            "You may be connected to the wrong WiFi network. You need to join LS1-0102315.",
+                            connectionError,
                             Toast.LENGTH_SHORT);
 
                     toast.show();
                 }
+
+                //TODO: chaneylc implement AsyncTask or Thread
 
                 // Initialize
                 linkSqaureAPI.Initialize();
@@ -96,7 +100,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
 
                 int result = linkSqaureAPI.Connect(IP, 18630);
                 if (result != LinkSquareAPI.RET_OK) {
-                    textView_connect.setText("Result: " + linkSqaureAPI.GetLSError()); // Get Error Message
+                    textView_connect.setText(String.format("%s%s", getString(R.string.result), linkSqaureAPI.GetLSError())); // Get Error Message
                 } else {
                     LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
 
@@ -120,7 +124,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                 final EditText input_sampleName = new EditText(MainActivity_LinkSquare.this);
                 layout_newScan.addView(input_sampleName);
                 final TextView text1 = new TextView(MainActivity_LinkSquare.this);
-                text1.setText("Additional Scan Notes");
+                text1.setText(R.string.additional_scan_notes);
                 layout_newScan.addView(text1);
                 final EditText input_sampleNote = new EditText(MainActivity_LinkSquare.this);
                 layout_newScan.addView(input_sampleNote);
@@ -190,7 +194,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
         // check to see if new localScanID contains any invalid characters
         // commas and tildas are used as delimiters in the database
         if (localScanID.contains(",") || localScanID.contains("~")) {
-            Toast.makeText(getApplicationContext(), "Scan name cannot contain spaces.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.scan_name_no_spaces, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -198,18 +202,18 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
             scanNote = " ";
         }
 
-        List<LSFrame> frames = new ArrayList<LSFrame>();
+        List<LSFrame> frames = new ArrayList<>();
 
         // Scan
         int result = linkSqaureAPI.Scan(3, 3, frames); // (number of frames using light source 1, number of frames using light source 2, List to store frames in)
         if (result != LinkSquareAPI.RET_OK) {
-            textView_scan.setText("Result: " + linkSqaureAPI.GetLSError());
+            textView_scan.setText(String.format("%s%s", getString(R.string.result), linkSqaureAPI.GetLSError()));
         } else {
             for (int i = 0; i < frames.size(); i++) {
                 LSFrame frm = frames.get(i);
                 StringBuilder str = new StringBuilder();
 
-                /**
+                /*
                  * Data is passed to DB in the following format:
                  *     COL2 = "deviceID";
                  *     COL3 = "observationUnitID";
@@ -228,29 +232,29 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
 
                 // Append "deviceID"
                 LinkSquareAPI.LSDeviceInfo deviceInfo = linkSqaureAPI.GetDeviceInfo();
-                str.append(deviceInfo.DeviceID + "~");
+                str.append(deviceInfo.DeviceID).append("~");
 
                 // Append "observationUnitID"
                 str.append(0 + "~");
 
                 // Append "observationUnitName"
-                str.append(localScanID + "~");
+                str.append(localScanID).append("~");
 
                 // Append "observationUnitBarcode"
                 str.append(0 + "~");
 
                 // Append "frameNumber"
-                str.append(frm.frameNo + "~");
+                str.append(frm.frameNo).append("~");
 
                 // Append "lightSource"
-                str.append(frm.lightSource + "~");
+                str.append(frm.lightSource).append("~");
 
                 // Append "spectralValuesCount"
-                str.append(frm.length + "~");
+                str.append(frm.length).append("~");
 
                 // Append "spectralValues"
                 for (int j = 0; j < frm.length; j++) {
-                    str.append(frm.raw_data[j] + " ");
+                    str.append(frm.raw_data[j]).append(" ");
                     // str.append(frm.data[i] + " ");
                 }
                 str.append("~");
@@ -264,12 +268,12 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                 boolean upload_success = myDb.insertData_fromLinkSquare(data);
                 if (upload_success) {
                     // TODO: figure out why this message lasts so long
-                    Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.success_exclamation, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Unsuccessful upload.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.unsuccessful_upload, Toast.LENGTH_SHORT).show();
                 }
             }
-            textView_scan.setText("Result: OK.");
+            textView_scan.setText(R.string.result_ok);
         }
     }
 
@@ -278,7 +282,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
             public void onClick(View v) {
                 // Close
                 linkSqaureAPI.Close();
-                textView_close.setText("Result: OK.");
+                textView_close.setText(R.string.result_ok);
             }
         });
     }
@@ -297,9 +301,9 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                     @Override
                     public void run() {
                         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
-                        alertDialog.setTitle("Alert");
-                        alertDialog.setMessage("LinkSquare Device Button!");
-                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        alertDialog.setTitle(getString(R.string.alert));
+                        alertDialog.setMessage(getString(R.string.link_square_device_button));
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
@@ -316,9 +320,9 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                 @Override
                 public void run() {
                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
-                    alertDialog.setTitle("Alert");
-                    alertDialog.setMessage("LinkSquare Network Timeout!");
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    alertDialog.setTitle(getString(R.string.alert));
+                    alertDialog.setMessage(getString(R.string.link_square_network_timeout));
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
@@ -334,9 +338,9 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                 @Override
                 public void run() {
                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity_LinkSquare.this).create();
-                    alertDialog.setTitle("Alert");
-                    alertDialog.setMessage("LinkSquare Network Closed!");
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    alertDialog.setTitle(getString(R.string.alert));
+                    alertDialog.setMessage(getString(R.string.linksquare_network_closed));
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();

@@ -25,9 +25,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:text="SCiO SDK Test Application"
+                android:text="@string/scio_sdk_test_application"
                 android:textColor="#000"
-                android:textSize="22dp"/>
+                android:textSize="22sp"/>
 
             <ScrollView
                 android:layout_width="fill_parent"
@@ -54,7 +54,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Cloud API"
+                            android:text="@string/cloud_api"
                             android:textStyle="bold"/>
 
                         <LinearLayout
@@ -69,7 +69,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doLogin"
-                                android:text="Login"/>
+                                android:text="@string/login"/>
 
                             <Button
                                 android:id="@+id/buttonLogout"
@@ -79,7 +79,7 @@
                                 android:layout_toRightOf="@+id/button"
                                 android:layout_weight="1"
                                 android:onClick="doLogout"
-                                android:text="LOGOUT"/>
+                                android:text="@string/logout"/>
                             <Button
                                 android:id="@+id/buttonClearScans"
                                 android:layout_width="wrap_content"
@@ -88,7 +88,7 @@
                                 android:layout_toRightOf="@+id/button"
                                 android:layout_weight="1"
                                 android:onClick="clearScans"
-                                android:text="CLEAR SCANS"/>
+                                android:text="@string/clear_scans"/>
 
                         </LinearLayout>
 
@@ -104,7 +104,7 @@
                                 android:layout_below="@+id/button"
                                 android:layout_weight="1"
                                 android:onClick="getScioVersion"
-                                android:text="SCiO Version"
+                                android:text="@string/scio_version"
                                 />
 
                             <Button
@@ -113,7 +113,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:onClick="doAnalyze"
-                                android:text="Analyze"/>
+                                android:text="@string/analyze"/>
 
                         </LinearLayout>
 
@@ -129,7 +129,7 @@
                                 android:layout_below="@+id/button"
                                 android:layout_weight="1"
                                 android:onClick="doModels"
-                                android:text="Get Models"
+                                android:text="@string/get_models"
                                 />
 
                             <Button
@@ -139,7 +139,7 @@
                                 android:layout_below="@+id/button"
                                 android:layout_weight="1"
                                 android:onClick="doCPModels"
-                                android:text="Get CP Models"
+                                android:text="@string/get_cp_models"
                                 />
 
                         </LinearLayout>
@@ -159,7 +159,7 @@
                                     android:id="@+id/textView4"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Username"
+                                    android:text="@string/username"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                                 <TextView
@@ -167,7 +167,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="5dp"
-                                    android:text="-"
+                                    android:text="@string/default_username"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
                             </LinearLayout>
 
@@ -181,7 +181,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_column="8"
-                                    android:text="Selected Model"
+                                    android:text="@string/selected_model"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                                 <TextView
@@ -190,7 +190,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_column="9"
                                     android:layout_marginLeft="5dp"
-                                    android:text="-"
+                                    android:text="@string/default_model"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
                             </LinearLayout>
 
@@ -233,7 +233,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="SCiO Device API"
+                            android:text="@string/scio_device_api"
                             android:textStyle="bold"/>
 
                         <LinearLayout
@@ -248,7 +248,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doDiscover"
-                                android:text="Discover"/>
+                                android:text="@string/discover"/>
 
                             <Button
                                 android:id="@+id/button_connect"
@@ -257,7 +257,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doConnect"
-                                android:text="Connect"
+                                android:text="@string/connect"
                                 />
 
                         </LinearLayout>
@@ -274,7 +274,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doCalibrate"
-                                android:text="Calibrate"/>
+                                android:text="@string/calibrate"/>
 
                             <Button
                                 android:id="@+id/button_is_calibrate"
@@ -283,7 +283,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="checkCalibration"
-                                android:text="Is Calibration Needed"/>
+                                android:text="@string/is_calibration_needed"/>
 
                         </LinearLayout>
 
@@ -299,7 +299,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doScan"
-                                android:text="Scan"/>
+                                android:text="@string/scan"/>
 
                             <Button
                                 android:id="@+id/button_read_battery"
@@ -307,7 +307,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:onClick="readBattery"
-                                android:text="Read Battery"
+                                android:text="@string/read_battery"
                                 />
 
                         </LinearLayout>
@@ -324,7 +324,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doRename"
-                                android:text="Rename"/>
+                                android:text="@string/rename"/>
 
                             <Button
                                 android:id="@+id/button_disconnect"
@@ -332,7 +332,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:onClick="doDisconnect"
-                                android:text="Disconnect"
+                                android:text="@string/disconnect"
                                 />
 
 
@@ -352,7 +352,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="SCiO Name"
+                                    android:text="@string/scio_name"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                                 <TextView
@@ -360,7 +360,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="5dp"
-                                    android:text="-"
+                                    android:text="@string/default_scio_name"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
                             </LinearLayout>
 
@@ -373,7 +373,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:paddingRight="5dp"
-                                    android:text="SCiO Address"
+                                    android:text="@string/scio_address"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                                 <TextView
@@ -381,7 +381,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="5dp"
-                                    android:text="-"
+                                    android:text="@string/default_scio_address"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
                             </LinearLayout>
 
@@ -393,7 +393,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Status"
+                                    android:text="@string/status"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                                 <TextView
@@ -401,7 +401,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="5dp"
-                                    android:text="-"
+                                    android:text="@string/default_scio_status"
                                     android:textAppearance="?android:attr/textAppearanceSmall"/>
                             </LinearLayout>
 
@@ -421,7 +421,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="SCiO Sensor API"
+                            android:text="@string/scio_sensor_api"
                             android:textStyle="bold"/>
 
                         <LinearLayout
@@ -436,7 +436,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doCalibrateSensor"
-                                android:text="Calibrate"/>
+                                android:text="@string/calibrate"/>
 
                             <Button
                                 android:id="@+id/button_is_calibrate_sensor"
@@ -445,7 +445,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="checkCalibrationSensor"
-                                android:text="Is Calibration Needed"/>
+                                android:text="@string/is_calibration_needed"/>
 
                         </LinearLayout>
 
@@ -461,7 +461,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doScanSensor"
-                                android:text="Scan"/>
+                                android:text="@string/scan"/>
 
                             <Button
                                 android:id="@+id/get_id_sensor"
@@ -470,7 +470,7 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="1"
                                 android:onClick="doGetIdSensor"
-                                android:text="Get ID"/>
+                                android:text="@string/get_id"/>
 
                         </LinearLayout>
 
@@ -484,7 +484,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_column="8"
-                                android:text="Status"
+                                android:text="@string/status"
                                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                             <TextView
@@ -493,7 +493,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_column="9"
                                 android:layout_marginLeft="5dp"
-                                android:text="-"
+                                android:text="@string/default_scio_status_sensor"
                                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                         </LinearLayout>
@@ -512,7 +512,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Examples"
+                            android:text="@string/examples"
                             android:textStyle="bold"/>
 
                         <Button
@@ -521,7 +521,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginRight="5dp"
                             android:onClick="startCachedScanning"
-                            android:text="Cached Multi Scanning Example"/>
+                            android:text="@string/cached_multi_scanning_example"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -544,7 +544,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:padding="@dimen/element_padding"
-            android:text="1.0"/>
+            android:text="@string/version_number"/>
 
     </RelativeLayout>
 

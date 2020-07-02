@@ -11,9 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-//import android.support.v4.app.ActivityCompat;
-import androidx.core.app.ActivityCompat;
-//import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +19,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import com.consumerphysics.android.sdk.callback.cloud.ScioCloudAnalyzeManyCallback;
 import com.consumerphysics.android.sdk.callback.cloud.ScioCloudSCiOVersionCallback;
@@ -36,15 +35,18 @@ import com.consumerphysics.android.sdk.model.ScioReading;
 import com.consumerphysics.android.sdk.model.ScioUser;
 import com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-//import consumerphysics.com.myscioapplication.R;
 import org.phenoapps.prospector.R;
 import org.phenoapps.prospector.adapter.ScioModelAdapter;
 import org.phenoapps.prospector.config.Constants;
 import org.phenoapps.prospector.utils.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+//import android.support.v4.app.ActivityCompat;
+//import android.support.v4.content.ContextCompat;
+//import consumerphysics.com.myscioapplication.R;
 
 public final class MainActivity extends BaseScioActivity {
 
@@ -804,10 +806,10 @@ public final class MainActivity extends BaseScioActivity {
         }
 
         if (isScioSensorAvailable()) {
-            statusSensorTextView.setText("Available");
+            statusSensorTextView.setText(R.string.available);
         }
         else {
-            statusSensorTextView.setText("Not Available");
+            statusSensorTextView.setText(R.string.not_available);
         }
     }
 
@@ -831,10 +833,10 @@ public final class MainActivity extends BaseScioActivity {
         modelTextView.setText(modelName);
 
         if (!isDeviceConnected()) {
-            statusTextView.setText("Disconnected");
+            statusTextView.setText(getString(R.string.disconnect));
         }
         else {
-            statusTextView.setText("Connected");
+            statusTextView.setText(getString(R.string.connected));
         }
     }
 
@@ -843,7 +845,7 @@ public final class MainActivity extends BaseScioActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "Please perform a scan before analyzing.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.ask_perform_scan, Toast.LENGTH_SHORT).show();
                     dismissingProgress();
                 }
             });
@@ -857,7 +859,7 @@ public final class MainActivity extends BaseScioActivity {
         List<String> modelsToAnalyze = new ArrayList<>();
         modelsToAnalyze.addAll(Arrays.asList(modelId.split(",")));
 
-        progressDialog = ProgressDialog.show(this, "Please Wait", "Analyzing...", false);
+        progressDialog = ProgressDialog.show(this, getString(R.string.please_wait), getString(R.string.analyzing), false);
 
         getScioCloud().analyze(scioReading, modelsToAnalyze, new ScioCloudAnalyzeManyCallback() {
             @Override
@@ -877,7 +879,7 @@ public final class MainActivity extends BaseScioActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getApplicationContext(), "Error while analyzing: " + msg, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_while_analyzing) + msg, Toast.LENGTH_LONG).show();
                         dismissingProgress();
                     }
                 });

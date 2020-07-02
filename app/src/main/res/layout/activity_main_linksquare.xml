@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.23"
-                android:text="LinkSquareAPI"
+                android:text="@string/linksquareapi"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintHorizontal_bias="0.051"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Connect"
+                android:text="@string/connect"
                 tools:layout_editor_absoluteX="16dp"
                 tools:layout_editor_absoluteY="61dp" />
 
@@ -46,7 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_weight="1.95"
-                android:text="Result:"
+                android:text="@string/result"
                 android:textSize="14sp"
                 tools:layout_editor_absoluteX="113dp"
                 tools:layout_editor_absoluteY="61dp" />
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Scan"
+                android:text="@string/scan"
                 tools:layout_editor_absoluteX="16dp"
                 tools:layout_editor_absoluteY="143dp" />
 
@@ -64,7 +64,7 @@
                 android:id="@+id/textView_scan"
                 android:layout_width="match_parent"
                 android:layout_height="100sp"
-                android:text="Result:"
+                android:text="@string/result"
                 android:textSize="14sp"
                 tools:layout_editor_absoluteX="113dp"
                 tools:layout_editor_absoluteY="143dp" />
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Close"
+                android:text="@string/close"
                 tools:layout_editor_absoluteX="16dp"
                 tools:layout_editor_absoluteY="231dp" />
 
@@ -83,7 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:layout_weight="1"
-                android:text="Result:"
+                android:text="@string/result"
                 android:textSize="14sp"
                 tools:layout_editor_absoluteX="113dp"
                 tools:layout_editor_absoluteY="232dp" />
