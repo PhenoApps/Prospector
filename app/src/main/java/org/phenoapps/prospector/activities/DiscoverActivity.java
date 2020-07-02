@@ -21,14 +21,15 @@ import android.widget.Toast;
 import com.consumerphysics.android.scioconnection.services.SCiOBLeService;
 import com.consumerphysics.android.scioconnection.utils.BLEUtils;
 
+import org.phenoapps.prospector.R;
+import org.phenoapps.prospector.config.Constants;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 //import consumerphysics.com.myscioapplication.R;
-import org.phenoapps.prospector.R;
-import org.phenoapps.prospector.config.Constants;
 
 public final class DiscoverActivity extends Activity {
 
@@ -50,7 +51,7 @@ public final class DiscoverActivity extends Activity {
                 String scio = devices.get(device.getAddress());
 
                 if (scio == null) {
-                    Log.d(TAG, "found scio device device: " + deviceName + ", " + device.getAddress());
+                    Log.d(TAG, getString(R.string.found_scio_device) + deviceName + ", " + device.getAddress());
                     addDevice(deviceName, device.getAddress());
                 }
             }
@@ -103,7 +104,7 @@ public final class DiscoverActivity extends Activity {
         stopService(new Intent(this, SCiOBLeService.class));
 
         setContentView(R.layout.activity_discover);
-        setTitle("Select SCiO Device");
+        setTitle(getString(R.string.ask_scio_device));
 
         devices = new LinkedHashMap<>();
 
@@ -118,7 +119,7 @@ public final class DiscoverActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Device dev = devicesAdapter.getItem(position);
                 storeDevice(dev);
-                Toast.makeText(getApplicationContext(), dev.getName() + " was selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), dev.getName() + getString(R.string.was_selected_with_space), Toast.LENGTH_SHORT).show();
                 finish();
             }
         });

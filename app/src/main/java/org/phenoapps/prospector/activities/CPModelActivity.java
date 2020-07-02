@@ -21,12 +21,13 @@ import com.consumerphysics.android.sdk.callback.cloud.ScioCloudCPModelsCallback;
 import com.consumerphysics.android.sdk.model.ScioCPModel;
 import com.consumerphysics.android.sdk.model.ScioModel;
 
+import org.phenoapps.prospector.R;
+import org.phenoapps.prospector.config.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
-import org.phenoapps.prospector.R;
-import org.phenoapps.prospector.config.Constants;
 
 
 public class CPModelActivity extends BaseScioActivity {
@@ -50,7 +51,7 @@ public class CPModelActivity extends BaseScioActivity {
         lv.setAdapter(adp);
 
         if (getScioCloud() == null || !getScioCloud().hasAccessToken()) {
-            Toast.makeText(getApplicationContext(), "Can not retrieve model. User is not logged in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.user_not_logged_in, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -59,7 +60,7 @@ public class CPModelActivity extends BaseScioActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ScioModel model = adp.getItem(position);
                 storeSelectedModel(model);
-                Toast.makeText(getApplicationContext(), model.getName() + " was selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), model.getName() + getString(R.string.was_selected_with_space), Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -72,7 +73,7 @@ public class CPModelActivity extends BaseScioActivity {
 
             @Override
             public void onError(int code, String error) {
-                Toast.makeText(getApplicationContext(), "Error retrieving CP models: " + error + "(" + code + ")", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.error_retrieving_cp_models) + error + "(" + code + ")", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -114,7 +115,7 @@ public class CPModelActivity extends BaseScioActivity {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.model_selector_menu, menu);
-            mode.setTitle("Select Models");
+            mode.setTitle(R.string.select_models);
             return true;
         }
 
@@ -137,7 +138,7 @@ public class CPModelActivity extends BaseScioActivity {
                     }
 
                     storeSelectedModels(scioModels);
-                    Toast.makeText(getApplicationContext(), scioModels.size() + " selected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), scioModels.size() + getString(R.string.selected_with_space), Toast.LENGTH_SHORT).show();
 
                     finish();
                     break;
@@ -167,10 +168,10 @@ public class CPModelActivity extends BaseScioActivity {
                     mode.setSubtitle(null);
                     break;
                 case 1:
-                    mode.setSubtitle("One model selected");
+                    mode.setSubtitle(R.string.one_model_selected);
                     break;
                 default:
-                    mode.setSubtitle("" + checkedCount + " models selected");
+                    mode.setSubtitle(checkedCount + getString(R.string.models_selected));
                     break;
             }
         }

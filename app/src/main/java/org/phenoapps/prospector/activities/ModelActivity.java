@@ -21,12 +21,13 @@ import android.widget.Toast;
 import com.consumerphysics.android.sdk.callback.cloud.ScioCloudModelsCallback;
 import com.consumerphysics.android.sdk.model.ScioModel;
 
+import org.phenoapps.prospector.R;
+import org.phenoapps.prospector.config.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 
 //import consumerphysics.com.myscioapplication.R;
-import org.phenoapps.prospector.R;
-import org.phenoapps.prospector.config.Constants;
 
 public class ModelActivity extends BaseScioActivity {
 
@@ -51,7 +52,7 @@ public class ModelActivity extends BaseScioActivity {
         lv.setAdapter(adp);
 
         if (getScioCloud() == null || !getScioCloud().hasAccessToken()) {
-            Toast.makeText(getApplicationContext(), "Can not retrieve model. User is not logged in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.cannot_retrieve_model, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -60,7 +61,7 @@ public class ModelActivity extends BaseScioActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ScioModel model = adp.getItem(position);
                 storeSelectedModel(model);
-                Toast.makeText(getApplicationContext(), model.getName() + " was selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), model.getName() + getString(R.string.was_selected_with_space), Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -73,7 +74,7 @@ public class ModelActivity extends BaseScioActivity {
 
             @Override
             public void onError(int code, String msg) {
-                Toast.makeText(getApplicationContext(), "Error while retrieving models", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.error_while_retrieving_model, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -115,7 +116,7 @@ public class ModelActivity extends BaseScioActivity {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.model_selector_menu, menu);
-            mode.setTitle("Select Models");
+            mode.setTitle(R.string.select_model_title);
             return true;
         }
 
@@ -138,7 +139,7 @@ public class ModelActivity extends BaseScioActivity {
                     }
 
                     storeSelectedModels(scioModels);
-                    Toast.makeText(getApplicationContext(), scioModels.size() + " selected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), scioModels.size() + getString(R.string.selected_with_space), Toast.LENGTH_SHORT).show();
 
                     finish();
                     break;
@@ -183,10 +184,10 @@ public class ModelActivity extends BaseScioActivity {
                     mode.setSubtitle(null);
                     break;
                 case 1:
-                    mode.setSubtitle("One model selected");
+                    mode.setSubtitle(getString(R.string.one_model_selected));
                     break;
                 default:
-                    mode.setSubtitle("" + checkedCount + " models selected");
+                    mode.setSubtitle(checkedCount + getString(R.string.models_selected));
                     break;
             }
         }

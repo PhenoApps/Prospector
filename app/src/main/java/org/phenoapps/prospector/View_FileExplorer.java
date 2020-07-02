@@ -38,7 +38,7 @@ public class View_FileExplorer extends ListActivity {
         List values = new ArrayList();
         File dir = new File(path);
         if (!dir.canRead()) {
-            setTitle(getTitle() + " (inaccessible)");
+            setTitle(getTitle() + getString(R.string.file_inaccessible));
         }
         Log.d("DEBUG", getTitle().toString());
         String[] list = dir.list();
@@ -69,7 +69,7 @@ public class View_FileExplorer extends ListActivity {
             intent.putExtra("path", filename);
             startActivity(intent);
         } else {
-            Toast.makeText(this, filename + " is not a directory", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, filename + getString(R.string.show_file_not_directory), Toast.LENGTH_LONG).show();
         }
     }
 }

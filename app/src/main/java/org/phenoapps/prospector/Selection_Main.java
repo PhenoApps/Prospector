@@ -80,14 +80,14 @@ public class Selection_Main extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Main.this);
-                builder.setTitle("Select Output Format");
+                builder.setTitle(R.string.select_output_format);
 
                 final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Main.this, android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("Database CSV");
-                arrayAdapter.add("SCiO Format");
-                arrayAdapter.add("BrAPI Format");
+                arrayAdapter.add(getString(R.string.database_csv));
+                arrayAdapter.add(getString(R.string.scio_format));
+                arrayAdapter.add(getString(R.string.brapi_format));
 
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
@@ -101,19 +101,19 @@ public class Selection_Main extends AppCompatActivity {
                                 File csv_file = myDb.export_toDatabaseCSV();
                                 // TODO: figure out why this sometimes doesn't show all of the scans
                                 myDb.scanFile(Selection_Main.this, csv_file); // TODO: figure out how to move this into export_toCSV()
-                                Toast.makeText(getApplicationContext(), "Exported to CSV. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.export_file_message) + csv_file.getPath(), Toast.LENGTH_LONG).show();
                                 break;
 
                             case 1: // user clicked "SCiO Format"
                                 File scio_file = myDb.export_toSCiO();
                                 myDb.scanFile(Selection_Main.this, scio_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.export_to_scio_message) + scio_file.getPath(), Toast.LENGTH_LONG).show();
                                 break;
 
                             case 2: // user clicked "BrAPI Format"
                                 File brapi_file = myDb.export_toBrAPI();
                                 myDb.scanFile(Selection_Main.this, brapi_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.export_to_scio_message) + brapi_file.getPath(), Toast.LENGTH_LONG).show();
                                 break;
 
                             default:
@@ -132,12 +132,12 @@ public class Selection_Main extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Main.this);
-                builder.setTitle("Select Import Method");
+                builder.setTitle(R.string.select_import_method);
 
                 final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Main.this, android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("Example Data");
+                arrayAdapter.add(getString(R.string.example_data));
 
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
@@ -150,18 +150,18 @@ public class Selection_Main extends AppCompatActivity {
                             case 0: // user clicked "Example Data"
                                 try {
                                     if (myDb.isUnique_observationUnitName("sample_1") == false) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), R.string.sample1_already_exists, Toast.LENGTH_SHORT).show();
                                     } else if (myDb.isUnique_observationUnitName("samle_2") == false) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), R.string.sample2_already_exists, Toast.LENGTH_SHORT).show();
                                     } else if (myDb.isUnique_observationUnitName("sample_3") == false) {
-                                        Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), R.string.sample3_already_exists, Toast.LENGTH_SHORT).show();
                                     } else {
                                         BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
                                         String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
                                         while ((line = reader.readLine()) != null) {
                                             myDb.insertData_fromDatabaseCSV(line);
                                         }
-                                        Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), R.string.after_example_data_added, Toast.LENGTH_SHORT).show();
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();

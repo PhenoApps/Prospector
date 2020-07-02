@@ -91,7 +91,7 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
 
                 if (model.getType().equals(ScioModel.Type.ESTIMATION)) {
                     if(value == null){
-                        value = "No Value";
+                        value = getContext().getString(R.string.no_value);
                     }
                     else{
                         Float estimationValue= Float.parseFloat(value);
@@ -111,7 +111,7 @@ public class ScioModelAdapter extends ArrayAdapter<ScioModel> {
             }
         }
         else {
-            attributeValue.setText("N/A");
+            attributeValue.setText(R.string.not_applicable);
         }
 
         if(model.isUnknownMaterial()){

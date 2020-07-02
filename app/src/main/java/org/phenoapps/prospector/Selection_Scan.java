@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Selection_Scan extends AppCompatActivity {
     // DECLARE DISPLAY OBJECTS
@@ -46,7 +46,7 @@ public class Selection_Scan extends AppCompatActivity {
 
         // INIT TOOLBAR
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Prospector");
+            getSupportActionBar().setTitle(R.string.app_name);
             getSupportActionBar().getThemedContext();
             getSupportActionBar().setHomeButtonEnabled(true);
         }
@@ -80,29 +80,29 @@ public class Selection_Scan extends AppCompatActivity {
         if (resultCode == RESULT_OK && dataIntent != null ) {
             if (requestCode == 0) { // user clicked "Database CSV"
                 try {
-                    OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
+                    OutputStream outputStream = getContentResolver().openOutputStream(Objects.requireNonNull(dataIntent.getData()));
                     myDb.export_toDatabaseCSV_withOutputStream(outputStream);
-                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
+                    Toast.makeText(getApplicationContext(), R.string.successfully_exported, Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.file_not_created, Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             } else if (requestCode == 1) { // user clicked "SCiO Format"
                 try {
-                    OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
+                    OutputStream outputStream = getContentResolver().openOutputStream(Objects.requireNonNull(dataIntent.getData()));
                     myDb.export_toSCiO_withOutputStream(outputStream);
-                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
+                    Toast.makeText(getApplicationContext(), R.string.successfully_exported, Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.file_not_created, Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             } else if (requestCode == 2) { // user clicked "BrAPI Format"
                 try {
-                    OutputStream outputStream = getContentResolver().openOutputStream(dataIntent.getData());
+                    OutputStream outputStream = getContentResolver().openOutputStream(Objects.requireNonNull(dataIntent.getData()));
                     myDb.export_toBrAPI_withOutputStream(outputStream);
-                    Toast.makeText(getApplicationContext(), "Successfully exported.", Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
+                    Toast.makeText(getApplicationContext(), R.string.successfully_exported, Toast.LENGTH_LONG).show(); // TODO: make this an actual check based on the result of myDb.export
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "File could not be created.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.file_not_created, Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }
@@ -123,16 +123,16 @@ public class Selection_Scan extends AppCompatActivity {
 
     private void deleteAllScans() {
         AlertDialog.Builder builder = new AlertDialog.Builder(Selection_Scan.this);
-        builder.setTitle("Are you sure you want to delete all scans?");
+        builder.setTitle(R.string.ask_delete_all_scans);
 
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 myDb.deleteAll();
                 listView_items_populate();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
@@ -144,12 +144,12 @@ public class Selection_Scan extends AppCompatActivity {
 
     private void importSampleScans() {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
-        builder.setTitle("Select Import Method");
+        builder.setTitle(R.string.select_import_method);
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
-        arrayAdapter.add("Example Data");
+        arrayAdapter.add(getString(R.string.example_data));
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
@@ -162,18 +162,18 @@ public class Selection_Scan extends AppCompatActivity {
                     case 0: // user clicked "Example Data"
                         try {
                             if (!myDb.isUnique_observationUnitName("sample_1")) {
-                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_1\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.sample1_already_exists, Toast.LENGTH_SHORT).show();
                             } else if (!myDb.isUnique_observationUnitName("sample_2")) {
-                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_2\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.sample2_already_exists, Toast.LENGTH_SHORT).show();
                             } else if (!myDb.isUnique_observationUnitName("sample_3")) {
-                                Toast.makeText(getApplicationContext(), "Data was not added because \"sample_3\" already exists in the database.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.sample3_already_exists, Toast.LENGTH_SHORT).show();
                             } else {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
                                 String line = reader.readLine(); // NOTE: this skips the first line of ExampleData which is column names
                                 while ((line = reader.readLine()) != null) {
                                     myDb.insertData_fromDatabaseCSV(line);
                                 }
-                                Toast.makeText(getApplicationContext(), "Example data added to database.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.after_example_data_added, Toast.LENGTH_SHORT).show();
                                 listData = listView_items_populate(); // NOTE: this should not move. I tried moving it to the end of the function, but the view does not appear to update if called then
                             }
                         } catch (IOException e) {
@@ -201,15 +201,15 @@ public class Selection_Scan extends AppCompatActivity {
 
     private void exportScans() {
         final android.app.AlertDialog.Builder builder2 = new android.app.AlertDialog.Builder(Selection_Scan.this);
-        builder2.setTitle("Export to Default Location?");
+        builder2.setTitle(R.string.ask_export_to_default);
 
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(Selection_Scan.this);
-        builder.setTitle("Select Output Format");
+        builder.setTitle(R.string.select_output_format);
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(Selection_Scan.this, android.R.layout.select_dialog_singlechoice);
-        arrayAdapter.add("Database CSV");
-        arrayAdapter.add("SCiO Format");
-        arrayAdapter.add("BrAPI Format");
+        arrayAdapter.add(getString(R.string.database_csv));
+        arrayAdapter.add(getString(R.string.scio_format));
+        arrayAdapter.add(getString(R.string.brapi_format));
 
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
@@ -223,16 +223,16 @@ public class Selection_Scan extends AppCompatActivity {
                 switch (i) {
                     case 0: // user clicked "Database CSV"
 
-                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        builder2.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 File csv_file = myDb.export_toDatabaseCSV();
                                 myDb.scanFile(Selection_Scan.this, csv_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + csv_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.show_exported_scio_format) + csv_file.getPath(), Toast.LENGTH_LONG).show();
                                 dialogInterface.dismiss();
                             }
                         });
-                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        builder2.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -248,16 +248,16 @@ public class Selection_Scan extends AppCompatActivity {
 
                     case 1: // user clicked "SCiO Format"
 
-                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        builder2.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 File scio_file = myDb.export_toSCiO();
                                 myDb.scanFile(Selection_Scan.this, scio_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + scio_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.show_exported_scio_format) + scio_file.getPath(), Toast.LENGTH_LONG).show();
                                 dialogInterface.dismiss();
                             }
                         });
-                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        builder2.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -273,16 +273,16 @@ public class Selection_Scan extends AppCompatActivity {
 
                     case 2: // user clicked "BrAPI Format"
 
-                        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        builder2.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 File brapi_file = myDb.export_toBrAPI();
                                 myDb.scanFile(Selection_Scan.this, brapi_file);
-                                Toast.makeText(getApplicationContext(), "Exported to SCiO Format. FIle located at " + brapi_file.getPath(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.show_exported_brapi_format) + brapi_file.getPath(), Toast.LENGTH_LONG).show();
                                 dialogInterface.dismiss();
                             }
                         });
-                        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        builder2.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);

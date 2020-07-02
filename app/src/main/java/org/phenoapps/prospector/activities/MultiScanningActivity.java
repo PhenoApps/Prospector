@@ -145,7 +145,7 @@ public class MultiScanningActivity extends BaseScioActivity {
             return;
         }
 
-        progressDialog = ProgressDialog.show(MultiScanningActivity.this, "Please wait", "Analyzing...", true);
+        progressDialog = ProgressDialog.show(MultiScanningActivity.this, getString(R.string.please_wait), getString(R.string.analyzing), true);
 
         ScioReading scioReading = scanStorage.getScioReadings().get(position);
         getScioCloud().analyze(scioReading, modelIds, new ScioCloudAnalyzeManyCallback() {
@@ -157,7 +157,7 @@ public class MultiScanningActivity extends BaseScioActivity {
                     @Override
                     public void run() {
                         adapter.notifyDataSetChanged();
-                        Toast.makeText(MultiScanningActivity.this, "Scan analyzed successfully.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MultiScanningActivity.this, R.string.scan_analyze_success, Toast.LENGTH_SHORT).show();
                         dismissProgress();
 
                     }
@@ -169,7 +169,7 @@ public class MultiScanningActivity extends BaseScioActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MultiScanningActivity.this, "Scan analysis failed: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MultiScanningActivity.this, getString(R.string.scan_analyze_fail) + errorMessage, Toast.LENGTH_SHORT).show();
                         dismissProgress();
 
                     }
@@ -206,7 +206,7 @@ public class MultiScanningActivity extends BaseScioActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MultiScanningActivity.this, "Please calibrate the device.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MultiScanningActivity.this, R.string.ask_calibrate_device, Toast.LENGTH_SHORT).show();
                         resetScan();
                     }
                 });
@@ -217,7 +217,7 @@ public class MultiScanningActivity extends BaseScioActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MultiScanningActivity.this, "SCiO scan failed.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MultiScanningActivity.this, R.string.scio_scan_failed, Toast.LENGTH_SHORT).show();
                         resetScan();
                     }
                 });
@@ -228,7 +228,7 @@ public class MultiScanningActivity extends BaseScioActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MultiScanningActivity.this, "SCiO timed out while scanning.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MultiScanningActivity.this, R.string.scio_timed_out, Toast.LENGTH_SHORT).show();
                         resetScan();
                     }
                 });

@@ -134,13 +134,13 @@ public class View_ScanGraph extends AppCompatActivity {
 
     private void renameScan() {
         AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-        builder.setTitle("Updated Sample Name");
+        builder.setTitle(R.string.updated_sample_name);
 
         final EditText input = new EditText(View_ScanGraph.this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String newObservationUnitName = input.getText().toString();
@@ -149,7 +149,7 @@ public class View_ScanGraph extends AppCompatActivity {
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
@@ -161,14 +161,14 @@ public class View_ScanGraph extends AppCompatActivity {
 
     private void editScan() {
         AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-        builder.setTitle("Choose Scans to Display");
+        builder.setTitle(R.string.choose_scans_to_display);
         builder.setMultiChoiceItems(items, itemsChecked, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 itemsChecked[which] = isChecked;
             }
         });
-        builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 updateGraph();
@@ -180,16 +180,16 @@ public class View_ScanGraph extends AppCompatActivity {
 
     private void deleteScan() {
         AlertDialog.Builder builder = new AlertDialog.Builder(View_ScanGraph.this);
-        builder.setTitle("Are you sure you want to delete this scan?");
+        builder.setTitle(R.string.ask_delete_scan);
 
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 myDb.delete_observationUnitName(observationUnitName);
                 finish();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
