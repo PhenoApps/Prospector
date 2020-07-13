@@ -2,7 +2,6 @@ package org.phenoapps.prospector;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -12,7 +11,6 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 public class DatabaseManager extends SQLiteOpenHelper {
@@ -33,11 +31,14 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COL10 = "serverDatabaseID";
     private static final String COL11 = "scanNote";
 
+    //added experiment column
+    private static final String COL12 = "experiment";
+
     private static final int CURRENT_LINKSQURE_LENGTH = 600; // TODO: remove dependance on this
     private static final int CURRENT_LINKSQURE_START = 400;
 
     public DatabaseManager(Context context) {
-        super(context, TABLE_NAME, null, 11);
+        super(context, TABLE_NAME, null, 12);
     }
 
     @Override
@@ -55,7 +56,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 COL8 + " TEXT, "+
                 COL9 + " TEXT, "+
                 COL10 + " TEXT, "+
-                COL11 + " TEXT)";
+                COL11 + " TEXT, "+
+                COL12 + " TEXT)"; //added experiment column
         db.execSQL(createTable);
     }
 
@@ -63,6 +65,18 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
+    }
+
+    public void insertExperiment(String name) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        // insert "experiment"
+        contentValues.put(COL12, name);
+
+        db.replace(TABLE_NAME, null, contentValues);
+
     }
 
     public boolean insertData_fromLinkSquare(String item) {
@@ -113,6 +127,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
         // insert "scanNote"
         contentValues.put(COL11, parts[8]);
 
+//        TODO: get current experiment and add to DB contentValues.put(COL12, parts[9]);
+
         Log.d(TAG, "addData: Adding " + item + " to " + TABLE_NAME);
 
         long result = db.insert(TABLE_NAME, null, contentValues);
@@ -139,6 +155,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         contentValues.put(COL10, parts[10]);
         contentValues.put(COL11, parts[11]);
 
+        //add experiment column
+        contentValues.put(COL12, parts[12]);
+
         SQLiteDatabase db = this.getWritableDatabase();
         long result = db.insert(TABLE_NAME, null, contentValues);
         if (result == -1) {
@@ -146,6 +165,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
         } else {
             return true;
         }
+    }
+
+    public Cursor getExperiments() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT DISTINCT " + COL0 + "," + COL12 + " FROM " + TABLE_NAME;
+        Cursor data = db.rawQuery(query, null);
+        return data;
     }
 
     public Cursor getAll() {
@@ -158,6 +184,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void deleteAll () {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "DELETE FROM " + TABLE_NAME;
+        db.execSQL(query);
+    }
+
+    public void deleteExperiment(String experiment) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE " + COL12 + " = '" + experiment + "'";
         db.execSQL(query);
     }
 
@@ -177,9 +209,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data.getInt(0);
     }
 
-    public Cursor getAll_observationUnitName() {
+    public Cursor getAll_observationUnitName(String experiment) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT " + COL4 + " FROM " + TABLE_NAME;
+        String query = "SELECT " + COL4 + " FROM " + TABLE_NAME + " WHERE " + COL12 + " = '" + experiment + "'";
         Cursor data = db.rawQuery(query, null);
         return data;
     }
@@ -198,8 +230,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL(query);
     }
 
-    public boolean isUnique_observationUnitName (String observationUnitName) {
-        Cursor observationUnitNames = getAll_observationUnitName();
+    public boolean isUnique_observationUnitName (String observationUnitName, String experiment) {
+        Cursor observationUnitNames = getAll_observationUnitName(experiment);
         while (observationUnitNames.moveToNext()) {
             if (observationUnitNames.getString(0).equals(observationUnitName)) {
                 return false;
@@ -232,6 +264,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
+    //TODO add experiment string to export
     public File export_toDatabaseCSV() {
         Cursor data = getAll();
         String data_string;
@@ -283,6 +316,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
+    //TODO add experiment string to export
     public void export_toDatabaseCSV_withOutputStream(OutputStream outputStream) {
         Cursor data = getAll();
         String data_string;
@@ -323,6 +357,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
+    //TODO add experiment string to export
     public File export_toSCiO() {
         // Based on: https://cassava-test.sgn.cornell.edu/breeders/nirs/
         Cursor data = getAll();
@@ -399,6 +434,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
+    //TODO add experiment string to export
     public void export_toSCiO_withOutputStream(OutputStream outputStream) {
         // Based on: https://cassava-test.sgn.cornell.edu/breeders/nirs/
         Cursor data = getAll();
@@ -464,6 +500,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
+    //TODO add experiment string to export
     public File export_toBrAPI() {
         // Based on: https://github.com/plantbreeding/API/issues/399
         Cursor data = getAll();
@@ -518,6 +555,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return null;
     }
 
+    //TODO add experiment string to export
     public void export_toBrAPI_withOutputStream(OutputStream outputStream) {
         // Based on: https://github.com/plantbreeding/API/issues/399
         Cursor data = getAll();

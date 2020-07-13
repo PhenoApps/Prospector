@@ -30,6 +30,8 @@ public class Selection_Main extends AppCompatActivity {
     // DECLARE GLOBALS
     DatabaseManager myDb;
 
+    private String experiment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +45,14 @@ public class Selection_Main extends AppCompatActivity {
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
+
+        String eid = getIntent().getStringExtra("experiment");
+
+        if (eid != null && !eid.isEmpty()) {
+
+            experiment = eid;
+
+        }
 
         // CONFIGURE BUTTONS
         configure_button_newScan();
@@ -149,11 +159,11 @@ public class Selection_Main extends AppCompatActivity {
                         switch(i) {
                             case 0: // user clicked "Example Data"
                                 try {
-                                    if (myDb.isUnique_observationUnitName("sample_1") == false) {
+                                    if (myDb.isUnique_observationUnitName("sample_1", experiment) == false) {
                                         Toast.makeText(getApplicationContext(), R.string.sample1_already_exists, Toast.LENGTH_SHORT).show();
-                                    } else if (myDb.isUnique_observationUnitName("samle_2") == false) {
+                                    } else if (myDb.isUnique_observationUnitName("samle_2", experiment) == false) {
                                         Toast.makeText(getApplicationContext(), R.string.sample2_already_exists, Toast.LENGTH_SHORT).show();
-                                    } else if (myDb.isUnique_observationUnitName("sample_3") == false) {
+                                    } else if (myDb.isUnique_observationUnitName("sample_3", experiment) == false) {
                                         Toast.makeText(getApplicationContext(), R.string.sample3_already_exists, Toast.LENGTH_SHORT).show();
                                     } else {
                                         BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));

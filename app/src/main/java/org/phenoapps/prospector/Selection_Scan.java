@@ -39,6 +39,8 @@ public class Selection_Scan extends AppCompatActivity {
     DatabaseManager myDb;
     ArrayList<String> listData;
 
+    private String experiment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,13 +58,24 @@ public class Selection_Scan extends AppCompatActivity {
 
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
-        listData = listView_items_populate();
 
-        // CONFIGURE BUTTONS
-        configure_listView_items();
+        //check if examples id is included in the arguments.
+        String eid = getIntent().getStringExtra("experiment");
 
-        // OTHER FUNCTION CALLS
-        permissions_check();
+        if (eid != null && !eid.isEmpty()) {
+
+            experiment = eid;
+
+            listData = listView_items_populate();
+
+            // CONFIGURE BUTTONS
+            configure_listView_items();
+
+            // OTHER FUNCTION CALLS
+            permissions_check();
+
+        }
+
     }
 
     @Override
@@ -161,11 +174,11 @@ public class Selection_Scan extends AppCompatActivity {
                 switch (i) {
                     case 0: // user clicked "Example Data"
                         try {
-                            if (!myDb.isUnique_observationUnitName("sample_1")) {
+                            if (!myDb.isUnique_observationUnitName("sample_1", experiment)) {
                                 Toast.makeText(getApplicationContext(), R.string.sample1_already_exists, Toast.LENGTH_SHORT).show();
-                            } else if (!myDb.isUnique_observationUnitName("sample_2")) {
+                            } else if (!myDb.isUnique_observationUnitName("sample_2", experiment)) {
                                 Toast.makeText(getApplicationContext(), R.string.sample2_already_exists, Toast.LENGTH_SHORT).show();
-                            } else if (!myDb.isUnique_observationUnitName("sample_3")) {
+                            } else if (!myDb.isUnique_observationUnitName("sample_3", experiment)) {
                                 Toast.makeText(getApplicationContext(), R.string.sample3_already_exists, Toast.LENGTH_SHORT).show();
                             } else {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("ExampleData.csv")));
@@ -331,13 +344,14 @@ public class Selection_Scan extends AppCompatActivity {
         }
     }
 
+    //added experiment column
     private ArrayList<String> listView_items_populate() {
-        Cursor data = myDb.getAll_observationUnitName();
+        Cursor data = myDb.getAll_observationUnitName(experiment);
         final ArrayList<String> listData = new ArrayList<>();
         String observationUnitName;
         while (data.moveToNext()) {
             observationUnitName = data.getString(0);
-            if (!listData.contains(observationUnitName)) {
+            if (observationUnitName != null && !listData.contains(observationUnitName)) {
                 listData.add(observationUnitName);
             }
         }

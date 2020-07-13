@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener"/>
+        <variable
+            name="experiment"
+            type="org.phenoapps.prospector.models.Experiment"/>
+    </data>
+
+<!--  TODO  android:background="@drawable/experiments_background"-->
+
+    <TextView
+        android:id="@+id/experiment_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:onClick="@{clickListener}"
+        android:fontFamily="monospace"
+        android:maxLines="2"
+        android:text="@{experiment.name}"
+        android:textAlignment="textStart"
+        android:textSize="24sp"
+        android:typeface="monospace"
+        android:gravity="start" />
+
+</layout>

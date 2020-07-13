@@ -45,6 +45,8 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
     final Context context = this;
     DatabaseManager myDb;
 
+    private String experiment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,13 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
         // INIT GLOBALS
         myDb = new DatabaseManager(this);
 
+        String eid = getIntent().getStringExtra("experiment");
+
+        if (eid != null && !eid.isEmpty()) {
+
+            experiment = eid;
+
+        }
         // CONFIGURE BUTTONS
         configure_button_connect();
         configure_button_scan();
@@ -139,7 +148,7 @@ public class MainActivity_LinkSquare extends AppCompatActivity implements LinkSq
                     public void onClick(DialogInterface dialog, int which) {
                         final String observationUnitName = input_sampleName.getText().toString();
                         final String scanNote = input_sampleNote.getText().toString();
-                        if (myDb.isUnique_observationUnitName(observationUnitName)) {
+                        if (myDb.isUnique_observationUnitName(observationUnitName, experiment)) {
                             saveScan(observationUnitName, scanNote);
                         } else {
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(MainActivity_LinkSquare.this);

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.phenoapps.prospector">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -18,12 +16,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Selection_Scan">
+        <activity android:name=".activities.ExperimentActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Selection_Scan" />
         <activity android:name=".View_QRScanner" />
         <activity android:name=".View_ScanGraph" />
         <activity android:name=".MainActivity_LinkSquare" />
@@ -31,7 +30,6 @@
         <activity android:name=".activities.BaseScioActivity"/>
         <activity android:name=".activities.CPModelActivity"/>
         <activity android:name=".activities.DiscoverActivity"/>
-        <activity android:name=".activities.MainActivity"/>
         <activity android:name=".activities.ModelActivity"/>
         <activity android:name=".activities.MultiScanningActivity"/>
         <activity android:name="com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity" />

@@ -1,551 +1,89 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            tools:context=".activities.MainActivity">
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <data>
+
+        <import type="android.view.View"/>
+        
+        <variable
+            name="onClick"
+            type="View.OnClickListener" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activities.MainActivity">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin">
-
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:text="@string/scio_sdk_test_application"
-                android:textColor="#000"
-                android:textSize="22sp"/>
-
-            <ScrollView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_below="@+id/textView">
-
-                <LinearLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:orientation="vertical">
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="5dp"/>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@android:drawable/dialog_holo_light_frame"
-                        android:orientation="vertical"
-                        android:padding="@dimen/element_padding">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/cloud_api"
-                            android:textStyle="bold"/>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doLogin"
-                                android:text="@string/login"/>
-
-                            <Button
-                                android:id="@+id/buttonLogout"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignBaseline="@+id/button"
-                                android:layout_toRightOf="@+id/button"
-                                android:layout_weight="1"
-                                android:onClick="doLogout"
-                                android:text="@string/logout"/>
-                            <Button
-                                android:id="@+id/buttonClearScans"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignBaseline="@+id/button"
-                                android:layout_toRightOf="@+id/button"
-                                android:layout_weight="1"
-                                android:onClick="clearScans"
-                                android:text="@string/clear_scans"/>
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/scioVersion"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@+id/button"
-                                android:layout_weight="1"
-                                android:onClick="getScioVersion"
-                                android:text="@string/scio_version"
-                                />
-
-                            <Button
-                                android:id="@+id/button_analyze"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:onClick="doAnalyze"
-                                android:text="@string/analyze"/>
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_models"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@+id/button"
-                                android:layout_weight="1"
-                                android:onClick="doModels"
-                                android:text="@string/get_models"
-                                />
-
-                            <Button
-                                android:id="@+id/button_cp_models"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@+id/button"
-                                android:layout_weight="1"
-                                android:onClick="doCPModels"
-                                android:text="@string/get_cp_models"
-                                />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/element_padding"
-                            android:orientation="vertical">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/textView4"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/username"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/tv_username"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="@string/default_username"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/textViewModel"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_column="8"
-                                    android:text="@string/selected_model"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/tv_model"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_column="9"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="@string/default_model"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>
-
-<!--                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/textModelRemaining"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_column="8"
-                                    android:text="Remaining Scans"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/remainingScans"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_column="9"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="-"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>-->
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/element_padding"
-                        android:background="@android:drawable/dialog_holo_light_frame"
-                        android:orientation="vertical"
-                        android:padding="@dimen/element_padding">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/scio_device_api"
-                            android:textStyle="bold"/>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_discover"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doDiscover"
-                                android:text="@string/discover"/>
-
-                            <Button
-                                android:id="@+id/button_connect"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doConnect"
-                                android:text="@string/connect"
-                                />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_calibrate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doCalibrate"
-                                android:text="@string/calibrate"/>
-
-                            <Button
-                                android:id="@+id/button_is_calibrate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="checkCalibration"
-                                android:text="@string/is_calibration_needed"/>
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_scan"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doScan"
-                                android:text="@string/scan"/>
-
-                            <Button
-                                android:id="@+id/button_read_battery"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:onClick="readBattery"
-                                android:text="@string/read_battery"
-                                />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_rename"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doRename"
-                                android:text="@string/rename"/>
-
-                            <Button
-                                android:id="@+id/button_disconnect"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:onClick="doDisconnect"
-                                android:text="@string/disconnect"
-                                />
-
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/element_padding"
-                            android:orientation="vertical">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/scio_name"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/tv_scio_name"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="@string/default_scio_name"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:paddingRight="5dp"
-                                    android:text="@string/scio_address"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/tv_scio_address"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="@string/default_scio_address"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/status"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                                <TextView
-                                    android:id="@+id/tv_scio_status"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginLeft="5dp"
-                                    android:text="@string/default_scio_status"
-                                    android:textAppearance="?android:attr/textAppearanceSmall"/>
-                            </LinearLayout>
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/element_padding"
-                        android:background="@android:drawable/dialog_holo_light_frame"
-                        android:orientation="vertical"
-                        android:padding="@dimen/element_padding">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/scio_sensor_api"
-                            android:textStyle="bold"/>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/button_calibrate_sensor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doCalibrateSensor"
-                                android:text="@string/calibrate"/>
-
-                            <Button
-                                android:id="@+id/button_is_calibrate_sensor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="checkCalibrationSensor"
-                                android:text="@string/is_calibration_needed"/>
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <Button
-                                android:id="@+id/scan_sensor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doScanSensor"
-                                android:text="@string/scan"/>
-
-                            <Button
-                                android:id="@+id/get_id_sensor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginRight="5dp"
-                                android:layout_weight="1"
-                                android:onClick="doGetIdSensor"
-                                android:text="@string/get_id"/>
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/element_padding"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_column="8"
-                                android:text="@string/status"
-                                android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                            <TextView
-                                android:id="@+id/tv_scio_status_sensor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_column="9"
-                                android:layout_marginLeft="5dp"
-                                android:text="@string/default_scio_status_sensor"
-                                android:textAppearance="?android:attr/textAppearanceSmall"/>
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/element_padding"
-                        android:background="@android:drawable/dialog_holo_light_frame"
-                        android:orientation="vertical"
-                        android:padding="@dimen/element_padding">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/examples"
-                            android:textStyle="bold"/>
-
-                        <Button
-                            android:id="@+id/start_cached_scanning"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="5dp"
-                            android:onClick="startCachedScanning"
-                            android:text="@string/cached_multi_scanning_example"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </ScrollView>
-
-        </LinearLayout>
-
-        <ImageView
-            android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <!--   TODO         android:background="@drawable/submit_location_button"-->
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="right"
-            android:src="@drawable/connections_bg"/>
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="8dp"
+            android:text="Add Experiment"
+            android:onClick="@{onClick}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/experimentIdEditText" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:scrollbars="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nameHeader"
+            tools:listitem="@layout/list_item_experiment" />
 
         <TextView
-            android:id="@+id/version"
+            android:id="@+id/nameHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:padding="@dimen/element_padding"
-            android:text="@string/version_number"/>
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Experiment Name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/submitButton"
+            android:layout_marginLeft="8dp" />
 
-    </RelativeLayout>
+        <TextView
+            android:id="@+id/sampleCountHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Sample Count"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/submitButton"
+            android:layout_marginRight="8dp" />
 
-</ScrollView>
+        <EditText
+            android:id="@+id/experimentIdEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:hint="Experiment ID"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
