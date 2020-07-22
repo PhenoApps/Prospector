@@ -2,23 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/delete_scnas"
-        android:icon="@drawable/ic_delete_scans"
-        app:showAsAction="ifRoom"
-        android:title="@string/delete_all" />
-    <item
         android:id="@+id/import_scans"
         android:icon="@drawable/ic_import_scans"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:title="@string/import_scans" />
     <item
         android:id="@+id/export_scans"
         android:icon="@drawable/ic_export_scans"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:title="@string/export" />
-    <item
-        android:id="@+id/new_scan"
-        android:icon="@drawable/ic_new_scan"
-        app:showAsAction="ifRoom"
-        android:title="@string/new_scan" />
 </menu>

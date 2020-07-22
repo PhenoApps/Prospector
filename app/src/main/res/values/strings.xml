@@ -139,7 +139,7 @@
     <string name="ask_scio_device">Select SCiO Device</string>
     <string name="ask_scio_requires_calibration">SCiO Sensor Requires calibration? </string>
     <string name="scio_not_available">SCiO Sensor not available</string>
-    <string name="calibrating">Calibrating...</string>
+    <string name="calibrating">Calibrating…</string>
     <string name="scio_calibrated_success">SCiO was calibrated successfully</string>
     <string name="error_while_calibrating">Error while calibrating</string>
     <string name="timeout_while_calibrating">Timeout while calibrating</string>
@@ -152,5 +152,27 @@
     <string name="ask_calibrate_device">Please calibrate the device.</string>
     <string name="scio_scan_failed">SCiO scan failed.</string>
     <string name="scio_timed_out">SCiO timed out while scanning.</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_ok">OK</string>
+
+    <string name="experiment_name_header">experiment</string>
+
+    <string name="scan_name_header">scanid</string>
+    <string name="scan_date_header">scandate</string>
+    <string name="scan_device_id_header">deviceid</string>
+    <string name="spec_frame_id_header">frameid</string>
+    <string name="spec_light_source_header">lightsource</string>
+    <string name="spec_spectral_count_header">spectralcount</string>
+    <string name="spec_spectral_values_header">spectralvalues</string>
+    <string name="scan_note_header">scannote</string>
+    <string name="horizontal_axis">Frames</string>
+    <string name="vertical_axis">Intensity (A.U)</string>
+    <string name="ask_new_scan_name">Please enter a name for the new scan.</string>
+    <string name="num_bulb">Number of bulb frames</string>
+    <string name="num_led">Number of LED frames</string>
+    <string name="scan_name_barcode_content_desc">The barcode generated from the inputted name.</string>
+    <string name="add_experiment">Add Experiment</string>
+    <string name="experiment_name">Experiment Name</string>
+    <string name="experiment_id">Experiment ID</string>
 
 </resources>

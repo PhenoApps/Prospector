@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-cache-path
+        name="examples"
+        path="."/>
+    <external-path
+        name="export"
+        path="."/>
+</paths>

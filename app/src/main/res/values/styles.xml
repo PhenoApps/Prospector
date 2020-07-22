@@ -7,4 +7,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="Text">
+        <item name="android:textSize">@dimen/text_size</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="Text.ObservationUnit">
+        <item name="android:gravity">start</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
 </resources>

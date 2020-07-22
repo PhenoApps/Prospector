@@ -7,7 +7,7 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="experiment"
-            type="org.phenoapps.prospector.models.Experiment"/>
+            type="org.phenoapps.prospector.data.models.Experiment"/>
     </data>
 
 <!--  TODO  android:background="@drawable/experiments_background"-->

@@ -1,4 +1,4 @@
-package org.phenoapps.prospector;
+package org.phenoapps.prospector.activities;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.phenoapps.prospector.R;
 
 import java.io.File;
 import java.util.ArrayList;

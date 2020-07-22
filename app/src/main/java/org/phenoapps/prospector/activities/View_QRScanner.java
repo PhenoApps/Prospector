@@ -1,19 +1,17 @@
-package org.phenoapps.prospector;
+package org.phenoapps.prospector.activities;
+
+import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.Manifest;
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
 import com.budiyev.android.codescanner.DecodeCallback;
 import com.google.zxing.Result;
+
+import org.phenoapps.prospector.R;
 
 public class View_QRScanner extends AppCompatActivity {
 

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="onClick"
+            type="View.OnClickListener"/>
+
+        <variable
+            name="scan"
+            type="org.phenoapps.prospector.data.models.Scan" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:background="@drawable/cell">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/graphView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:setQRCode="@{scan.sid}" />
+
+        <TextView
+            android:id="@+id/textView"
+            style="@style/Text.ObservationUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{onClick}"
+            android:text="@{scan.sid}"
+            app:layout_constraintBottom_toTopOf="@id/dateView"
+            app:layout_constraintStart_toEndOf="@id/imageView"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/dateView"
+            style="@style/Text.ObservationUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{onClick}"
+            android:text="@{scan.date}"
+            app:layout_constraintBottom_toTopOf="@id/deviceView"
+            app:layout_constraintStart_toEndOf="@id/imageView"
+            app:layout_constraintTop_toBottomOf="@id/textView" />
+
+        <TextView
+            android:id="@+id/deviceView"
+            style="@style/Text.ObservationUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{onClick}"
+            android:text="@{scan.deviceId}"
+            app:layout_constraintBottom_toTopOf="@id/graphView"
+            app:layout_constraintStart_toEndOf="@id/imageView"
+            app:layout_constraintTop_toBottomOf="@id/dateView" />
+
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/graphView"
+            android:layout_width="0dp"
+            android:layout_height="128dp"
+            app:layout_constraintTop_toBottomOf="@id/deviceView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

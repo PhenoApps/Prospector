@@ -22,17 +22,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Selection_Scan" />
-        <activity android:name=".View_QRScanner" />
-        <activity android:name=".View_ScanGraph" />
-        <activity android:name=".MainActivity_LinkSquare" />
 
-        <activity android:name=".activities.BaseScioActivity"/>
-        <activity android:name=".activities.CPModelActivity"/>
-        <activity android:name=".activities.DiscoverActivity"/>
-        <activity android:name=".activities.ModelActivity"/>
-        <activity android:name=".activities.MultiScanningActivity"/>
-        <activity android:name="com.consumerphysics.android.sdk.sciosdk.ScioLoginActivity" />
+        <activity android:name=".activities.ScanActivity" />
+
+        <provider
+            android:authorities="${applicationId}.fileprovider"
+            android:name="androidx.core.content.FileProvider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
     </application>
 
 </manifest>

@@ -7,17 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat.startActivity
 import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.Selection_Scan
+import org.phenoapps.prospector.activities.ScanActivity
+import org.phenoapps.prospector.callbacks.DiffCallbacks
+import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.databinding.ListItemExperimentBinding
-import org.phenoapps.prospector.models.Experiment
 
 class ExperimentAdapter(
         val context: Context
-) : ListAdapter<Experiment, ExperimentAdapter.ViewHolder>(ExperimentDiffCallback()) {
+) : ListAdapter<Experiment, ExperimentAdapter.ViewHolder>(DiffCallbacks.Companion.ExperimentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -33,13 +33,13 @@ class ExperimentAdapter(
         getItem(position).let { experiment ->
             with(holder) {
 
-                itemView.tag = experiment
+                itemView.tag = experiment.eid
 
                 bind(View.OnClickListener {
 
-                    val intent = Intent(context, Selection_Scan::class.java)
+                    val intent = Intent(context, ScanActivity::class.java)
 
-                    intent.putExtra("experiment", experiment.name)
+                    intent.putExtra("experiment", experiment.eid)
 
                     startActivity(context, intent, null)
 
@@ -61,16 +61,5 @@ class ExperimentAdapter(
                 executePendingBindings()
             }
         }
-    }
-}
-
-private class ExperimentDiffCallback : DiffUtil.ItemCallback<Experiment>() {
-
-    override fun areItemsTheSame(oldItem: Experiment, newItem: Experiment): Boolean {
-        return oldItem.name == newItem.name
-    }
-
-    override fun areContentsTheSame(oldItem: Experiment, newItem: Experiment): Boolean {
-        return oldItem.name == newItem.name
     }
 }

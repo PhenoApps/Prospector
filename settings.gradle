@@ -1,1 +1,1 @@
-include ':app', ':LinkSquareAPI', ':SCiOSDK_Android', ':sciosdk'
+include ':app', ':LinkSquareAPI'
