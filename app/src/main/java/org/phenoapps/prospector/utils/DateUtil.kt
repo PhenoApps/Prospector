@@ -1,4 +1,4 @@
-package org.phenoapps.intercross.util
+package org.phenoapps.prospector.utils
 
 import android.os.Build
 import java.time.LocalDateTime
