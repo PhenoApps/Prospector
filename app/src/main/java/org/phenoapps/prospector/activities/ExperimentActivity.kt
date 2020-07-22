@@ -16,7 +16,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.util.DateUtil
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.ExperimentScansRepository
@@ -25,6 +24,7 @@ import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.utils.DateUtil
 import java.io.File
 
 class ExperimentActivity : AppCompatActivity() {

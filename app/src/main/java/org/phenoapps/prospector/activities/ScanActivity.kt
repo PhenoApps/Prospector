@@ -14,7 +14,6 @@ import androidx.lifecycle.Observer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.phenoapps.intercross.util.Dialogs
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ScansAdapter
 import org.phenoapps.prospector.data.ExperimentScansRepository
@@ -23,6 +22,7 @@ import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
 import org.phenoapps.prospector.databinding.ScanLayoutBinding
+import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.FileUtil
 
 /*
