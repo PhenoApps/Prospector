@@ -17,11 +17,11 @@ interface ExperimentScansDao {
     @Query("SELECT * FROM experimentscans as es WHERE es.eid = :eid ORDER BY scanDate DESC")
     fun getScans(eid: Long): LiveData<List<ExperimentScans>>
 
+    @Query("SELECT * FROM scanspectralvalues as sf WHERE sf.eid = :eid and sf.sid = :sid ORDER BY sf.frameId ASC")
+    fun getSpectralValues(eid: Long, sid: String): LiveData<List<ScanSpectralValues>>
+
     @Query("SELECT * FROM experimentscans ORDER BY expDate DESC")
     suspend fun getAll(): List<ExperimentScans>
-
-    @Query("SELECT * FROM scanspectralvalues as sf WHERE sf.eid = :eid and sf.sid = :sid ORDER BY sf.frameId ASC")
-    suspend fun getSpectralValues(eid: Long, sid: String): List<ScanSpectralValues>
 
     @Query("INSERT OR REPLACE INTO experiments (name, date) VALUES (:name, :date)")
     suspend fun insertExperiment(name: String, date: String)
@@ -35,10 +35,16 @@ interface ExperimentScansDao {
     @Query("DELETE FROM experiments WHERE eid = :eid")
     suspend fun deleteExperiment(eid: Long)
 
+    @Query("DELETE FROM scans WHERE eid = :eid and sid = :sid")
+    suspend fun deleteScan(eid: Long, sid: String)
+
 //    @Query("SELECT * FROM scanspectralvalues as sf WHERE sf.eid = :eid and sf.sid = :sid ORDER BY sf.frameId ASC")
 //    fun forceGetSpectralValues(eid: Long, sid: Long): List<ScanSpectralValues>
 //
     @Query("SELECT sf.* FROM spectral_frames as sf, scans as s WHERE s.eid = :eid and s.sid = :sid and sf.sid = :sid ORDER BY sf.fid ASC")
     fun forceGetSpectralValues(eid: Long, sid: String): LiveData<List<SpectralFrame>>
+
+    @Query("SELECT sf.* FROM spectral_frames as sf, scans as s WHERE s.eid = :eid and s.sid = :sid and sf.sid = :sid ORDER BY sf.fid ASC")
+    fun spectralFrames(eid: Long, sid: String): List<SpectralFrame>
 
 }

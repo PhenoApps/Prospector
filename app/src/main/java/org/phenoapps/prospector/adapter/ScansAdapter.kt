@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.observe
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jjoe64.graphview.GraphView
@@ -16,6 +17,7 @@ import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
 import org.phenoapps.prospector.databinding.ListItemGraphedScanBinding
+import org.phenoapps.prospector.fragments.ScanListFragmentDirections
 import org.phenoapps.prospector.utils.AsyncLoadGraph
 
 class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, private val viewModel: ExperimentScansViewModel) : ListAdapter<Scan,
@@ -47,25 +49,23 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
 
                     viewModel.forceSpectralValues(scan.eid, scan.sid).observe(lifecycle) { frames: List<SpectralFrame> ->
 
-                        AsyncLoadGraph(graph,
+                        AsyncLoadGraph(context,
+                                graph,
                                 scan.sid,
                                 context.getString(R.string.horizontal_axis),
                                 context.getString(R.string.vertical_axis),
-                                frames).execute()
+                                frames,
+                                potatoRender = true).execute()
 
                     }
 
-                    bind(View.OnClickListener {
+                    bind(scan, View.OnClickListener {
 
-//                    val intent = Intent(context, GraphActivity::class.java)
-//
-//                    intent.putExtra("sid", scan.sid)
-//
-//                    intent.putExtra("eid", scan.eid)
-//
-//                    startActivity(context, intent, null)
+                        Navigation.findNavController(itemView).navigate(
+                                ScanListFragmentDirections
+                                        .actionToScanDetail(scan.eid, scan.sid))
 
-                    }, scan)
+                    })
 
                 } else {
 
@@ -79,11 +79,11 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
     inner class ScanGraphViewHolder(
             private val binding: ListItemGraphedScanBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(listener: View.OnClickListener, scan: Scan) {
+        fun bind(scan: Scan, onClick: View.OnClickListener) {
 
             with(binding) {
 
-                this.onClick = listener
+                this.onClick = onClick
 
                 this.scan = scan
 

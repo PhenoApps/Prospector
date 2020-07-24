@@ -59,7 +59,7 @@
             app:layout_constraintBottom_toTopOf="@id/deleteButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView"
+            app:layout_constraintTop_toBottomOf="@id/dateView"
             app:layout_constraintVertical_bias="1.0"
             tools:listitem="@layout/list_item_graphed_scan" />
 

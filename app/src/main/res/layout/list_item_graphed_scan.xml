@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:onClick="@{onClick}"
         android:background="@drawable/cell">
 
         <ImageView
@@ -34,7 +35,6 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{onClick}"
             android:text="@{scan.sid}"
             app:layout_constraintBottom_toTopOf="@id/dateView"
             app:layout_constraintStart_toEndOf="@id/imageView"
@@ -45,7 +45,6 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{onClick}"
             android:text="@{scan.date}"
             app:layout_constraintBottom_toTopOf="@id/deviceView"
             app:layout_constraintStart_toEndOf="@id/imageView"
@@ -56,7 +55,6 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{onClick}"
             android:text="@{scan.deviceId}"
             app:layout_constraintBottom_toTopOf="@id/graphView"
             app:layout_constraintStart_toEndOf="@id/imageView"
@@ -66,9 +64,12 @@
             android:id="@+id/graphView"
             android:layout_width="0dp"
             android:layout_height="128dp"
-            app:layout_constraintTop_toBottomOf="@id/deviceView"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:onClick="@{onClick}"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/deviceView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

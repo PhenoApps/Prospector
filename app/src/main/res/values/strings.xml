@@ -174,5 +174,38 @@
     <string name="add_experiment">Add Experiment</string>
     <string name="experiment_name">Experiment Name</string>
     <string name="experiment_id">Experiment ID</string>
+    <string name="alias_header">Alias</string>
+    <string name="device_id_header">Device ID</string>
+    <string name="device_type_header">Device Type</string>
+    <string name="hw_version_header">HW Version</string>
+    <string name="op_mode_header">OP Mode</string>
+    <string name="sw_version_header">SW Version</string>
+    <string name="attempting_connect">Attempting to connect to device.</string>
+    <string name="preferences_profile_title">Profile</string>
+    <string name="pref_operator_title">Operator</string>
+    <string name="pref_scanning_title">Link Square Settings</string>
+    <string name="pref_led_frames_title">LED Frames</string>
+    <string name="pref_led_frames_summary">The number of frames reprsents the duplication of data upon a single scan.</string>
+    <string name="pref_bulb_frames_title">Bulb Frames</string>
+    <string name="pref_auto_name_scan_title">Automatically name scans</string>
+    <string name="nav_label_experiment_list">Experiment List Fragment</string>
+    <string name="nav_label_scan_list">List of scans for a given experiment.</string>
+    <string name="nav_label_settings">Settings Fragment</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+
+    <!-- nav drawer -->
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+    <string name="double_back_press">Press back again to exit</string>
+    <string name="nav_label_scan_detail">Scan Detail Fragment</string>
+
+    <!-- scan detail fragment -->
+    <string name="off">Autosize Off</string>
+    <string name="autosize">Autosize On</string>
+    <string name="undo">Undo</string>
+
+    <!-- new scan dialog -->
+    <string name="uuid">UUID</string>
 
 </resources>

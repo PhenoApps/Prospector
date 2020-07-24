@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <PreferenceCategory android:title="@string/preferences_profile_title" app:iconSpaceReserved="false">
+
+        <EditTextPreference
+            android:title="@string/pref_operator_title"
+            android:key="org.phenoapps.prospector.OPERATOR" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_scanning_title" app:iconSpaceReserved="false">
+        <SeekBarPreference
+            android:key="org.phenoapps.prospector.LED_FRAMES"
+            android:title="@string/pref_led_frames_title"
+            android:max="8"
+            android:summary="@string/pref_led_frames_summary"/>
+        <SeekBarPreference
+            android:key="org.phenoapps.prospector.BULB_FRAMES"
+            android:title="@string/pref_bulb_frames_title"
+            android:max="8"
+            android:summary="@string/pref_led_frames_summary"/>
+        <SwitchPreference
+            android:key="org.phenoapps.prospector.AUTO_NAMED_SCAN"
+            android:title="@string/pref_auto_name_scan_title"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

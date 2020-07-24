@@ -5,22 +5,49 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
+import androidx.preference.PreferenceManager
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.databinding.DialogLayoutCreateNameBinding
+import org.phenoapps.prospector.fragments.SettingsFragment
+import java.util.*
 
 class Dialogs {
 
     companion object {
 
-        fun askForName(activity: Activity, layoutId: Int, title: Int, button: Int, function: (String) -> Unit) {
+        fun askForName(activity: Activity, title: Int, button: Int, function: (String) -> Unit) {
 
-            val binding = DataBindingUtil.inflate<DialogLayoutCreateNameBinding>(activity.layoutInflater, layoutId, null, false)
+            val binding = DataBindingUtil.inflate<DialogLayoutCreateNameBinding>(activity.layoutInflater, R.layout.dialog_layout_create_name, null, false)
 
-            binding.name = "shortcuts make long delays"
+            val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
 
-            binding.numBulbText.text = "${activity.getString(R.string.num_bulb)}: 0"
+            val uuid = prefs.getBoolean(SettingsFragment.AUTO_SCAN_NAME, false)
 
-            binding.numLedText.text = "${activity.getString(R.string.num_led)}: 0"
+            binding.checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
+
+                if (isChecked) {
+
+                    prefs.edit().putBoolean(SettingsFragment.AUTO_SCAN_NAME, true).apply()
+
+                    val newUuid = UUID.randomUUID().toString()
+
+                    binding.name = newUuid
+
+                    binding.editText.setText(newUuid)
+
+                } else {
+
+                    prefs.edit().putBoolean(SettingsFragment.AUTO_SCAN_NAME, false).apply()
+
+                    binding.name = "shortcuts make long delays"
+
+                    binding.editText.setText("")
+
+                }
+
+            }
+
+            binding.checkBox.isChecked = uuid
 
             binding.editText.addTextChangedListener {
 
@@ -33,38 +60,6 @@ class Dialogs {
                 }
 
             }
-
-            binding.numLedFrames.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-
-                    val text = "${activity.getString(R.string.num_led)}: $progress"
-
-                    binding.numLedText.text = text
-
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-
-            })
-
-            binding.numBulbFrames.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-
-                    val text = "${activity.getString(R.string.num_bulb)}: $progress"
-
-                    binding.numBulbText.text = text
-
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-
-            })
 
             val builder = AlertDialog.Builder(activity).apply {
 

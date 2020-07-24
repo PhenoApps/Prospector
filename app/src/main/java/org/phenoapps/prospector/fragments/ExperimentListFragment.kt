@@ -1,13 +1,17 @@
-package org.phenoapps.prospector.activities
+package org.phenoapps.prospector.fragments
 
 import android.Manifest
 import android.os.Bundle
 import android.os.Handler
-import android.view.View
+import android.preference.PreferenceManager
+import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,83 +28,34 @@ import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.DateUtil
 import java.io.File
 
-class ExperimentActivity : AppCompatActivity() {
+class ExperimentListFragment : Fragment() {
 
     private lateinit var sViewModel: ExperimentScansViewModel
 
-    private lateinit var mBinding: ActivityMainBinding
+    private lateinit var mBinding: FragmentExperimentListBinding
 
-    private val permissionCheck by lazy {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
-            setupActivity()
+        val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
-        }
-    }
-
-    private fun writeStream(file: File, resourceId: Int) {
-
-        if (!file.isFile) {
-
-            val stream = resources.openRawResource(resourceId)
-
-            file.writeBytes(stream.readBytes())
-
-            stream.close()
-        }
-
-    }
-
-    private fun setupDirs() {
-
-        //create separate subdirectory foreach type of import
-        val scans = File(this.externalCacheDir, "Scans")
-
-        scans.mkdir()
-
-        //create empty files for the examples
-        val example = File(scans, "/scans_example.csv")
-
-        //blocking code can be run with Dispatchers.IO
-        CoroutineScope(Dispatchers.IO).launch {
-
-            writeStream(example, R.raw.scans_example)
-
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
-        permissionCheck.launch(arrayOf(
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.CAMERA))
-
-    }
-
-    private fun setupActivity() {
+        mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_experiment_list, container, false)
 
         val viewModel: ExperimentScansViewModel by viewModels {
 
             ExperimentScanViewModelFactory(
                     ExperimentScansRepository.getInstance(
-                            ProspectorDatabase.getInstance(this)
+                            ProspectorDatabase.getInstance(requireContext())
                                     .expScanDao()))
 
         }
 
         sViewModel = viewModel
-
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        setupDirs()
 
         setupRecyclerView()
 
@@ -108,6 +63,24 @@ class ExperimentActivity : AppCompatActivity() {
 
         startObservers()
 
+        setHasOptionsMenu(true)
+
+        return mBinding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+//        inflater.inflate(R.menu.activity_main_toolbar, menu)
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+//        when(item.itemId) {
+//
+//        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun setupButtons() {
@@ -138,9 +111,9 @@ class ExperimentActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
 
-        mBinding.recyclerView.layoutManager = LinearLayoutManager(this)
+        mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        mBinding.recyclerView.adapter = ExperimentAdapter(this)
+        mBinding.recyclerView.adapter = ExperimentAdapter(requireContext())
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -165,7 +138,7 @@ class ExperimentActivity : AppCompatActivity() {
 
     private fun startObservers() {
 
-        sViewModel.experiments.observe(this) {
+        sViewModel.experiments.observe(viewLifecycleOwner) {
 
             (mBinding.recyclerView.adapter as ExperimentAdapter)
                     .submitList(it)

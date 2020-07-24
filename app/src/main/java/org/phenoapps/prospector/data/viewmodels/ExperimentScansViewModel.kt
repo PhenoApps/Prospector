@@ -27,12 +27,9 @@ class ExperimentScansViewModel(
 
     fun forceSpectralValues(eid: Long, sid: String): LiveData<List<SpectralFrame>> = repo.forceGetSpectralValues(eid, sid)
 
-    fun getSpectralValues(eid: Long, sid: String) = liveData {
+    fun getSpectralValues(eid: Long, sid: String) = repo.getSpectralValues(eid, sid)
 
-        val data = repo.getSpectralValues(eid, sid)
-
-        emit(data)
-    }
+    fun spectralFrames(eid: Long, sid: String) = repo.spectralFrames(eid, sid)
 
     fun insertScan(scan: Scan) = repo.insertScan(scan)
 
@@ -51,6 +48,12 @@ class ExperimentScansViewModel(
     fun deleteExperiment(eid: Long) = viewModelScope.launch {
 
         repo.deleteExperiment(eid)
+
+    }
+
+    fun deleteScan(scan: Scan) = viewModelScope.launch {
+
+        repo.deleteScan(scan.eid, scan.sid)
 
     }
 

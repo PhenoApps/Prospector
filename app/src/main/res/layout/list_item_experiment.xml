@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
         <variable
@@ -12,18 +13,29 @@
 
 <!--  TODO  android:background="@drawable/experiments_background"-->
 
-    <TextView
-        android:id="@+id/experiment_name"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:onClick="@{clickListener}"
-        android:fontFamily="monospace"
-        android:maxLines="2"
-        android:text="@{experiment.name}"
-        android:textAlignment="textStart"
-        android:textSize="24sp"
-        android:typeface="monospace"
-        android:gravity="start" />
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/experiment_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:fontFamily="monospace"
+            android:gravity="start"
+            android:maxLines="2"
+            android:onClick="@{clickListener}"
+            android:text="@{experiment.name}"
+            android:textAlignment="textStart"
+            android:textSize="24sp"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </layout>

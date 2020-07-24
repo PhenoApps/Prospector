@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_graph"
+    app:startDestination="@+id/experiment_list_fragment">
+
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.SettingsFragment"
+        android:label="@string/nav_label_settings"/>
+
+    <fragment
+        android:id="@+id/scan_detail_fragment"
+        android:name="org.phenoapps.prospector.fragments.ScanDetailFragment"
+        android:label="@string/nav_label_scan_detail">
+
+        <argument android:name="experiment"
+            android:defaultValue="-1L"
+            app:argType="long"/>
+
+        <argument android:name="scan"
+            android:defaultValue=""
+            app:argType="string"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/scan_list_fragment"
+        android:name="org.phenoapps.prospector.fragments.ScanListFragment"
+        android:label="@string/nav_label_scan_list">
+
+        <argument android:name="experiment"
+            android:defaultValue="-1L"
+            app:argType="long"/>
+
+        <action
+            android:id="@+id/action_to_scan_detail"
+            app:destination="@id/scan_detail_fragment"
+            app:popUpTo="@id/scan_list_fragment">
+        </action>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/experiment_list_fragment"
+        android:name="org.phenoapps.prospector.fragments.ExperimentListFragment"
+        android:label="@string/nav_label_experiment_list"
+        tools:layout="@layout/fragment_experiment_list">
+
+        <action
+            android:id="@+id/action_to_scan_list"
+            app:destination="@id/scan_list_fragment"/>
+
+        <action
+            android:id="@+id/action_to_settings"
+            app:destination="@id/settings_fragment"
+            app:popUpTo="@id/experiment_list_fragment">
+        </action>
+
+    </fragment>
+
+</navigation>

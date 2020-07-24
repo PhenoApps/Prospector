@@ -9,19 +9,21 @@ class ExperimentScansRepository
     private constructor(
             private val expScansDao: ExperimentScansDao) {
 
-
-
     fun getExperiments() = expScansDao.getExperiments()
 
     fun forceGetSpectralValues(eid: Long, sid: String): LiveData<List<SpectralFrame>> = expScansDao.forceGetSpectralValues(eid, sid)
 
     fun getScans(eid: Long) = expScansDao.getScans(eid)
 
+    fun getSpectralValues(eid: Long, sid: String) = expScansDao.getSpectralValues(eid, sid)
+
+    fun spectralFrames(eid: Long, sid: String) = expScansDao.spectralFrames(eid, sid)
+
     suspend fun getAll() = expScansDao.getAll()
 
-    suspend fun getSpectralValues(eid: Long, sid: String) = expScansDao.getSpectralValues(eid, sid)
-
     suspend fun deleteExperiment(eid: Long) = expScansDao.deleteExperiment(eid)
+
+    suspend fun deleteScan(eid: Long, sid: String) = expScansDao.deleteScan(eid, sid)
 
     suspend fun insertExperiment(name: String, date: String) = expScansDao.insertExperiment(name, date)
 
