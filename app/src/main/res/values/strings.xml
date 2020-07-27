@@ -221,5 +221,12 @@
     <string name="pref_export_type">Export Type</string>
     <string name="loading">Loading…</string>
     <string name="default_csv_export_file_name">scans</string>
+    <string name="new_experiment_prefix">"New experiment "</string>
+    <string name="new_exp_must_enter_name">Please try to enter an experiment name.</string>
+    <string name="connecting">Connecting...</string>
+    <string name="device_error_prefix">Device Error:</string>
+    <string name="connection_error">Connection error.</string>
+    <string name="why_with_question_mark">Why?</string>
+    <string name="still_connected">Still connected.</string>
 
 </resources>

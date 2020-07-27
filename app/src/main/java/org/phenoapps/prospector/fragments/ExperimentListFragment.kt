@@ -1,13 +1,8 @@
 package org.phenoapps.prospector.fragments
 
-import android.Manifest
 import android.os.Bundle
 import android.os.Handler
-import android.preference.PreferenceManager
 import android.view.*
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -18,8 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.MainScope
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.ExperimentScansRepository
@@ -27,16 +21,21 @@ import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
-import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.DateUtil
-import java.io.File
 
-class ExperimentListFragment : Fragment() {
+class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private lateinit var sViewModel: ExperimentScansViewModel
+    private val sExpScanModel: ExperimentScansViewModel by viewModels {
 
-    private lateinit var mBinding: FragmentExperimentListBinding
+        ExperimentScanViewModelFactory(
+                ExperimentScansRepository.getInstance(
+                        ProspectorDatabase.getInstance(requireContext())
+                                .expScanDao()))
+
+    }
+
+    private var mBinding: FragmentExperimentListBinding? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -46,26 +45,21 @@ class ExperimentListFragment : Fragment() {
 
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_experiment_list, container, false)
 
-        val viewModel: ExperimentScansViewModel by viewModels {
+        mBinding?.let { ui ->
 
-            ExperimentScanViewModelFactory(
-                    ExperimentScansRepository.getInstance(
-                            ProspectorDatabase.getInstance(requireContext())
-                                    .expScanDao()))
+            ui.setupRecyclerView()
+
+            ui.setupButtons()
+
+            ui.startObservers()
+
+            return ui.root
 
         }
 
-        sViewModel = viewModel
-
-        setupRecyclerView()
-
-        setupButtons()
-
-        startObservers()
-
         setHasOptionsMenu(true)
 
-        return mBinding.root
+        return null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -83,37 +77,43 @@ class ExperimentListFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun setupButtons() {
+    private fun FragmentExperimentListBinding.setupButtons() {
 
-        mBinding.onClick = View.OnClickListener {
+        val newExpString = getString(R.string.new_experiment_prefix)
 
-            val value = mBinding.experimentIdEditText.text
+        val tryEnterNameString = getString(R.string.new_exp_must_enter_name)
+
+        onClick = View.OnClickListener {
+
+            val value = experimentIdEditText.text
 
             if (value.isNotBlank()) {
 
-                sViewModel.insertExperiment(Experiment(value.toString()).apply {
+                sExpScanModel.insertExperiment(Experiment(value.toString()).apply {
+
                     this.date = DateUtil().getTime()
+
                 })
 
-                mBinding.experimentIdEditText.text.clear()
+                experimentIdEditText.text.clear()
 
-                Snackbar.make(mBinding.root,
-                        "New Experiment $value added.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(root,
+                        "$newExpString: $value.", Snackbar.LENGTH_SHORT).show()
 
             } else {
 
-                Snackbar.make(mBinding.root,
-                        "You must enter an experiment name.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(root,
+                        tryEnterNameString, Snackbar.LENGTH_LONG).show()
+
             }
         }
-
     }
 
-    private fun setupRecyclerView() {
+    private fun FragmentExperimentListBinding.setupRecyclerView() {
 
-        mBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        mBinding.recyclerView.adapter = ExperimentAdapter(requireContext())
+        recyclerView.adapter = ExperimentAdapter(requireContext())
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -129,23 +129,23 @@ class ExperimentListFragment : Fragment() {
 
                 val id = viewHolder.itemView.tag as Long
 
-                sViewModel.deleteExperiment(id)
+                sExpScanModel.deleteExperiment(id)
 
             }
 
-        }).attachToRecyclerView(mBinding.recyclerView)
+        }).attachToRecyclerView(recyclerView)
     }
 
-    private fun startObservers() {
+    private fun FragmentExperimentListBinding.startObservers() {
 
-        sViewModel.experiments.observe(viewLifecycleOwner) {
+        sExpScanModel.experiments.observe(viewLifecycleOwner) {
 
-            (mBinding.recyclerView.adapter as ExperimentAdapter)
+            (recyclerView.adapter as ExperimentAdapter)
                     .submitList(it)
 
             Handler().postDelayed({
 
-                mBinding.recyclerView.scrollToPosition(0)
+                recyclerView.scrollToPosition(0)
 
             }, 250)
 

@@ -3,7 +3,6 @@ package org.phenoapps.prospector.fragments
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.widget.GridLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
@@ -223,69 +222,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun disconnectDeviceAsync() {
-
-        sDeviceViewModel.disconnect()
-
-    }
-
-    //TODO move connection to shared view model that begins in Experiment list page
-    private fun connectDeviceAsync() {
-
-        sDeviceViewModel.connection(requireContext()).observe(viewLifecycleOwner, Observer {
-
-            it?.let {
-
-                when (it) {
-
-                    LinkSquareAPI.RET_OK -> {
-
-                        sDeviceViewModel.getDeviceInfo()?.let { info ->
-
-                            mDeviceInfo = info
-
-                        }
-
-                        registerLinkSquareButtonCallback()
-
-                        requireActivity().runOnUiThread {
-
-                            mBinding?.let { ui ->
-
-                                mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.connected)))
-
-                                ui.deviceTextView.text = buildLinkSquareDeviceInfo(mDeviceInfo)
-
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    override fun onDestroyView() {
-
-        super.onDestroyView()
-
-        async {
-
-            disconnectDeviceAsync()
-
-        }
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        async {
-
-            connectDeviceAsync()
-
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -296,6 +232,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
         mBinding?.let { ui ->
 
+            registerLinkSquareButtonCallback()
+
             ui.deleteOnClick = sOnClickDelete
 
             ui.scanOnClick = sOnClickScan
@@ -303,17 +241,13 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
             ui.expDate = getString(R.string.loading)
 
             ui.expName = getString(R.string.loading)
-        }
 
+            //check if experiment id is included in the arguments.
+            val eid = arguments?.getLong("experiment", -1L) ?: -1L
 
-        //check if experiment id is included in the arguments.
-        val eid = arguments?.getLong("experiment", -1L) ?: -1L
+            if (eid != -1L) {
 
-        if (eid != -1L) {
-
-            mExpId = eid
-
-            mBinding?.let { ui ->
+                mExpId = eid
 
                 ui.recyclerView.adapter = ScansAdapter(this, requireContext(), sViewModel)
 
@@ -356,31 +290,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         setHasOptionsMenu(true)
 
         return mBinding?.root
-    }
-
-    private fun buildLinkSquareDeviceInfo(data: LinkSquareAPI.LSDeviceInfo?): String {
-
-        data?.let { info ->
-
-            val aliasHeader = getString(R.string.alias_header)
-            val deviceIdHeader = getString(R.string.device_id_header)
-            val deviceTypeHeader = getString(R.string.device_type_header)
-            val hwVersion = getString(R.string.hw_version_header)
-            val opMode = getString(R.string.op_mode_header)
-            val swVersion = getString(R.string.sw_version_header)
-
-            return """
-            ${aliasHeader}: ${info.Alias}      
-            ${deviceIdHeader}: ${info.DeviceID}          
-            ${deviceTypeHeader}: ${info.DeviceType}       
-            ${hwVersion}: ${info.HWVersion}        
-            ${opMode}: ${info.OPMode}        
-            ${swVersion}: ${info.SWVersion}
-        """.trimIndent()
-
-        }
-
-        return "None"
     }
 
     private fun startObservers() {

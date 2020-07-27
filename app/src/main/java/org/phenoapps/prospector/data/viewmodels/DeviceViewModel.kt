@@ -10,14 +10,13 @@ import androidx.lifecycle.liveData
 import androidx.preference.PreferenceManager
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.coroutineContext
 
 /**
  * TODO: Implement an interface for spectrometers then generalize this to devices other than LS.
  */
-class DeviceViewModel() : ViewModel() {
+class DeviceViewModel : ViewModel() {
 
     init {
 
@@ -27,14 +26,21 @@ class DeviceViewModel() : ViewModel() {
 
     private fun manager(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
 
-    private val sDevice: LinkSquareAPI? by lazy {
+    private var sDevice: LinkSquareAPI = LinkSquareAPI.getInstance().also {
 
-        LinkSquareAPI.getInstance().also {
+        it.Initialize()
+
+    }
+
+    fun reset() {
+
+        sDevice.Close()
+
+        sDevice = LinkSquareAPI.getInstance().also {
 
             it.Initialize()
 
         }
-
     }
 
     fun onClick(context: Context, onClick: () -> Unit) {
@@ -60,11 +66,17 @@ class DeviceViewModel() : ViewModel() {
 
     }
 
+    fun getDeviceError() = sDevice?.GetLSError()
+
     fun getDeviceInfo() = sDevice?.GetDeviceInfo()
 
     fun disconnect() = sDevice?.Close()
 
-    fun connection(context: Context) = liveData<Int?> {
+    fun isConnected() = sDevice?.IsConnected() ?: false
+
+    fun connection(context: Context) = liveData {
+
+        val connecting = -1
 
         with (manager(context)) {
 
@@ -72,12 +84,24 @@ class DeviceViewModel() : ViewModel() {
 
             val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
 
-            val result = connect(ip, port).await()
+            emit(connecting)
 
-            emit(result)
+            val result = connect(ip, port)
 
+            emit(when (result) {
+
+                LinkSquareAPI.RET_OK -> {
+
+                    getDeviceInfo()
+
+                }
+                else -> {
+
+                    getDeviceError()
+
+                }
+            })
         }
-
     }
 
     fun scan(context: Context) = liveData<List<LSFrame>> {
@@ -96,7 +120,7 @@ class DeviceViewModel() : ViewModel() {
 
     }
 
-    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext(coroutineContext) {
+    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext(Dispatchers.IO) {
 
         val frames = ArrayList<LSFrame>()
 
@@ -106,13 +130,9 @@ class DeviceViewModel() : ViewModel() {
 
     }
 
-    private suspend fun connect(ip: String, port: Int) = withContext(coroutineContext) {
+    private suspend fun connect(ip: String, port: Int) = withContext(Dispatchers.IO) {
 
-        async {
-
-            sDevice?.Connect(ip, port)
-
-        }
+        return@withContext sDevice?.Connect(ip, port)
 
     }
 

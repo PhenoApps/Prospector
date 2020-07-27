@@ -54,7 +54,7 @@ open class FileUtil(private val ctx: Context) {
     private val exportHeaderString by lazy {
         arrayOf(scanDateHeader, scanDeviceIdHeader, scanIdHeader,
                 specFrameIdHeader, specLightSourceHeader, specCountHeader,
-                specValuesHeader)
+                specValuesHeader, scanNoteHeader)
                 .joinToString(",")
     }
 
@@ -192,7 +192,7 @@ open class FileUtil(private val ctx: Context) {
 
                         frames?.forEach { specFrame ->
 
-                            write("${key.scanDate},${key.deviceId},${key.sid},${specFrame.frameId},${specFrame.lightSource},${specFrame.count},${specFrame.spectralValues}".toByteArray())
+                            write("${key.scanDate},${key.deviceId},${key.sid},${specFrame.frameId},${specFrame.lightSource},${specFrame.count},${specFrame.spectralValues},none".toByteArray())
 
                             write(newLine)
 

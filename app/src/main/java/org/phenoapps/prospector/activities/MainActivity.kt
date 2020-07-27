@@ -1,7 +1,6 @@
 package org.phenoapps.prospector.activities
 
 import OPERATOR
-import android.Manifest
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
@@ -11,8 +10,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -20,28 +19,24 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.ui.NavigationUI
 import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.stratiotechnology.linksquareapi.LinkSquareAPI
+import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
-import org.phenoapps.prospector.fragments.SettingsFragment
 import org.phenoapps.prospector.utils.SnackbarQueue
 import java.io.File
-import java.util.*
-import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    private val sDeviceViewModel: DeviceViewModel by viewModels()
 
     private var doubleBackToExitPressedOnce = false
 
@@ -62,6 +57,12 @@ class MainActivity : AppCompatActivity() {
             setupActivity()
 
         }
+    }
+
+    private fun disconnectDeviceAsync() {
+
+        sDeviceViewModel.disconnect()
+
     }
 
     private fun writeStream(file: File, resourceId: Int) {
@@ -143,6 +144,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if (!sDeviceViewModel.isConnected()) {
+
+            async {
+
+                sDeviceViewModel.connection(this@MainActivity).observe(this@MainActivity, Observer {
+
+                    it?.let {
+
+                        when (it) {
+
+                            is String -> {
+
+                                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connection_error)))
+
+                            }
+
+                            is LinkSquareAPI.LSDeviceInfo -> {
+
+                                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connected)))
+
+                            }
+
+                            else -> {
+
+                                mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connecting)))
+
+
+                            }
+                        }
+                    }
+                })
+            }
+
+
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -211,6 +248,17 @@ class MainActivity : AppCompatActivity() {
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
+    override fun onDestroy() {
+
+        async {
+
+            disconnectDeviceAsync()
+
+        }
+
+        super.onDestroy()
+
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
