@@ -28,7 +28,7 @@
     <string name="scio_device_api">SCiO Device API</string>
     <string name="discover">Discover</string>
     <string name="connect">Connect</string>
-    <string name="connected">Connect</string>
+    <string name="connected">Connected</string>
 
     <string name="calibrate">Calibrate</string>
     <string name="is_calibration_needed">Is Calibration Needed</string>
@@ -183,7 +183,7 @@
     <string name="attempting_connect">Attempting to connect to device.</string>
     <string name="preferences_profile_title">Profile</string>
     <string name="pref_operator_title">Operator</string>
-    <string name="pref_scanning_title">Link Square Settings</string>
+    <string name="pref_scanning_title">Device Settings</string>
     <string name="pref_led_frames_title">LED Frames</string>
     <string name="pref_led_frames_summary">The number of frames reprsents the duplication of data upon a single scan.</string>
     <string name="pref_bulb_frames_title">Bulb Frames</string>
@@ -207,5 +207,19 @@
 
     <!-- new scan dialog -->
     <string name="uuid">UUID</string>
+    <string name="pref_device_ip">Device IP Address</string>
+    <string name="pref_device_default_ip">192.168.1.1</string>
+    <string name="pref_device_ip_summary">The IP address used to connect to the operator\'s device.</string>
+    <string name="pref_device_port">Device Port</string>
+    <string name="pref_device_default_port">18630</string>
+    <string name="pref_device_port_summary">The web socket port number used by the operator\'s device.</string>
+
+    <!-- export settings strings -->
+    <string name="export_type_always_ask">Always Ask</string>
+    <string name="export_type_csv">CSV</string>
+    <string name="export_type_brapi">BrAPI</string>
+    <string name="pref_export_type">Export Type</string>
+    <string name="loading">Loading…</string>
+    <string name="default_csv_export_file_name">scans</string>
 
 </resources>

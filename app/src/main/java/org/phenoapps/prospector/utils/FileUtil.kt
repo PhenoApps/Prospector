@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.WorkerThread
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.data.models.ExperimentScans
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import java.io.BufferedReader
@@ -47,6 +48,13 @@ open class FileUtil(private val ctx: Context) {
         arrayOf(scanIdHeader, scanDateHeader, scanDeviceIdHeader,
                 specFrameIdHeader, specLightSourceHeader, specCountHeader,
                 specValuesHeader, scanNoteHeader)
+                .joinToString(",")
+    }
+
+    private val exportHeaderString by lazy {
+        arrayOf(scanDateHeader, scanDeviceIdHeader, scanIdHeader,
+                specFrameIdHeader, specLightSourceHeader, specCountHeader,
+                specValuesHeader)
                 .joinToString(",")
     }
 
@@ -165,7 +173,7 @@ open class FileUtil(private val ctx: Context) {
     }
 
     //todo: create export view and use it for this method
-    fun exportCrossesToFile(uri: Uri, frames: List<SpectralFrame>) {
+    fun export(uri: Uri, scans: Map<ExperimentScans, List<SpectralFrame>>) {
 
         val newLine: ByteArray = System.getProperty("line.separator")?.toByteArray() ?: "\n".toByteArray()
 
@@ -175,16 +183,21 @@ open class FileUtil(private val ctx: Context) {
 
                 this?.let {
 
-                    write(scanModelHeaderString.toByteArray())
+                    write(exportHeaderString.toByteArray())
 
                     write(newLine)
 
-                    frames.forEachIndexed { index, frame ->
+                    scans.keys.forEachIndexed { index, key ->
 
+                        val frames = scans[key]
 
-                        frame.toString()
+                        frames?.forEach { specFrame ->
 
-                        write(newLine)
+                            write("${key.scanDate},${key.deviceId},${key.sid},${specFrame.frameId},${specFrame.lightSource},${specFrame.count},${specFrame.spectralValues}".toByteArray())
+
+                            write(newLine)
+
+                        }
 
                     }
 
