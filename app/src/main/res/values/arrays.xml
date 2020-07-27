@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="export_types_array">
+        <item>@string/export_type_always_ask</item>
+        <item>@string/export_type_csv</item>
+        <item>@string/export_type_brapi</item>
+    </string-array>
+
+</resources>

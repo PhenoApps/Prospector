@@ -11,8 +11,6 @@
             type="org.phenoapps.prospector.data.models.Experiment"/>
     </data>
 
-<!--  TODO  android:background="@drawable/experiments_background"-->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

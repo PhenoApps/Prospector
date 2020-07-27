@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.activities
 
+import OPERATOR
 import android.Manifest
 import android.content.res.Configuration
 import android.os.Bundle
@@ -180,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 
         nvDrawer.getHeaderView(0).apply {
             findViewById<TextView>(R.id.navHeaderText)
-                    .text = prefs.getString(SettingsFragment.OPERATOR, "")
+                    .text = prefs.getString(OPERATOR, "")
         }
 
         nvDrawer.setNavigationItemSelectedListener { menuItem ->

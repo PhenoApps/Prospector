@@ -144,7 +144,7 @@ class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {
 //
 //            R.id.import_scans -> importScans.launch("*/*")
 //
-//            R.id.export_scans -> null//TODO
+//            R.id.export_scans -> null
 //
 //        }
 

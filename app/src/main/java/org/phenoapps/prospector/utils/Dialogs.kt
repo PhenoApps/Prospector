@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.utils
 
+import AUTO_SCAN_NAME
 import android.app.Activity
 import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
@@ -21,13 +22,13 @@ class Dialogs {
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
 
-            val uuid = prefs.getBoolean(SettingsFragment.AUTO_SCAN_NAME, false)
+            val uuid = prefs.getBoolean(AUTO_SCAN_NAME, false)
 
             binding.checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
 
                 if (isChecked) {
 
-                    prefs.edit().putBoolean(SettingsFragment.AUTO_SCAN_NAME, true).apply()
+                    prefs.edit().putBoolean(AUTO_SCAN_NAME, true).apply()
 
                     val newUuid = UUID.randomUUID().toString()
 
@@ -37,7 +38,7 @@ class Dialogs {
 
                 } else {
 
-                    prefs.edit().putBoolean(SettingsFragment.AUTO_SCAN_NAME, false).apply()
+                    prefs.edit().putBoolean(AUTO_SCAN_NAME, false).apply()
 
                     binding.name = "shortcuts make long delays"
 
