@@ -6,22 +6,27 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jjoe64.graphview.GraphView
+import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.models.SpectralFrame
-import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
+import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.databinding.ListItemGraphedScanBinding
 import org.phenoapps.prospector.fragments.ScanListFragmentDirections
-import org.phenoapps.prospector.utils.AsyncLoadGraph
+import org.phenoapps.prospector.utils.centerViewport
+import org.phenoapps.prospector.utils.renderPotato
+import org.phenoapps.prospector.utils.setViewportGrid
+import org.phenoapps.prospector.utils.toPixelArray
 
-class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, private val viewModel: ExperimentScansViewModel) : ListAdapter<Scan,
+class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, private val viewModel: ExperimentSamplesViewModel) : ListAdapter<Scan,
         ScansAdapter.ScanGraphViewHolder>(DiffCallbacks.Companion.ScanDiffCallback()) {
+
+    private val jobMap: MutableMap<ScanGraphViewHolder, Job> = HashMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScanGraphViewHolder {
 
@@ -43,36 +48,64 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
 
             with(holder) {
 
+                itemView.tag = scan.sid
+
+                //if (holder in jobMap) viewModel.viewModelScope.cancel()
+
+                //holder.setIsRecyclable(false)
+
                 val graph = itemView.findViewById<GraphView>(R.id.graphView)
 
-                if (scan != null) {
+                //if (position == 0) graph.visibility = View.VISIBLE
 
-                    viewModel.forceSpectralValues(scan.eid, scan.sid).observe(lifecycle) { frames: List<SpectralFrame> ->
+                jobMap[holder] = viewModel.viewModelScope.launch {
 
-                        AsyncLoadGraph(context,
-                                graph,
-                                scan.sid,
-                                context.getString(R.string.horizontal_axis),
-                                context.getString(R.string.vertical_axis),
-                                frames,
-                                potatoRender = true).execute()
+                    val data = async {
+
+                        return@async withContext(Dispatchers.IO) {
+
+                            return@withContext viewModel.getSpectralValues(scan.eid, scan.sid ?: -1L)
+
+                        }
+                    }
+
+                    val preGraph = async {
+
+                        setViewportGrid(graph)
 
                     }
 
-                    bind(scan, View.OnClickListener {
+                    val frames = data.await()
 
-                        Navigation.findNavController(itemView).navigate(
-                                ScanListFragmentDirections
-                                        .actionToScanDetail(scan.eid, scan.sid))
+                    preGraph.await()
 
-                    })
+                    val renderData = withContext(Dispatchers.Main) {
 
-                } else {
+                        val wavelengths = frames.toPixelArray()
 
-                    itemView.visibility = View.GONE
+                        centerViewport(graph, wavelengths)
+
+                        renderPotato(graph, wavelengths)
+
+                    }
 
                 }
+
+                bind(scan, View.OnClickListener {
+
+                    Navigation.findNavController(itemView).navigate(
+                            ScanListFragmentDirections
+                                    .actionToScanDetail(scan.eid, scan.name, scan.sid ?: -1L))
+
+                })
+
+//                } else {
+//
+//                    itemView.visibility = View.GONE
+//
+//                }
             }
+
         }
     }
 
@@ -83,11 +116,24 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
 
             with(binding) {
 
-                this.onClick = onClick
+                if (itemView.tag == scan.sid) {
 
-                this.scan = scan
+                    this.nameView.text = scan.date
 
-                executePendingBindings()
+                    this.onClick = onClick
+
+                    this.minimizeOnClick = View.OnClickListener {
+
+                        graphView.visibility = when (graphView.visibility) {
+                            View.GONE -> View.VISIBLE
+                            else -> View.GONE
+                        }
+
+                    }
+
+                    this.scan = scan
+
+                }
             }
         }
     }

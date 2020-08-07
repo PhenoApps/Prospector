@@ -4,40 +4,50 @@ import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+import org.phenoapps.prospector.utils.DateUtil
 
-/**
- * Scans is the new Room SQL table that holds spectrometry frame data
- * from Linked Square devices.
- */
 @Keep
-@ForeignKey(
-        entity = Experiment::class,
-        parentColumns = ["eid"],
-        childColumns = ["eid"])
+
 @Entity(tableName = "scans",
-        primaryKeys = ["eid", "sid"])
+        foreignKeys = [
+            ForeignKey(
+                entity = Sample::class,
+                parentColumns = ["eid", "name"],
+                childColumns = ["eid", "name"], onDelete = ForeignKey.CASCADE)
+        ])
 data class Scan(
 
         @ColumnInfo(name = "eid")
-        val eid: Long,
+        var eid: Long,
+
+        @ColumnInfo(name = "name")
+        var name: String,
 
         @ColumnInfo(name = "sid")
-        var sid: String) {
+        @PrimaryKey(autoGenerate = true)
+        var sid: Long? = null) {
 
     @ColumnInfo(name = "date")
-    var date: String? = null
+    var date = DateUtil().getTime()
+
+    @ColumnInfo(name = "deviceType")
+    var deviceType: String = "LinkSquare"
 
     @ColumnInfo(name = "deviceId")
     var deviceId: String? = null
 
-    @ColumnInfo(name = "note")
-    var note: String? = null
+    @ColumnInfo(name = "operator")
+    var operator: String? = null
+
+    @ColumnInfo(name = "lightSource")
+    var lightSource: Int? = null
 
     override fun equals(other: Any?): Boolean {
 
         return when (other) {
 
-            is Scan -> other.sid == this.sid && other.eid == this.eid
+            is Scan -> other.sid == this.sid
 
             else -> false
         }
@@ -48,5 +58,4 @@ data class Scan(
         return this.sid.hashCode()
 
     }
-
 }

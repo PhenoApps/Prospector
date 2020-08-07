@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
@@ -13,16 +12,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:setQRCode="@{name}"
-            app:layout_constraintBottom_toTopOf="@id/editText"
+        <com.journeyapps.barcodescanner.DecoratedBarcodeView
+            android:id="@+id/barcodeView"
+            android:layout_width="0dp"
+            android:layout_height="256dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/toggleButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:contentDescription="@string/scan_name_barcode_content_desc" />
+            app:layout_constraintVertical_weight=".8"/>
+
+        <ToggleButton
+            android:id="@+id/toggleButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textOff="@string/camera_off"
+            android:textOn="@string/camera_on"
+            app:layout_constraintBottom_toTopOf="@+id/editText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barcodeView" />
 
         <EditText
             android:id="@+id/editText"
@@ -31,17 +44,31 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
+            android:singleLine="true"
+            android:background="@drawable/cell"
+            android:hint="@string/sampleNameHint"
+            android:selectAllOnFocus="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageView" />
+            app:layout_constraintTop_toBottomOf="@id/toggleButton"
+            app:layout_constraintBottom_toTopOf="@id/noteText" />
 
-        <CheckBox
-            android:id="@+id/checkBox"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/noteText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/uuid"
-            app:layout_constraintStart_toStartOf="@+id/editText"
-            app:layout_constraintTop_toBottomOf="@+id/editText" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:singleLine="false"
+            android:inputType="textMultiLine"
+            android:maxLength="2000"
+            android:maxLines="4"
+            android:background="@drawable/cell"
+            android:hint="@string/sampleNoteHint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editText"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

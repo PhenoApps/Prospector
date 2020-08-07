@@ -10,6 +10,10 @@
             type="View.OnClickListener"/>
 
         <variable
+            name="minimizeOnClick"
+            type="View.OnClickListener" />
+
+        <variable
             name="scan"
             type="org.phenoapps.prospector.data.models.Scan" />
     </data>
@@ -18,58 +22,56 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:onClick="@{onClick}"
         android:background="@drawable/cell">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/graphView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:setQRCode="@{scan.sid}" />
-
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/nameView"
             style="@style/Text.ObservationUnit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{scan.sid}"
-            app:layout_constraintBottom_toTopOf="@id/dateView"
-            app:layout_constraintStart_toEndOf="@id/imageView"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/dateView"
-            style="@style/Text.ObservationUnit"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{scan.date}"
-            app:layout_constraintBottom_toTopOf="@id/deviceView"
-            app:layout_constraintStart_toEndOf="@id/imageView"
-            app:layout_constraintTop_toBottomOf="@id/textView" />
+            android:onClick="@{minimizeOnClick}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/deviceView"/>
 
         <TextView
             android:id="@+id/deviceView"
             style="@style/Text.ObservationUnit"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{scan.deviceId}"
+            android:text="@{scan.deviceType}"
+            android:onClick="@{minimizeOnClick}"
+            app:layout_constraintTop_toBottomOf="@id/nameView"
+            app:layout_constraintBottom_toTopOf="@id/lightView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/lightView"
+            style="@style/Text.ObservationUnit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{scan.lightSource == 0 ? @string/led : @string/incandescent}"
+            android:onClick="@{minimizeOnClick}"
+            app:layout_constraintTop_toBottomOf="@id/deviceView"
             app:layout_constraintBottom_toTopOf="@id/graphView"
-            app:layout_constraintStart_toEndOf="@id/imageView"
-            app:layout_constraintTop_toBottomOf="@id/dateView" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <com.jjoe64.graphview.GraphView
             android:id="@+id/graphView"
             android:layout_width="0dp"
             android:layout_height="128dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
             android:onClick="@{onClick}"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/lightView"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deviceView" />
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

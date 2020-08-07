@@ -3,36 +3,71 @@ package org.phenoapps.prospector.fragments
 import android.os.Bundle
 import android.os.Handler
 import android.view.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.observe
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.ExperimentScansRepository
 import org.phenoapps.prospector.data.ProspectorDatabase
+import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
-import org.phenoapps.prospector.utils.DateUtil
+import org.phenoapps.prospector.utils.Dialogs
 
 class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private val sExpScanModel: ExperimentScansViewModel by viewModels {
+    private val sExpSamples: ExperimentSamplesViewModel by viewModels {
 
-        ExperimentScanViewModelFactory(
-                ExperimentScansRepository.getInstance(
+        ExperimentSamplesViewModelFactory(
+                ProspectorRepository.getInstance(
                         ProspectorDatabase.getInstance(requireContext())
                                 .expScanDao()))
 
+    }
+
+    private val sOnNewExpClick = View.OnClickListener {
+
+        val newExpString = getString(R.string.new_experiment_prefix)
+
+        val tryEnterNameString = getString(R.string.new_exp_must_enter_name)
+
+        mBinding?.let { ui ->
+
+            val value = ui.experimentIdEditText.text.toString().trim()
+
+            if (value.isNotBlank()) {
+
+                launch {
+
+                    val eid = sExpSamples.insertExperiment(Experiment(value)).await()
+
+                    Snackbar.make(ui.root,
+                            "$newExpString: $value.", Snackbar.LENGTH_SHORT).show()
+
+                    ui.experimentIdEditText.text.clear()
+
+                    updateUi()
+                }
+
+            } else {
+
+                Snackbar.make(ui.root,
+                        tryEnterNameString, Snackbar.LENGTH_LONG).show()
+
+            }
+        }
     }
 
     private var mBinding: FragmentExperimentListBinding? = null
@@ -43,15 +78,15 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
         val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
-        mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_experiment_list, container, false)
+        mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_experiment_list, null, false)
 
         mBinding?.let { ui ->
 
             ui.setupRecyclerView()
 
-            ui.setupButtons()
+            setupButtons()
 
-            ui.startObservers()
+            updateUi()
 
             return ui.root
 
@@ -77,36 +112,10 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun FragmentExperimentListBinding.setupButtons() {
+    private fun setupButtons() {
 
-        val newExpString = getString(R.string.new_experiment_prefix)
+        mBinding?.onClick = sOnNewExpClick
 
-        val tryEnterNameString = getString(R.string.new_exp_must_enter_name)
-
-        onClick = View.OnClickListener {
-
-            val value = experimentIdEditText.text
-
-            if (value.isNotBlank()) {
-
-                sExpScanModel.insertExperiment(Experiment(value.toString()).apply {
-
-                    this.date = DateUtil().getTime()
-
-                })
-
-                experimentIdEditText.text.clear()
-
-                Snackbar.make(root,
-                        "$newExpString: $value.", Snackbar.LENGTH_SHORT).show()
-
-            } else {
-
-                Snackbar.make(root,
-                        tryEnterNameString, Snackbar.LENGTH_LONG).show()
-
-            }
-        }
     }
 
     private fun FragmentExperimentListBinding.setupRecyclerView() {
@@ -127,28 +136,54 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                val id = viewHolder.itemView.tag as Long
+                Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                        getString(R.string.ask_delete_experiment),
+                        getString(R.string.cancel),
+                        getString(R.string.ok)) {
 
-                sExpScanModel.deleteExperiment(id)
+                    if (it) {
 
+                        val id = viewHolder.itemView.tag as Long
+
+                        launch {
+
+                            sExpSamples.deleteExperiment(id)
+
+                        }
+
+                        //mBinding?.recyclerView?.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
+                        //updateUi()
+
+                        //queueScroll()
+
+                    } else  mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.adapterPosition)
+
+                }
             }
 
         }).attachToRecyclerView(recyclerView)
     }
 
-    private fun FragmentExperimentListBinding.startObservers() {
+    private fun updateUi() {
 
-        sExpScanModel.experiments.observe(viewLifecycleOwner) {
+        sExpSamples.experiments.observe(viewLifecycleOwner, Observer {
 
-            (recyclerView.adapter as ExperimentAdapter)
-                    .submitList(it)
+            (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
+                    ?.submitList(it)
+
+            //queueScroll()
+        })
+    }
+
+    private fun queueScroll() {
+
+        mBinding?.let { ui ->
 
             Handler().postDelayed({
 
-                recyclerView.scrollToPosition(0)
+                ui.recyclerView.scrollToPosition(0)
 
             }, 250)
-
         }
     }
 }

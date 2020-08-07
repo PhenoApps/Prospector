@@ -2,52 +2,77 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <PreferenceCategory android:title="@string/preferences_profile_title" app:iconSpaceReserved="false">
+
+    <PreferenceCategory
+        android:title="@string/preferences_profile_title"
+        app:iconSpaceReserved="false">
 
         <EditTextPreference
+            android:icon="@drawable/ic_setting_person"
             android:title="@string/pref_operator_title"
             android:key="org.phenoapps.prospector.OPERATOR" />
 
         <ListPreference
+            android:icon="@drawable/ic_nv_export"
             android:title="@string/pref_export_type"
+            android:defaultValue="@string/export_type_always_ask"
             android:key="org.phenoapps.prospector.EXPORT_TYPE"
-            android:entryValues="@array/export_types_array"/>
+            android:entryValues="@array/export_indices_array"
+            android:entries="@array/export_types_array"/>
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/pref_scanning_title" app:iconSpaceReserved="false">
+    <PreferenceCategory
+        android:key="org.phenoapps.prospector.DEVICE_INFO"
+        android:title="@string/pref_scanning_title"
+        android:summary=""
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            android:title="@string/pref_device_type"
+            android:key="org.phenoapps.prospector.DEVICE_TYPE"
+            android:defaultValue="0"
+            android:entryValues="@array/device_indices_array"
+            android:entries="@array/device_types_array">
+        </ListPreference>
 
         <EditTextPreference
+            android:icon="@drawable/ic_settings_input_antenna_black_18dp"
             android:key="org.phenoapps.prospector.DEVICE_IP"
             android:title="@string/pref_device_ip"
             android:defaultValue="@string/pref_device_default_ip"
             android:summary="@string/pref_device_ip_summary" />
 
         <EditTextPreference
+            android:icon="@drawable/ic_settings_input_svideo_black_18dp"
             android:key="org.phenoapps.prospector.DEVICE_PORT"
             android:title="@string/pref_device_port"
             android:defaultValue="@string/pref_device_default_port"
             android:summary="@string/pref_device_port_summary" />
 
         <SeekBarPreference
+            android:icon="@drawable/ic_wb_iridescent_24px"
             android:key="org.phenoapps.prospector.LED_FRAMES"
             android:title="@string/pref_led_frames_title"
             android:max="8"
+            android:defaultValue="1"
+            app:showSeekBarValue="true"
             android:summary="@string/pref_led_frames_summary"/>
 
         <SeekBarPreference
+            android:icon="@drawable/ic_wb_incandescent_24px"
             android:key="org.phenoapps.prospector.BULB_FRAMES"
             android:title="@string/pref_bulb_frames_title"
             android:max="8"
+            android:defaultValue="1"
+            app:showSeekBarValue="true"
             android:summary="@string/pref_led_frames_summary"/>
 
         <SwitchPreference
-            android:key="org.phenoapps.prospector.AUTO_NAMED_SCAN"
-            android:title="@string/pref_auto_name_scan_title"/>
-
-        <ListPreference
-            android:key="org.phenoapps.prospector.DEVICE_TYPE"/>
-
+            android:defaultValue="false"
+            android:key="org.phenoapps.prospector.CONVERT_TO_WAVELENGTHS"
+            android:title="@string/pref_convert_wavelengths_title"
+            android:summary="@string/pref_convert_wavelengths_summary"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

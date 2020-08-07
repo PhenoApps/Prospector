@@ -2,13 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/import_scans"
-        android:icon="@drawable/ic_import_scans"
+        android:id="@+id/delete_scans"
+        android:icon="@drawable/ic_delete_scans"
         app:showAsAction="always"
-        android:title="@string/import_scans" />
-    <item
-        android:id="@+id/export_scans"
-        android:icon="@drawable/ic_export_scans"
-        app:showAsAction="always"
-        android:title="@string/export" />
+        android:title="@string/delete_all" />
 </menu>

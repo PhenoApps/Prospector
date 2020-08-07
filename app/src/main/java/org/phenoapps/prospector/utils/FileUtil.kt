@@ -10,10 +10,18 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.WorkerThread
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.models.ExperimentScans
+import org.phenoapps.prospector.data.models.Experiment
+import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -27,6 +35,10 @@ open class FileUtil(private val ctx: Context) {
     /**
      * Cross table export file header fields.
      */
+
+    private val experimentNameHeader: String by lazy { ctx.getString(R.string.export_experiment_name_header) }
+    private val deviceTypeHeader: String by lazy { ctx.getString(R.string.export_device_type_header) }
+    private val operatorHeader: String by lazy { ctx.getString(R.string.export_operator_header) }
 
     private val scanIdHeader: String by lazy { ctx.getString(R.string.scan_name_header) }
 
@@ -58,7 +70,7 @@ open class FileUtil(private val ctx: Context) {
                 .joinToString(",")
     }
 
-    fun parseInputFile(eid: Long, uri: Uri): Map<Scan, List<SpectralFrame>> {
+    fun parseInputFile(eid: Long, uri: Uri, viewModel: ExperimentSamplesViewModel) {
 
         val data = HashMap<Scan, ArrayList<SpectralFrame>>()
 
@@ -71,13 +83,11 @@ open class FileUtil(private val ctx: Context) {
             //ensure the headers size > 0
             if (headers.isNotEmpty()) {
 
-                loadData(eid, headers, lines-lines[0], data)
+                loadData(eid, headers, lines-lines[0], viewModel)
 
             }
 
         }
-
-        return data
     }
 
     /**
@@ -87,7 +97,7 @@ open class FileUtil(private val ctx: Context) {
     private fun loadData(eid: Long,
                          headers: List<String>,
                          lines: List<String>,
-                         data: MutableMap<Scan, ArrayList<SpectralFrame>>) {
+                         viewModel: ExperimentSamplesViewModel) {
 
         val requiredHeaders = scanModelHeaderString.split(",").map { it.trim().toLowerCase(Locale.ROOT) }.toSet()
 
@@ -138,19 +148,19 @@ open class FileUtil(private val ctx: Context) {
                                                 val scan = Scan(eid, scanId).apply {
                                                     this.date = date
                                                     this.deviceId = device
-                                                    this.note = note
                                                 }
 
-                                                val specFrame = SpectralFrame(scanId, frameId.toInt(), count.toInt(), values, lightSource.toInt())
+                                                viewModel.viewModelScope.launch {
 
-                                                if (scan !in data.keys) {
+                                                    viewModel.insertSample(Sample(eid, scanId))
 
-                                                    data[scan] = ArrayList()
+                                                    val sid = viewModel.insertScan(scan).await()
+
+                                                    val specFrame = SpectralFrame(sid, frameId.toInt(), values, lightSource.toInt())
+
+                                                    viewModel.insertFrame(sid, specFrame)
 
                                                 }
-
-                                                data[scan]?.add(specFrame)
-
                                             }
                                         }
                                     }
@@ -172,7 +182,130 @@ open class FileUtil(private val ctx: Context) {
 
     }
 
-    fun export(uri: Uri, scans: Map<ExperimentScans, List<SpectralFrame>>) {
+    /*
+    TODO: add wavelength export, might need BrApi for memory reasons
+    Currently only exports pixel values
+    Function must be called wrapped in a Dispatchers.IO coroutine context
+     */
+    suspend fun exportCsv(uri: Uri, exps: List<Experiment>, samples: List<Sample>, scans: List<Scan>, frames: List<SpectralFrame>) = withContext(Dispatchers.IO) {
+
+        val newline = System.lineSeparator()
+
+        //false warning, this function is run always in Dispatchers.IO
+        ctx.contentResolver.openOutputStream(uri)?.let { stream ->
+
+            val writer = stream.buffered().writer()
+
+            val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader,$deviceTypeHeader,$scanDeviceIdHeader,$operatorHeader,$specLightSourceHeader"
+
+            val headers = prefixHeaders + (1..600).map { it.toInt() }.joinToString(",") + ",$scanNoteHeader"
+
+            writer.write(headers)
+
+            writer.write(newline)
+
+            exps.forEach { experiment ->
+
+                samples.filter { it.eid == experiment.eid }.forEach { sample ->
+
+                    scans.filter { it.name == sample.name && it.eid == experiment.eid }.forEach { scan ->
+
+                        frames.filter { it.sid == scan.sid }.forEach { frame ->
+
+                            val data = arrayOf(
+                                    experiment.name,
+                                    scan.name,
+                                    scan.date,
+                                    scan.deviceType,
+                                    scan.deviceId,
+                                    scan.operator,
+                                    scan.lightSource
+                            )
+
+                            val frameData = frame.spectralValues.replace(" ", ",")
+
+                            writer.write("${data.joinToString(",")},$frameData,${sample.note ?: ""}")
+
+                            writer.write(newline)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //TODO convert to stream writer, large files take too much memory
+    suspend fun exportJson(uri: Uri, exps: List<Experiment>, samples: List<Sample>, scans: List<Scan>, frames: List<SpectralFrame>) = withContext(Dispatchers.IO) {
+
+        val output = JSONArray()
+
+        exps.forEach { experiment ->
+
+            val expJson = JSONObject()
+
+            expJson.put("experimentName", experiment.name)
+            expJson.put("date", experiment.date)
+
+            val scanArray = JSONArray()
+
+            scans.filter { it.eid == experiment.eid }.forEach { scan ->
+
+                val scanJson = JSONObject()
+
+                val framesJson = JSONArray()
+
+                frames.filter { it.sid == scan.sid }.forEach { frame ->
+
+                    framesJson.put(frame.toJson())
+
+                }
+
+                scanJson.put("sample", scan.name)
+                scanJson.put("deviceId", scan.deviceId)
+                scanJson.put("date", scan.date)
+                scanJson.put("operator", scan.operator)
+                scanJson.put("spectralValues", framesJson)
+
+                scanArray.put(scanJson)
+
+            }
+
+            expJson.put("scans", scanArray)
+
+            output.put(expJson)
+
+        }
+
+        export(uri, output)
+
+    }
+
+    fun export(uri: Uri, json: JSONArray) {
+
+        try {
+
+            ctx.contentResolver.openOutputStream(uri).apply {
+
+                this?.let {
+
+                    write(json.toString(4).toByteArray())
+
+                    close()
+                }
+
+            }
+
+        } catch (e: IOException) {
+
+            e.printStackTrace()
+
+        }
+
+        MediaScannerConnection.scanFile(ctx, arrayOf(uri.path), arrayOf("*/*"), null)
+
+    }
+
+    fun export(uri: Uri, scans: Map<Experiment, List<SpectralFrame>>) {
 
         val newLine: ByteArray = System.getProperty("line.separator")?.toByteArray() ?: "\n".toByteArray()
 
@@ -192,7 +325,7 @@ open class FileUtil(private val ctx: Context) {
 
                         frames?.forEach { specFrame ->
 
-                            write("${key.scanDate},${key.deviceId},${key.sid},${specFrame.frameId},${specFrame.lightSource},${specFrame.count},${specFrame.spectralValues},none".toByteArray())
+                            ///write("${key.scanDate},${key.deviceId},${key.sid},${specFrame.frameId},${specFrame.lightSource},${specFrame.count},${specFrame.spectralValues},none".toByteArray())
 
                             write(newLine)
 

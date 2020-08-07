@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Prospector</string>
 
+    <!-- Don't translate region -->
+
+    <string name="packageName">org.phenoapps.prospector</string>
+
+    <!-- -->
+
+
     <string name="title_activity_scan">ScanActivity</string>
     <string name="title_activity_discover">DiscoverActivity</string>
     <string name="title_activity_collection">CollectionActivity</string>
@@ -167,6 +174,7 @@
     <string name="scan_note_header">scannote</string>
     <string name="horizontal_axis">Frames</string>
     <string name="vertical_axis">Intensity (A.U)</string>
+    <string name="ask_sample_name">Please type or scan a sample name.</string>
     <string name="ask_new_scan_name">Please enter a name for the new scan.</string>
     <string name="num_bulb">Number of bulb frames</string>
     <string name="num_led">Number of LED frames</string>
@@ -185,13 +193,12 @@
     <string name="pref_operator_title">Operator</string>
     <string name="pref_scanning_title">Device Settings</string>
     <string name="pref_led_frames_title">LED Frames</string>
-    <string name="pref_led_frames_summary">The number of frames reprsents the duplication of data upon a single scan.</string>
+    <string name="pref_led_frames_summary">The number of frames per scan.</string>
     <string name="pref_bulb_frames_title">Bulb Frames</string>
     <string name="pref_auto_name_scan_title">Automatically name scans</string>
     <string name="nav_label_experiment_list">Experiment List Fragment</string>
     <string name="nav_label_scan_list">List of scans for a given experiment.</string>
     <string name="nav_label_settings">Settings Fragment</string>
-    <string name="settings">Settings</string>
     <string name="about">About</string>
 
     <!-- nav drawer -->
@@ -223,10 +230,48 @@
     <string name="default_csv_export_file_name">scans</string>
     <string name="new_experiment_prefix">"New experiment "</string>
     <string name="new_exp_must_enter_name">Please try to enter an experiment name.</string>
-    <string name="connecting">Connecting...</string>
+    <string name="connecting">Connecting…</string>
     <string name="device_error_prefix">Device Error:</string>
     <string name="connection_error">Connection error.</string>
     <string name="why_with_question_mark">Why?</string>
     <string name="still_connected">Still connected.</string>
+    <string name="filterByScanNameHint">Filter By Name</string>
+    <string name="on">On</string>
+    <string name="camera_off">Scan Barcode</string>
+    <string name="camera_on">Turn off</string>
+    <string name="nav_label_sample_list">Sample Fragment</string>
+    <string name="add_sample">Add Sample</string>
+    <string name="scanning_sample">Scanning Sample…</string>
+    <string name="cancel">Cancel</string>
+    <string name="sampleNameHint">Sample Name</string>
+    <string name="sampleNoteHint">Note</string>
+    <string name="settings">Settings</string>
+    <string name="search_for_sample">Search For Sample</string>
+    <string name="barcode_scan_fragment_label">Barcode scan fragment for searching sample ids.</string>
+    <string name="settings_error_num_frames_must_exceed_zero">Please enter at least one bulb or LED frame.</string>
+    <string name="sort_by_name">Sort by Name</string>
+    <string name="sort_by_date">Sort by Date</string>
+    <string name="in_ascending_order">in ascending order.</string>
+    <string name="in_descending_order">in descending order.</string>
+    <string name="ask_delete_experiment">Delete this experiment?</string>
+    <string name="initial_setup_instructions">
+        This app currently only supports LinkSquare Spectrometers.\n
+        Please follow these instructions for proper use:\n
+        1. Turn on your LinkSquare, ensure the device is charged.\n
+        2. Connect to the LinkSquare Wi-fi on your phone/tablet.\n
+        \t\tTypically these networks start with "LS" and have a default password of eight zeroes.\n
+        3. Prospector should notify you if the connection is successful.\n
+        4. If an error is shown, go to the settings page to verify your LinkSquare settings are correct.\n
+    </string>
+    <string name="pref_device_type">Device Type</string>
 
+    <!-- LinkSquare light source types -->
+    <string name="led">LED</string>
+    <string name="incandescent">Incandescent</string>
+    <string name="pref_convert_wavelengths_title">Convert to wavelengths</string>
+    <string name="pref_convert_wavelengths_summary">The LinkSquare outputs pixel arrays by default, this setting converts this data to spectral wavelengths.</string>
+    <string name="ask_export_type_title">Please choose an export type.</string>
+    <string name="export_experiment_name_header">experiment</string>
+    <string name="export_device_type_header">deviceType</string>
+    <string name="export_operator_header">operator</string>
 </resources>

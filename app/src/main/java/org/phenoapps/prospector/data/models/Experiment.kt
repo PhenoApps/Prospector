@@ -4,6 +4,7 @@ import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.phenoapps.prospector.utils.DateUtil
 
 @Keep
 @Entity(tableName = "experiments")
@@ -17,5 +18,5 @@ data class Experiment(
         var eid: Long? = null) {
 
     @ColumnInfo(name = "date")
-    var date: String = String()
+    var date = DateUtil().getTime()
 }

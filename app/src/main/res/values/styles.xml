@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -16,5 +16,22 @@
         <item name="android:gravity">start</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
+
+    <style name="Text.ExperimentTitle">
+        <item name="android:gravity">start</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:typeface">monospace</item>
+    </style>
+
+    <style name="Text.ExperimentTitle.SubTitle">
+        <item name="android:gravity">start</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Text.ExperimentListHeader"></style>
 
 </resources>

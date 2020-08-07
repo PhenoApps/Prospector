@@ -13,25 +13,33 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:onClick="@{clickListener}"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/cell">
 
-        <TextView
-            android:id="@+id/experiment_name"
+        <TextView style="@style/Text.ExperimentTitle"
+            android:id="@+id/expName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:fontFamily="monospace"
-            android:gravity="start"
-            android:maxLines="2"
-            android:onClick="@{clickListener}"
             android:text="@{experiment.name}"
-            android:textAlignment="textStart"
-            android:textSize="24sp"
-            android:typeface="monospace"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/expDate"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView style="@style/Text.ExperimentTitle.SubTitle"
+            android:id="@+id/expDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@{experiment.date}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/expName" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

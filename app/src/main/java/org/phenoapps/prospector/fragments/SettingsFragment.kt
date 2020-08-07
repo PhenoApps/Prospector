@@ -2,28 +2,25 @@ package org.phenoapps.prospector.fragments
 
 import DEVICE_IP
 import DEVICE_PORT
+import DEVICE_TYPE
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.preference.EditTextPreference
-
+import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
-import com.stratiotechnology.linksquareapi.LinkSquareAPI
-
+import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 
 
-class SettingsFragment : PreferenceFragmentCompat() {
+class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
-
-    private var mDeviceInfo: String = String()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -38,13 +35,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference<EditTextPreference>(DEVICE_IP)?.setOnPreferenceChangeListener { preference, newValue ->
 
-            Handler().postDelayed({
+            launch {
 
-                sDeviceViewModel.reset()
+                sDeviceViewModel.connect(requireContext())
+
+            }
+
+            Handler().postDelayed({
 
                 startObserver()
 
-            }, 50)
+            }, 100)
 
 
             true
@@ -53,70 +54,50 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference<EditTextPreference>(DEVICE_PORT)?.setOnPreferenceChangeListener { preference, newValue ->
 
-            Handler().postDelayed({
+            launch {
 
-                sDeviceViewModel.reset()
+                sDeviceViewModel.connect(requireContext())
+
+            }
+
+            Handler().postDelayed({
 
                 startObserver()
 
-            }, 50)
+            }, 100)
 
             true
 
         }
     }
 
-    override fun onDestroyView() {
+    private fun startObserver() {
 
-        sDeviceViewModel.connection(requireActivity()).removeObserver(connectionObserver)
+        findPreference<ListPreference>(DEVICE_TYPE)?.let { etPref ->
 
-        super.onDestroyView()
-    }
+            launch {
 
-    private val connectionObserver = Observer<Any> {
+                withContext(Dispatchers.IO) {
 
-        findPreference<EditTextPreference>(DEVICE_IP)?.let { etPref ->
+                    val connected = sDeviceViewModel.isConnected()
 
-            it?.let { result ->
+                    val summary = when (connected) {
 
-                when (result) {
+                        true -> buildLinkSquareDeviceInfo(requireContext(), sDeviceViewModel.getDeviceInfo())
 
-                    is LinkSquareAPI.LSDeviceInfo -> {
-
-                        mDeviceInfo = buildLinkSquareDeviceInfo(requireActivity(), result)
-
-                        etPref.summary = mDeviceInfo
+                        else -> sDeviceViewModel.getDeviceError()
 
                     }
 
-                    is String -> {
+                    if (isAdded) {
 
-                        etPref.summary = "${requireActivity().getString(R.string.device_error_prefix)} $result"
+                        this@SettingsFragment.requireActivity().runOnUiThread {
 
-                    }
-
-                    is Int -> {
-
-                        if (result == -1) {
-
-                            etPref.summary = requireActivity().getString(R.string.connecting)
-
+                            etPref.summary = summary
                         }
                     }
                 }
             }
-        }
-    }
-
-    private fun startObserver() {
-
-        findPreference<EditTextPreference>(DEVICE_IP)?.let { etPref ->
-
-            if (!sDeviceViewModel.isConnected()) {
-
-                sDeviceViewModel.connection(requireActivity()).observe(viewLifecycleOwner, connectionObserver)
-
-            } else etPref.summary = buildLinkSquareDeviceInfo(requireActivity(), sDeviceViewModel.getDeviceInfo())
         }
     }
 }

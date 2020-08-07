@@ -1,15 +1,16 @@
 package org.phenoapps.prospector.fragments
 
-import android.net.Uri
+import DEVICE_TYPE
+import OPERATOR
 import android.os.Bundle
 import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.stratiotechnology.linksquareapi.LSFrame
@@ -17,16 +18,14 @@ import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ScansAdapter
-import org.phenoapps.prospector.data.ExperimentScansRepository
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.models.ExperimentScans
+import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
-import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
-import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.FileUtil
 import org.phenoapps.prospector.utils.SnackbarQueue
@@ -39,12 +38,12 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val mSnackbar = SnackbarQueue()
 
-    private val sDeviceViewModel: DeviceViewModel by viewModels()
+    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
-    private val sViewModel: ExperimentScansViewModel by viewModels {
+    private val sViewModel: ExperimentSamplesViewModel by viewModels {
 
-        ExperimentScanViewModelFactory(
-                ExperimentScansRepository.getInstance(
+        ExperimentSamplesViewModelFactory(
+                ProspectorRepository.getInstance(
                         ProspectorDatabase.getInstance(requireContext()).expScanDao()
                 )
         )
@@ -54,172 +53,109 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mExpId: Long = -1L
 
+    private var mSampleName: String? = null
+
     private lateinit var mDeviceInfo: LinkSquareAPI.LSDeviceInfo
 
-    private var mExpScans: List<ExperimentScans> = ArrayList()
-
-    private suspend fun export(uri: Uri) = withContext(Dispatchers.IO) {
-
-        val scanMap = mutableMapOf<ExperimentScans, List<SpectralFrame>>()
-                .withDefault { ArrayList() }
-
-        mExpScans.forEach { exp ->
-
-            exp.sid?.let { sid ->
-
-                val frames = sViewModel.spectralFrames(exp.eid, sid)
-
-                scanMap[exp] = frames
-
-            }
-        }
-
-        FileUtil(requireContext()).export(uri, scanMap)
-
-    }
-
-    private val exportScans by lazy {
-
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-
-            //check if uri is null or maybe throws an exception
-
-            launch {
-
-                export(uri)
-
-            }
-
-        }
-
-    }
+//    private var mExpScans: List<ExperimentScans> = ArrayList()
 
     private val importScans by lazy {
 
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
 
-            val scans = FileUtil(requireContext()).parseInputFile(mExpId, uri)
+            launch {
 
-            scans.keys.forEach { key ->
+                withContext(Dispatchers.IO) {
 
-                CoroutineScope(Dispatchers.IO).launch {
+                    FileUtil(requireContext()).parseInputFile(mExpId, uri, sViewModel)
 
-                    sViewModel.insertScan(key)
+                }
+            }
+        }
+    }
 
-                    scans[key]?.forEach { frame ->
+    private fun insertScan(name: String, frames: List<LSFrame>) {
 
-                        sViewModel.insertFrame(key.sid, frame)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        launch {
+
+            frames.forEach { frame ->
+
+                val sid = sViewModel.insertScan(Scan(mExpId, name).apply {
+
+                    if (::mDeviceInfo.isInitialized) {
+
+                        deviceId = mDeviceInfo.DeviceID
 
                     }
 
-                }
+                    this.deviceType = prefs.getString(DEVICE_TYPE, "LinkSquare") ?: "LinkSquare"
+
+                    this.lightSource = frame.lightSource.toInt()
+
+                    this.operator = prefs.getString(OPERATOR, "") ?: ""
+
+                }).await()
+
+                sViewModel.insertFrame(sid, SpectralFrame(
+                        sid,
+                        frame.frameNo,
+                        frame.raw_data.joinToString(" ") { value -> value.toString() },
+                        frame.lightSource.toInt())
+                )
 
             }
-        }
-    }
-
-    private val sOnClickDelete = View.OnClickListener {
-
-        if (mExpId != -1L) {
-
-            sViewModel.deleteExperiment(mExpId)
-
-            findNavController().popBackStack()
-
-        }
-
-    }
-
-    private suspend fun getSpecFrames(scan: Scan): List<SpectralFrame> {
-
-        return withContext(Dispatchers.IO) {
-
-            return@withContext sViewModel.spectralFrames(scan.eid, scan.sid)
-
-        }
-    }
-
-    private fun insertScan(scanId: String, frames: List<LSFrame>) {
-
-        CoroutineScope(Dispatchers.IO).async {
-
-            sViewModel.insertScan(Scan(mExpId, scanId).apply {
-
-                if (::mDeviceInfo.isInitialized) {
-
-                    deviceId = mDeviceInfo.DeviceID
-
-                }
-
-            })
-
-            frames.map {
-                SpectralFrame(
-                        scanId,
-                        it.frameNo,
-                        it.length,
-                        it.raw_data.joinToString(" ") { value -> value.toString() },
-                        it.lightSource.toInt())
-            }.forEach { frame ->
-
-                sViewModel.insertFrame(scanId, frame)
-
-            }
-
         }
     }
 
     private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
 
-        CoroutineScope(Dispatchers.IO).async {
+        launch {
 
-            sViewModel.insertScan(scan)
+            val sid = sViewModel.insertScan(scan).await()
 
             frames.forEach { frame ->
 
-                sViewModel.insertFrame(scan.sid, frame)
+                sViewModel.insertFrame(sid, frame)
 
             }
-
         }
-
     }
 
     private val sOnClickScan = View.OnClickListener {
 
-        callInsertDialog()
+        callScanDialog()
 
     }
 
-    private fun registerLinkSquareButtonCallback() {
+    private fun callScanDialog() {
 
-        sDeviceViewModel.onClick(requireContext()) {
-
-            requireActivity().runOnUiThread {
-
-                callInsertDialog()
-
-            }
+        val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning_sample, R.string.ok, R.string.close) {
 
         }
 
-    }
+        dialog.create()
 
-    private fun callInsertDialog() {
+        val dialogInterface = dialog.show()
 
-        Dialogs.askForName(requireActivity(), R.string.ask_new_scan_name, R.string.ok) { scanId ->
+        sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, Observer {
 
-            sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, Observer {
+            it?.let {  frames ->
 
-                it?.let {  frames ->
+                launch {
 
-                    insertScan(scanId, frames)
+                    mSampleName?.let { sid ->
+
+                        insertScan(sid, frames)
+
+                    }
+
+                    dialogInterface.dismiss()
 
                 }
-
-            })
-
-        }
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -232,22 +168,22 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
         mBinding?.let { ui ->
 
-            registerLinkSquareButtonCallback()
-
-            ui.deleteOnClick = sOnClickDelete
+            //ui.deleteOnClick = sOnClickDelete
 
             ui.scanOnClick = sOnClickScan
-
-            ui.expDate = getString(R.string.loading)
-
-            ui.expName = getString(R.string.loading)
 
             //check if experiment id is included in the arguments.
             val eid = arguments?.getLong("experiment", -1L) ?: -1L
 
-            if (eid != -1L) {
+            val name = arguments?.getString("sample", String()) ?: String()
+
+            if (eid != -1L && name.isNotBlank()) {
 
                 mExpId = eid
+
+                mSampleName = name
+
+                ui.sampleName = mSampleName
 
                 ui.recyclerView.adapter = ScansAdapter(this, requireContext(), sViewModel)
 
@@ -261,23 +197,35 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                        launch {
+                        Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_scan), getString(R.string.cancel), getString(R.string.ok)) { result ->
 
-                            (ui.recyclerView.adapter as ScansAdapter)
-                                    .currentList[viewHolder.adapterPosition].also { scan ->
+                            if (result) {
 
-                                val frames = getSpecFrames(scan)
+                                (ui.recyclerView.adapter as ScansAdapter)
+                                        .currentList[viewHolder.adapterPosition].also { scan ->
 
-                                sViewModel.deleteScan(scan)
+                                    launch {
 
-                                mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.sid, undoString) {
+                                        withContext(Dispatchers.IO) {
 
-                                    reinsertScan(scan, frames)
+                                            sViewModel.getSpectralValues(scan.eid, scan.sid
+                                                    ?: -1L).let { frames ->
 
-                                })
+                                                sViewModel.deleteScan(scan)
 
-                            }
+                                                mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
+
+                                                    reinsertScan(scan, frames)
+
+                                                })
+                                            }
+                                        }
+                                    }
+                                }
+                            } else ui.recyclerView.adapter?.notifyDataSetChanged()
                         }
+
+                        updateUi()
                     }
 
                 }).attachToRecyclerView(ui.recyclerView)
@@ -294,39 +242,43 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun startObservers() {
 
-        sViewModel.getScans(mExpId).observe(viewLifecycleOwner, Observer { data ->
+        updateUi()
 
-            if (data.isNotEmpty()) {
+        sDeviceViewModel.setEventListener {
 
-                mExpScans = data
+            requireActivity().runOnUiThread {
 
-                val exp = data.first()
+                callScanDialog()
 
-                mBinding?.let { ui ->
+            }
 
-                    ui.expDate = exp.expDate
+        }.observe(viewLifecycleOwner, Observer {
 
-                    ui.expName = exp.expName
+        })
+    }
 
-                    (ui.recyclerView.adapter as ScansAdapter).submitList(data.map {
+    private fun updateUi() {
 
-                        it.sid?.let { sid ->
+        mSampleName?.let { name ->
 
-                            Scan(exp.eid, sid)
-                                    .apply {
-                                        this.deviceId = it.deviceId
-                                        this.date = it.scanDate
-                                    }
+            sViewModel.getScans(mExpId, name).observe(viewLifecycleOwner, Observer { data ->
+
+                if (data.isNotEmpty()) {
+
+                    mBinding?.let { ui ->
+
+                        with (ui.recyclerView.adapter as ScansAdapter) {
+
+                            submitList(data)
 
                         }
 
-                    }.mapNotNull { it })
+                        ui.executePendingBindings()
 
-                    ui.executePendingBindings()
-
-                }
-            }
-        })
+                    }
+                } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
+            })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -341,15 +293,21 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
         when (item.itemId) {
 
-            R.id.import_scans -> importScans.launch("*/*")
+            R.id.delete_scans -> Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_all_scans), getString(R.string.cancel), getString(R.string.ok)) {
 
-            R.id.export_scans -> {
+                if (it) {
 
-                val defaultFileNamePrefix = getString(R.string.default_csv_export_file_name)
+                    mSampleName?.let { sample ->
 
-                exportScans.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}.csv")
+                        launch {
+
+                            sViewModel.deleteScans(mExpId, sample)
+
+                            updateUi()
+                        }
+                    }
+                }
             }
-
         }
 
         return super.onOptionsItemSelected(item)

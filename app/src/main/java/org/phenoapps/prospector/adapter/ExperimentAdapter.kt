@@ -51,7 +51,7 @@ class ExperimentAdapter(
                     experiment.eid?.let { eid ->
 
                         Navigation.findNavController(binding.root).navigate(
-                                ExperimentListFragmentDirections.actionToScanList(eid))
+                                ExperimentListFragmentDirections.actionToSamples(eid))
 
                     }
 
@@ -59,7 +59,6 @@ class ExperimentAdapter(
 
                 this.experiment = experiment
 
-                executePendingBindings()
             }
         }
     }

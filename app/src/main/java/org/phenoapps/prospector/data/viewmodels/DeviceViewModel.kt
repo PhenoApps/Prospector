@@ -5,12 +5,16 @@ import DEVICE_IP
 import DEVICE_PORT
 import LED_FRAMES
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
@@ -26,57 +30,13 @@ class DeviceViewModel : ViewModel() {
 
     private fun manager(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
 
-    private var sDevice: LinkSquareAPI = LinkSquareAPI.getInstance().also {
+    private var sDevice: LinkSquareAPI? = LinkSquareAPI.getInstance().also {
 
-        it.Initialize()
-
-    }
-
-    fun reset() {
-
-        sDevice.Close()
-
-        sDevice = LinkSquareAPI.getInstance().also {
-
-            it.Initialize()
-
-        }
-    }
-
-    fun onClick(context: Context, onClick: () -> Unit) {
-
-        with (manager(context)) {
-
-            sDevice?.let { device ->
-
-                device.SetEventListener { eventType, i ->
-
-                    when (eventType) {
-
-                        LinkSquareAPI.EventType.Button -> {
-
-                            onClick()
-
-                        }
-                    }
-                }
-            }
-
-        }
+        it?.Initialize()
 
     }
 
-    fun getDeviceError() = sDevice?.GetLSError()
-
-    fun getDeviceInfo() = sDevice?.GetDeviceInfo()
-
-    fun disconnect() = sDevice?.Close()
-
-    fun isConnected() = sDevice?.IsConnected() ?: false
-
-    fun connection(context: Context) = liveData {
-
-        val connecting = -1
+    suspend fun connect(context: Context) {
 
         with (manager(context)) {
 
@@ -84,23 +44,93 @@ class DeviceViewModel : ViewModel() {
 
             val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
 
-            emit(connecting)
+            connect(ip, port)
 
-            val result = connect(ip, port)
+        }
+    }
 
-            emit(when (result) {
+    fun reset(context: Context) {
 
-                LinkSquareAPI.RET_OK -> {
+        sDevice?.Close()
 
-                    getDeviceInfo()
+        sDevice = LinkSquareAPI.getInstance().also {
 
-                }
-                else -> {
+            it?.Initialize()
 
-                    getDeviceError()
+        }
 
+        connection(context)
+    }
+
+    fun getDeviceError() = sDevice?.GetLSError()
+
+    fun getDeviceInfo() = sDevice?.GetDeviceInfo()
+
+    suspend fun disconnect() = sDevice?.Close()
+
+    fun isConnected() = sDevice?.IsConnected() ?: false
+
+    fun setEventListener(onClick: () -> Unit) = liveData(Dispatchers.IO, 2000L) {
+
+        sDevice.let { device ->
+
+            device?.SetEventListener(object : LinkSquareAPI.LinkSquareAPIListener {
+
+                override fun LinkSquareEventCallback(eventType: LinkSquareAPI.EventType?, var2: Int) {
+                    when (eventType) {
+
+                        LinkSquareAPI.EventType.Button -> {
+
+                            onClick()
+
+                        }
+                        else -> {
+
+                            Log.d("ProspectorLSDevice", eventType?.name)
+
+                        }
+                    }
                 }
             })
+        }
+
+        emit("DONE")
+    }
+
+    fun connection(context: Context) = liveData(Dispatchers.IO, 2000L) {
+
+        val connecting = -1
+
+        var result: Int? = LinkSquareAPI.RET_ERR
+
+        //emit(connecting)
+
+        while (result == LinkSquareAPI.RET_ERR) {
+
+            with (manager(context)) {
+
+                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
+
+                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
+
+                result = connect(ip, port)
+
+                emit(when (result) {
+
+                    LinkSquareAPI.RET_OK -> {
+
+                        getDeviceInfo()
+
+                    }
+                    else -> {
+
+                        getDeviceError()
+
+                    }
+                })
+            }
+
+            delay(1000L)
         }
     }
 
@@ -108,9 +138,9 @@ class DeviceViewModel : ViewModel() {
 
         with (manager(context)) {
 
-            val ledFrames = getInt(LED_FRAMES, 8)
+            val ledFrames = getInt(LED_FRAMES, 1)
 
-            val bulbFrames = getInt(BULB_FRAMES, 8)
+            val bulbFrames = getInt(BULB_FRAMES, 1)
 
             val frames = scan(ledFrames, bulbFrames)
 
@@ -130,9 +160,9 @@ class DeviceViewModel : ViewModel() {
 
     }
 
-    private suspend fun connect(ip: String, port: Int) = withContext(Dispatchers.IO) {
+    private suspend fun connect(ip: String, port: Int) = withContext(viewModelScope.coroutineContext + Dispatchers.IO + Job()) {
 
-        return@withContext sDevice?.Connect(ip, port)
+        sDevice?.Connect(ip, port)
 
     }
 

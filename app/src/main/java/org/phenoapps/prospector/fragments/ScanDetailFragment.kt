@@ -2,41 +2,38 @@ package org.phenoapps.prospector.fragments
 
 import android.os.Bundle
 import android.view.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
-import com.jjoe64.graphview.GraphView
-import com.stratiotechnology.linksquareapi.LinkSquareAPI
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.adapter.ScansAdapter
-import org.phenoapps.prospector.data.ExperimentScansRepository
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.models.Scan
+import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.SpectralFrame
-import org.phenoapps.prospector.data.viewmodels.ExperimentScansViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentScanViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentDetailScanBinding
-import org.phenoapps.prospector.databinding.FragmentScanListBinding
-import org.phenoapps.prospector.utils.AsyncLoadGraph
-import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.FileUtil
+import org.phenoapps.prospector.utils.*
 
 
 class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private lateinit var sViewModel: ExperimentScansViewModel
+    private lateinit var sViewModel: ExperimentSamplesViewModel
 
     private lateinit var mBinding: FragmentDetailScanBinding
 
     private var mExpId: Long = -1L
 
-    private var mScanId: String = String()
+    private var mSample: String = String()
+
+    private var mScanId: Long = -1L
+
+    private var mCentered: Boolean = true
 
     private val sOnClickDelete = View.OnClickListener {
 
@@ -52,10 +49,10 @@ class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val viewModel: ExperimentScansViewModel by viewModels {
+        val viewModel: ExperimentSamplesViewModel by viewModels {
 
-            ExperimentScanViewModelFactory(
-                    ExperimentScansRepository.getInstance(
+            ExperimentSamplesViewModelFactory(
+                    ProspectorRepository.getInstance(
                             ProspectorDatabase.getInstance(requireContext()).expScanDao()
                     )
             )
@@ -69,27 +66,27 @@ class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {
 
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_detail_scan, container, false)
 
-
         //check if experiment id is included in the arguments.
         val eid = arguments?.getLong("experiment", -1L) ?: -1L
 
-        val sid = arguments?.getString("scan", String()) ?: String()
+        val sample = arguments?.getString("sample", String()) ?: String()
 
-        if (eid != -1L && sid.isNotBlank()) {
+        val sid = arguments?.getLong("scan", -1L) ?: -1L
+
+        if (eid != -1L && sample.isNotBlank() && sid != -1L) {
 
             mExpId = eid
 
+            mSample = sample
+
             mScanId = sid
 
-            loadGraph()
-
-            startObservers()
-
-            mBinding.toggleButton.setOnClickListener {
+            launch {
 
                 loadGraph()
 
             }
+
         }
 
         setHasOptionsMenu(true)
@@ -97,35 +94,26 @@ class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {
         return mBinding.root
     }
 
+
     private fun loadGraph() {
 
-        sViewModel.forceSpectralValues(mExpId, mScanId).observe(viewLifecycleOwner) { frames: List<SpectralFrame> ->
+        sViewModel.getSpectralValuesLive(mExpId, mScanId).observe(viewLifecycleOwner, Observer<List<SpectralFrame>> {
 
-            AsyncLoadGraph(requireContext(),
-                    mBinding.graphView,
-                    mScanId,
-                    requireContext().getString(R.string.horizontal_axis),
-                    requireContext().getString(R.string.vertical_axis),
-                    frames,
-                    false,
-                    mBinding.toggleButton.isChecked).execute()
+            it?.let { data ->
 
-        }
+                if (data.isNotEmpty()) {
 
-    }
+                    val wavelengths = it.toWaveArray()
 
-    private fun startObservers() {
+                    setViewportGrid(mBinding.graphView)
 
-        sViewModel.getSpectralValues(mExpId, mScanId).observe(viewLifecycleOwner, Observer { data ->
+                    centerViewport(mBinding.graphView, wavelengths)
 
-            if (data.isNotEmpty()) {
+                    setViewportScalable(mBinding.graphView)
 
-                val exp = data.first()
+                    renderNormal(mBinding.graphView, wavelengths)
 
-                mBinding.scanDate = exp.scanDate
-
-                mBinding.scanName = exp.sid
-
+                }
             }
         })
     }
