@@ -15,7 +15,7 @@
         <ListPreference
             android:icon="@drawable/ic_nv_export"
             android:title="@string/pref_export_type"
-            android:defaultValue="0"
+            android:defaultValue="@string/export_type_always_ask"
             android:key="org.phenoapps.prospector.EXPORT_TYPE"
             android:entryValues="@array/export_indices_array"
             android:entries="@array/export_types_array"/>
