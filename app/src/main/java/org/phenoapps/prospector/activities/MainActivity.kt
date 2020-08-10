@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         when (val exportType = prefs.getString(EXPORT_TYPE, askType) ?: askType) {
 
-            askType -> {
+            "0" -> {
 
                 Dialogs.askForExportType(AlertDialog.Builder(this@MainActivity),
                         getString(R.string.ask_export_type_title),
@@ -141,7 +141,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                 }
 
-            } else -> exportFile(exportType)
+            }
+
+            "1" -> exportFile("csv")
+
+            else -> exportFile("json")
         }
     }
 
@@ -150,18 +154,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
      */
     private fun exportFile(exportType: String) {
 
-        val jsonType = getString(R.string.export_type_brapi)
-
-        val csvType = getString(R.string.export_type_csv)
-
         val defaultFileNamePrefix = getString(R.string.default_csv_export_file_name)
 
         val ext = when(exportType) {
-            csvType -> ".csv"
+            "csv" -> ".csv"
             else -> ".json"
         }
 
-        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { it?.let { uri ->
 
             withData { experiments, samples, scans, frames ->
 
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                         when (exportType) {
 
-                            jsonType -> {
+                            "json" -> {
 
                                 FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames)
 
@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     }
                 }
             }
-        }.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}$ext")
+        }}.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}$ext")
     }
 
     private suspend fun disconnectDeviceAsync() {
