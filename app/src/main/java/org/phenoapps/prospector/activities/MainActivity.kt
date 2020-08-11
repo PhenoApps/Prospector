@@ -44,10 +44,7 @@ import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
-import org.phenoapps.prospector.utils.DateUtil
-import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.FileUtil
-import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.util.*
 
@@ -160,7 +157,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         val defaultFileNamePrefix = getString(R.string.default_csv_export_file_name)
 
         val ext = when(exportType) {
-            "csv" -> ".csv"
+            "CSV" -> ".csv"
             else -> ".json"
         }
 
@@ -174,14 +171,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                         when (exportType) {
 
-                            "json" -> {
+                            "CSV" -> {
 
-                                FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames)
+                                FileUtil(this@MainActivity).exportCsv(uri, experiments, samples, scans, frames)
 
                             }
                             else -> {
 
-                                FileUtil(this@MainActivity).exportCsv(uri, experiments, samples, scans, frames)
+                                FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames)
+
                             }
                         }
                     }

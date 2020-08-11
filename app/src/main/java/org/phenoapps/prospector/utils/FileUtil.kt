@@ -262,6 +262,7 @@ open class FileUtil(private val ctx: Context) {
 
                 scanJson.put("sample", scan.name)
                 scanJson.put("deviceId", scan.deviceId)
+                scanJson.put("deviceType", scan.deviceType)
                 scanJson.put("date", scan.date)
                 scanJson.put("operator", scan.operator)
                 scanJson.put("spectralValues", framesJson)

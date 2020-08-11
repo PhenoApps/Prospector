@@ -18,10 +18,7 @@ import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentDetailScanBinding
-import org.phenoapps.prospector.utils.centerViewport
-import org.phenoapps.prospector.utils.renderNormal
-import org.phenoapps.prospector.utils.setViewportGrid
-import org.phenoapps.prospector.utils.setViewportScalable
+import org.phenoapps.prospector.utils.*
 
 
 class ScanDetailFragment : Fragment(), CoroutineScope by MainScope() {

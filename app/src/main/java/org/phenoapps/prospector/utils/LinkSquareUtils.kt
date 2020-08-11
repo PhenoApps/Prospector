@@ -11,6 +11,8 @@ import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.SpectralFrame
 import kotlin.random.Random
 
+val plotColor = Color.BLACK
+
 fun renderPotato(graph: GraphView, data: List<DataPoint>) {
 
     graph.removeAllSeries()
@@ -36,7 +38,7 @@ fun renderPotato(graph: GraphView, data: List<DataPoint>) {
         prev = i
 
         // give line a unique color
-        plot.color = Color.rgb(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255))
+        plot.color = plotColor
 
         graph.addSeries(plot)
 
