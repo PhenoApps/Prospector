@@ -27,11 +27,14 @@ const val DEVICE_INFO = "$packageId.DEVICE_INFO"
 const val CONVERT_TO_WAVELENGTHS = "$packageId.CONVERT_TO_WAVELENGTHS"
 
 /**
- Constants used for sorting
- **/
-
-const val DESCENDING = false
-const val ASCENDING = true
-
-const val SORT_BY_NAME = true
-const val SORT_BY_DATE = false
+ * Constants used for sorting
+ * integer states:
+ * 0 -> Alphabetic Descending
+ * 1 -> Alphabetic Ascending
+ * 2 -> Date Descending
+ * 3 -> Date Ascending
+ */
+const val ALPHA_DESC = 0
+const val ALPHA_ASC = 1
+const val DATE_DESC = 2
+const val DATE_ASC = 3

@@ -44,7 +44,10 @@ import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
-import org.phenoapps.prospector.utils.*
+import org.phenoapps.prospector.utils.DateUtil
+import org.phenoapps.prospector.utils.Dialogs
+import org.phenoapps.prospector.utils.FileUtil
+import org.phenoapps.prospector.utils.SnackbarQueue
 import java.io.File
 import java.util.*
 
@@ -129,7 +132,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         val jsonType = getString(R.string.export_type_brapi)
         val csvType = getString(R.string.export_type_csv)
 
-        when (val exportType = prefs.getString(EXPORT_TYPE, askType) ?: askType) {
+        when (val exportType = prefs.getString(EXPORT_TYPE, "0") ?: "0") {
 
             "0" -> {
 
@@ -154,6 +157,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
      */
     private fun exportFile(exportType: String) {
 
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+
+        val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+
         val defaultFileNamePrefix = getString(R.string.default_csv_export_file_name)
 
         val ext = when(exportType) {
@@ -169,19 +176,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     withContext(Dispatchers.IO) {
 
+                        val start = System.nanoTime()
+
                         when (exportType) {
 
                             "CSV" -> {
 
-                                FileUtil(this@MainActivity).exportCsv(uri, experiments, samples, scans, frames)
+                                FileUtil(this@MainActivity).exportCsv(uri, experiments, samples, scans, frames, convert)
 
                             }
                             else -> {
 
-                                FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames)
+                                FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames, convert)
 
                             }
                         }
+
+                        Log.d("ExportTime", (1e-9*(System.nanoTime()-start)).toString())
                     }
                 }
             }
@@ -357,7 +368,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             launch {
 
-                loadDeveloperData()
+                //loadDeveloperData()
 
             }
         }
@@ -371,7 +382,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val numbers = (0..9)
 
-        repeat(2) {
+        val start = System.nanoTime()
+
+        repeat(1) {
 
             val uuid = UUID.randomUUID().toString()
 
@@ -379,7 +392,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 this.note = "Developer test note ${UUID.randomUUID().toString()}"
             }).await()
 
-            repeat(2) {
+            repeat(10) {
 
                 val sid = sViewModel.insertScan(Scan(eid, uuid).also {
                     it.deviceId="1-2-3-4"
@@ -387,24 +400,37 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     it.operator="Developer"
                 }).await()
 
+//                val sid2 = sViewModel.insertScan(Scan(eid, uuid).also {
+//                    it.deviceId="1-2-3-4"
+//                    it.lightSource=0
+//                    it.operator="Developer"
+//                }).await()
+
+                //val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+
                 val pixelValues = (1..600).map { numbers.random().toDouble() }.joinToString(" ")
 
-                val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                sViewModel.insertFrame(sid, SpectralFrame(sid, 0, pixelValues, 0))
 
-                if (!convert) {
+//                val waves = SpectralFrame(sid2, 0, pixelValues, 0).toWaveArray()
+//
+//                sViewModel.insertFrame(sid2, waves)
 
-                    sViewModel.insertFrame(sid, SpectralFrame(sid, 0, pixelValues, 0))
-
-                } else {
-
-                    sViewModel.insertFrame(sid, SpectralFrame(sid, 0, pixelValues, 0).toWaveArray())
-
-                }
+//                if (!convert) {
+//
+//
+//                } else {
+//
+//
+//                }
 
                 //delay(1000)
 
             }
         }
+
+        Log.d("Time", (1e-9*(System.nanoTime()-start)).toString())
+
     }
 
     private fun setupNavDrawer() {

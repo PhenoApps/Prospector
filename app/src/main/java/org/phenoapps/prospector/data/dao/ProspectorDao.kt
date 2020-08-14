@@ -3,14 +3,16 @@ package org.phenoapps.prospector.data.dao
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
-import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.models.*
 
 @Dao
 interface ProspectorDao {
 
+    /** View queries **/
+    @Query("SELECT DISTINCT * FROM SampleScanCount WHERE eid = :eid")
+    fun getSampleScanCounts(eid: Long): LiveData<List<SampleScanCount>>
+
+    /** Select queries **/
     @Query("SELECT DISTINCT * FROM experiments ORDER BY date DESC")
     fun getExperiments(): LiveData<List<Experiment>>
 
@@ -65,4 +67,6 @@ interface ProspectorDao {
 
     @Query("DELETE FROM experiments WHERE eid = :eid")
     suspend fun deleteExperiment(eid: Long)
+
+
 }

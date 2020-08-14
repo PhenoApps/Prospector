@@ -1,14 +1,16 @@
 package org.phenoapps.prospector.fragments
 
-import DESCENDING
-import SORT_BY_DATE
-import SORT_BY_NAME
+import ALPHA_ASC
+import ALPHA_DESC
+import DATE_ASC
+import DATE_DESC
 import android.os.Bundle
 import android.os.Handler
 import android.view.*
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
@@ -24,22 +26,13 @@ import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
-import org.phenoapps.prospector.listeners.ToggleClickListener
 import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.SnackbarQueue
 
 class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
-    /*
-    0 is sort by name while 1 is sort by date
-     */
-    private var mSortState = SORT_BY_DATE
-
-    /*
-    0 is ascending order, 1 is descending
-     */
-    private var mSortParity = DESCENDING
+    private var mSortState = DATE_DESC
 
     private val sSnackbarQueue = SnackbarQueue()
 
@@ -55,6 +48,12 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private var mBinding: FragmentSampleListBinding? = null
+
+    private val sOnClickListener = View.OnClickListener {
+
+        callInsertDialog()
+
+    }
 
     override fun onDestroyView() {
 
@@ -81,6 +80,21 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             mBinding?.let { ui ->
 
+                setFragmentResultListener("BarcodeResult") { key, bundle ->
+
+                    ui.onClick = sOnClickListener
+
+                    val code = bundle.getString("barcode_result", "") ?: ""
+
+                    if (code.isNotBlank()) {
+
+                        ui.editText.setText(code)
+
+                    }
+
+                    ui.executePendingBindings()
+                }
+
                 ui.setupRecyclerView()
 
                 ui.setupButtons()
@@ -88,9 +102,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                 updateUi()
 
                 return ui.root
-
             }
-
         }
 
         return null
@@ -107,68 +119,107 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
         when(item.itemId) {
 
+            R.id.menu_scan_code -> {
+
+                findNavController().navigate(SampleListFragmentDirections
+                        .actionToBarcodeScan())
+
+            }
+
             R.id.menu_search_sample -> {
 
                 findNavController().navigate(SampleListFragmentDirections
-                        .actionToBarcodeScan(mExpId))
+                        .actionToBarcodeSearch(mExpId))
 
+            }
+
+            R.id.menu_sort_sample -> {
+
+                item.setIcon(when (mSortState) {
+
+                    ALPHA_ASC -> {
+
+                        mSortState = DATE_DESC
+
+                        org.phenoapps.icons.R.drawable.ic_sort_by_date_descending_18dp
+
+                    }
+
+                    ALPHA_DESC -> {
+
+                        mSortState = ALPHA_ASC
+
+                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_ascending_18dp
+
+                    }
+
+                    DATE_ASC -> {
+
+                        mSortState = ALPHA_DESC
+
+                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_descending_18dp
+
+                    }
+
+                    else -> {
+
+                        mSortState = DATE_ASC
+
+                        org.phenoapps.icons.R.drawable.ic_sort_by_date_ascending_18dp
+
+                    }
+                })
+
+                updateUi()
             }
         }
 
         return super.onOptionsItemSelected(item)
     }
 
-
     private fun FragmentSampleListBinding.setupButtons() {
 
-        onClick = View.OnClickListener {
+        onClick = sOnClickListener
 
-            callInsertDialog()
+    }
 
-        }
+    private suspend fun insertSample(sample: String, note: String) = withContext(Dispatchers.IO) {
 
-        onToggle = ToggleClickListener {
+        sSamples.insertSample(Sample(mExpId, sample).apply {
 
-            mSortState = it
+            this.date = DateUtil().getTime()
 
-            updateUi()
-        }
+            this.note = note
 
-        onToggleParity = ToggleClickListener {
+        }).await()
 
-            mSortParity = it
-
-            updateUi()
-        }
     }
 
     private fun callInsertDialog() {
 
-        Dialogs.askForName(requireActivity(), R.string.ask_sample_name, R.string.ok, R.string.cancel) { sampleName, scanNote ->
+        val sample = mBinding?.editText?.text?.toString() ?: ""
+        val note = mBinding?.noteText?.text?.toString() ?: ""
 
-            if (sampleName.isNotBlank()) {
+        if (sample.isNotBlank()) {
 
-                launch {
+            CoroutineScope(Dispatchers.IO).launch {
 
-                    sSamples.insertSample(Sample(mExpId, sampleName).apply {
+                insertSample(sample, note)
 
-                        this.date = DateUtil().getTime()
+            }
 
-                        this.note = scanNote
+            mBinding?.editText?.setText("")
+            mBinding?.noteText?.setText("")
 
-                    }).await()
+            findNavController().navigate(SampleListFragmentDirections
+                    .actionToScanList(mExpId, sample))
 
-                    updateUi()
-                }
+        } else {
 
+            mBinding?.let { ui ->
 
-            } else {
+                sSnackbarQueue.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.ask_sample_name)))
 
-                mBinding?.let { ui ->
-
-                    sSnackbarQueue.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.ask_sample_name)))
-
-                }
             }
         }
     }
@@ -196,11 +247,11 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                     if (result) {
 
                         (mBinding?.recyclerView?.adapter as SampleAdapter)
-                                .currentList[viewHolder.adapterPosition].also { sample ->
+                                .currentList[viewHolder.adapterPosition].also { s ->
 
                             launch {
 
-                                deleteSample(sample)
+                                deleteSample(Sample(s.eid, s.name))
 
                                 updateUi()
 
@@ -223,51 +274,40 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun updateUi() {
 
-        sSamples.getSamples(mExpId).observe(viewLifecycleOwner) {
+        sSamples.getSampleScanCounts(mExpId).observe(viewLifecycleOwner) {
 
-            val sorted = when (mSortParity) {
+            it?.let { date ->
 
-                DESCENDING -> {
+                (mBinding?.recyclerView?.adapter as SampleAdapter)
+                        .submitList(when (mSortState) {
 
-                     when (mSortState) {
+                            DATE_DESC -> {
 
-                         SORT_BY_NAME -> {
+                                it.sortedByDescending { it.date }
+                            }
 
-                             it.sortedByDescending { it.name }
-                         }
+                            DATE_ASC -> {
 
-                         else -> {
+                                it.sortedBy { it.date }
+                            }
 
-                             it.sortedByDescending { it.date }
-                         }
-                     }
-                }
+                            ALPHA_DESC -> {
 
-                else -> {
+                                it.sortedByDescending { it.name }
+                            }
 
-                    when (mSortState) {
+                            else -> {
 
-                        SORT_BY_NAME -> {
+                                it.sortedBy { it.name }
+                            }
+                        })
 
-                            it.sortedBy { it.name }
-                        }
+                Handler().postDelayed({
 
-                        else -> {
+                    mBinding?.recyclerView?.scrollToPosition(0)
 
-                            it.sortedBy { it.date }
-                        }
-                    }
-                }
+                }, 250)
             }
-
-            (mBinding?.recyclerView?.adapter as SampleAdapter)
-                    .submitList(sorted)
-
-            Handler().postDelayed({
-
-                mBinding?.recyclerView?.scrollToPosition(0)
-
-            }, 250)
         }
     }
 }

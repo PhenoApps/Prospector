@@ -15,6 +15,7 @@ class ProspectorRepository
     fun getScans() = dao.getScans()
     fun getFrames() = dao.getFrames()
     fun getSamples(eid: Long) = dao.getSamples(eid)
+    fun getSampleScanCounts(eid: Long) = dao.getSampleScanCounts(eid)
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = dao.getSpectralValues(eid, sid)
     fun getSpectralValuesLive(eid: Long, sid: Long)= dao.getSpectralValuesLive(eid, sid)
 

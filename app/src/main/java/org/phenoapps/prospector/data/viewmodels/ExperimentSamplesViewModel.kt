@@ -24,6 +24,7 @@ class ExperimentSamplesViewModel(
 
     //live data
     fun getSamples(eid: Long) = repo.getSamples(eid)
+    fun getSampleScanCounts(eid: Long) = repo.getSampleScanCounts(eid)
     fun getScans(eid: Long, sample: String) = repo.getScans(eid, sample)
     fun getSpectralValuesLive(eid: Long, sid: Long) = repo.getSpectralValuesLive(eid, sid)
 

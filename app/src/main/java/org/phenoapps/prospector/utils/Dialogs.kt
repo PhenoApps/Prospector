@@ -1,42 +1,16 @@
 package org.phenoapps.prospector.utils
 
-import AUTO_SCAN_NAME
 import android.app.Activity
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.preference.PreferenceManager
-import com.google.zxing.ResultPoint
-import com.journeyapps.barcodescanner.BarcodeCallback
-import com.journeyapps.barcodescanner.BarcodeResult
-import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.databinding.DialogLayoutCreateNameBinding
 import org.phenoapps.prospector.databinding.DialogLayoutCreateScanBinding
 
 class Dialogs {
 
     companion object {
 
-        private fun startBarcode(view: DecoratedBarcodeView, callback: () -> BarcodeCallback) {
-
-            view.barcodeView.apply {
-
-                cameraSettings.isContinuousFocusEnabled = true
-
-                cameraSettings.isAutoTorchEnabled = true
-
-                cameraSettings.isAutoFocusEnabled = true
-
-                cameraSettings.isBarcodeSceneModeEnabled = true
-
-                this.resume()
-
-                decodeSingle(callback())
-
-            }
-
-        }
 
         fun askForScan(activity: Activity, title: Int, button: Int, cancel: Int, function: () -> Unit): AlertDialog.Builder {
 
@@ -56,88 +30,9 @@ class Dialogs {
 
                 }
 
-            }
+                binding.imageView.isIndeterminate = true
 
-        }
-
-        fun askForName(activity: Activity, title: Int, button: Int, negative: Int, function: (String, String) -> Unit) {
-
-            val binding = DataBindingUtil.inflate<DialogLayoutCreateNameBinding>(activity.layoutInflater, R.layout.dialog_layout_create_name, null, false)
-
-            val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
-
-            val uuid = prefs.getBoolean(AUTO_SCAN_NAME, false)
-
-            with (binding.toggleButton) {
-
-                setOnClickListener {
-
-                    binding.barcodeView.visibility = when (text) {
-
-                        textOff -> {
-
-                            binding.barcodeView.pause()
-
-                            View.GONE
-                        }
-
-                        else -> {
-
-                            startBarcode(binding.barcodeView) {
-
-                                object : BarcodeCallback {
-
-                                    override fun barcodeResult(result: BarcodeResult) {
-
-                                        if (result.text == null) return
-
-                                        binding.editText.setText(result.text.toString())
-
-                                    }
-
-                                    override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) {
-
-                                    }
-                                }
-                            }
-
-                            View.VISIBLE
-                        }
-                    }
-                }
-            }
-
-            val builder = AlertDialog.Builder(activity).apply {
-
-                setTitle(title)
-
-                setView(binding.root)
-
-                setNegativeButton(negative) { dialog, it ->
-
-                    dialog.dismiss()
-
-                }
-
-                setPositiveButton(button) { dialog, it ->
-
-                    binding.barcodeView.pause()
-
-                    val text = binding.editText.text.toString()
-
-                    if (text.isNotBlank()) {
-
-                        function(text, binding.noteText.text.toString())
-
-                    } else dialog.dismiss()
-
-                }
-
-                setCancelable(false)
-
-                create()
-
-                show()
+                binding.imageView.visibility = View.VISIBLE
             }
 
         }

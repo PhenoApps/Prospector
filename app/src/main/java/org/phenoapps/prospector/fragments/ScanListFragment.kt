@@ -185,7 +185,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 ui.sampleName = mSampleName
 
-                ui.recyclerView.adapter = ScansAdapter(this, requireContext(), sViewModel)
+                ui.recyclerView.adapter = ScansAdapter(requireContext(), sViewModel)
 
                 val undoString = getString(R.string.undo)
 

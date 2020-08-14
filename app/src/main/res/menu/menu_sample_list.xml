@@ -2,8 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menu_scan_code"
+        android:icon="@drawable/ic_barcode_scan"
+        app:showAsAction="always"
+        android:title="@string/scan_barcode"/>
+    <item
         android:id="@+id/menu_search_sample"
         android:icon="@drawable/ic_tb_white_search"
         app:showAsAction="always"
         android:title="@string/search_for_sample" />
+    <item
+        android:id="@+id/menu_sort_sample"
+        android:icon="@drawable/ic_sort_by_date_descending_18dp"
+        app:showAsAction="always"
+        android:title="@string/sort_by_date" />
 </menu>

@@ -5,12 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import org.phenoapps.prospector.data.dao.ProspectorDao
-import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.models.*
 
-@Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class], version = 1)
+@Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
+        views = [SampleScanCount::class], version = 1)
 abstract class ProspectorDatabase : RoomDatabase() {
 
     abstract fun expScanDao(): ProspectorDao

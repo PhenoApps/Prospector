@@ -1,16 +1,18 @@
 package org.phenoapps.prospector.adapter
 
+import CONVERT_TO_WAVELENGTHS
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.Navigation
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jjoe64.graphview.GraphView
+import com.jjoe64.graphview.series.DataPoint
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
@@ -21,9 +23,9 @@ import org.phenoapps.prospector.fragments.ScanListFragmentDirections
 import org.phenoapps.prospector.utils.centerViewport
 import org.phenoapps.prospector.utils.renderPotato
 import org.phenoapps.prospector.utils.setViewportGrid
-import org.phenoapps.prospector.utils.toPixelArray
+import org.phenoapps.prospector.utils.toWaveMap
 
-class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, private val viewModel: ExperimentSamplesViewModel) : ListAdapter<Scan,
+class ScansAdapter(val context: Context, private val viewModel: ExperimentSamplesViewModel) : ListAdapter<Scan,
         ScansAdapter.ScanGraphViewHolder>(DiffCallbacks.Companion.ScanDiffCallback()) {
 
     private val jobMap: MutableMap<ScanGraphViewHolder, Job> = HashMap()
@@ -50,13 +52,7 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
 
                 itemView.tag = scan.sid
 
-                //if (holder in jobMap) viewModel.viewModelScope.cancel()
-
-                //holder.setIsRecyclable(false)
-
                 val graph = itemView.findViewById<GraphView>(R.id.graphView)
-
-                //if (position == 0) graph.visibility = View.VISIBLE
 
                 jobMap[holder] = viewModel.viewModelScope.launch {
 
@@ -75,13 +71,25 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
 
                     }
 
-                    val frames = data.await()
+                    val frames = data.await().first()
 
                     preGraph.await()
 
                     val renderData = withContext(Dispatchers.Main) {
 
-                        val wavelengths = frames.toPixelArray()
+                        val convert = PreferenceManager.getDefaultSharedPreferences(context)
+                                .getBoolean(CONVERT_TO_WAVELENGTHS, false)
+
+                        val wavelengths = if (!convert) {
+
+                            frames.spectralValues.split(" ").mapIndexed { index, value ->
+
+                                DataPoint(index+1.0, value.toDouble())
+
+                            }
+
+
+                        } else frames.toWaveMap().map { DataPoint(it.first, it.second) }
 
                         centerViewport(graph, wavelengths)
 
@@ -128,11 +136,14 @@ class ScansAdapter(private val lifecycle: LifecycleOwner, val context: Context, 
                             View.GONE -> View.VISIBLE
                             else -> View.GONE
                         }
-
                     }
 
                     this.scan = scan
 
+                    this.deviceType = when(scan.deviceType) {
+                        "0" -> "LinkSquare 1"
+                        else -> "Unknown"
+                    }
                 }
             }
         }

@@ -15,6 +15,12 @@
         android:id="@+id/barcode_scan_fragment"
         android:name="org.phenoapps.prospector.fragments.BarcodeScanFragment"
         android:label="@string/barcode_scan_fragment_label">
+    </fragment>
+
+    <fragment
+        android:id="@+id/barcode_search_fragment"
+        android:name="org.phenoapps.prospector.fragments.BarcodeSearchFragment"
+        android:label="@string/barcode_scan_fragment_label">
 
         <argument android:name="experiment"
             android:defaultValue="-1L"
@@ -100,6 +106,12 @@
         <action
             android:id="@+id/action_to_scan_list"
             app:destination="@id/scan_list_fragment"/>
+
+        <action
+            android:id="@+id/action_to_barcode_search"
+            app:destination="@id/barcode_search_fragment"
+            app:popUpTo="@id/sample_list_fragment">
+        </action>
 
         <action
             android:id="@+id/action_to_barcode_scan"

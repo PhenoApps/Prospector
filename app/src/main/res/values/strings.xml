@@ -8,6 +8,8 @@
     <!-- -->
 
 
+    <string name="scans">scans</string>
+
     <string name="title_activity_scan">ScanActivity</string>
     <string name="title_activity_discover">DiscoverActivity</string>
     <string name="title_activity_collection">CollectionActivity</string>
@@ -274,4 +276,5 @@
     <string name="export_experiment_name_header">experiment</string>
     <string name="export_device_type_header">deviceType</string>
     <string name="export_operator_header">operator</string>
+    <string name="scan_barcode">Button used to scan barcodes.</string>
 </resources>

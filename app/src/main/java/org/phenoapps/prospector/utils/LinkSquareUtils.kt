@@ -20,29 +20,18 @@ fun renderPotato(graph: GraphView, data: List<DataPoint>) {
     graph.gridLabelRenderer.isVerticalLabelsVisible = false
     graph.gridLabelRenderer.isHorizontalLabelsVisible = false
 
-    var prev = 0
+    val plot = LineGraphSeries(data
+            .mapIndexed { index, dataPoint ->
+                //if (index % 10 == 0) {
+                    DataPoint(dataPoint.x, dataPoint.y)
+                //} else null
+            }.mapNotNull { it }.toTypedArray())
 
-    var frameSize = 600
+    // give line a unique color
+    plot.color = plotColor
 
-    var numFrames = data.size / frameSize
+    graph.addSeries(plot)
 
-    for (i in frameSize..data.size step frameSize) {
-
-        val plot = LineGraphSeries((data.subList(prev, i))
-                .mapIndexed { index, dataPoint ->
-                    if (index % 10 == 0) {
-                        DataPoint((index.toDouble() % 600)+440, dataPoint.y)
-                    } else null
-                }.mapNotNull { it }.toTypedArray())
-
-        prev = i
-
-        // give line a unique color
-        plot.color = plotColor
-
-        graph.addSeries(plot)
-
-    }
 }
 
 fun List<SpectralFrame>.toPixelArray(): List<DataPoint> {
@@ -59,10 +48,10 @@ fun List<SpectralFrame>.toPixelArray(): List<DataPoint> {
 
 fun centerViewport(graph: GraphView, data: List<DataPoint>) = with(graph) {
 
-    //600 is the fixed size frame length for each LSFrame
-    val minX = 440.0
+    val minX = data.minBy { it.x }?.x ?: 440.0
 
-    val maxX = 440.0+600.0
+    //val maxX = 440.0+600.0
+    val maxX = data.maxBy { it.x }?.x ?: minX+600.0
 
     val maxY = data.map { it.y }.max() ?: 400.0
 
@@ -124,7 +113,7 @@ fun renderNormal(graph: GraphView, data: List<DataPoint>) = with(graph) {
 
         val plot = LineGraphSeries((data.subList(prev, i))
                 .mapIndexed { index, dataPoint ->
-                    DataPoint((index.toDouble() % frameSize)+440, dataPoint.y)
+                    DataPoint(dataPoint.x, dataPoint.y)
                 }.toTypedArray())
 
         prev = i

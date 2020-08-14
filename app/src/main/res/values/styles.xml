@@ -32,6 +32,12 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <style name="Text.ExperimentTitle.CountText">
+        <item name="android:gravity">end</item>
+        <item name="android:textAlignment">viewEnd</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
     <style name="Text.ExperimentListHeader"></style>
 
 </resources>

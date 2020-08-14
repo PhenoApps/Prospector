@@ -8,7 +8,7 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="sample"
-            type="org.phenoapps.prospector.data.models.Sample"/>
+            type="org.phenoapps.prospector.data.models.SampleScanCount"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,25 +20,36 @@
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/sampleName"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@{sample.name}"
             app:layout_constraintBottom_toTopOf="@id/sampleDate"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sampleCount"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView style="@style/Text.ExperimentTitle.SubTitle"
             android:id="@+id/sampleDate"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@{sample.date}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/sampleCount"
+            app:layout_constraintEnd_toStartOf="@id/sampleCount"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/sampleName" />
+
+        <TextView style="@style/Text.ExperimentTitle.CountText"
+            android:id="@+id/sampleCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@{String.valueOf(sample.count)+@string/scans}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/sampleDate"
+            app:layout_constraintTop_toBottomOf="@id/sampleDate" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

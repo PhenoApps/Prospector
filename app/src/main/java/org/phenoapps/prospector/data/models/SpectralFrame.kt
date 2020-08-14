@@ -4,7 +4,6 @@ import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import org.json.JSONObject
 
 @Keep
 @Entity(tableName = "spectral_frames",
@@ -28,21 +27,4 @@ data class SpectralFrame(
         @ColumnInfo(name = "lightSource")
         var lightSource: Int) {
 
-//        private fun String.toWavelengthJson() {
-//
-//                val output = JSONObject()
-//
-//                mapOf(this.split(" "))
-//        }
-
-    fun toJson(): JSONObject {
-
-        return JSONObject().apply {
-
-            put("lightSource", lightSource)
-
-            put("spectralValues", spectralValues)
-
-        }
-    }
 }

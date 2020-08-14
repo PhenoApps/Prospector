@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
-import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.databinding.ListItemSampleBinding
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
 
 class SampleAdapter(
         val context: Context
-) : ListAdapter<Sample, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleDiffCallback()) {
+) : ListAdapter<SampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -42,7 +42,7 @@ class SampleAdapter(
 
     class ViewHolder(private val binding: ListItemSampleBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(sample: Sample) {
+        fun bind(sample: SampleScanCount) {
 
             with(binding) {
 

@@ -16,6 +16,10 @@
         <variable
             name="scan"
             type="org.phenoapps.prospector.data.models.Scan" />
+        
+        <variable
+            name="deviceType"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -41,7 +45,7 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{scan.deviceType}"
+            android:text="@{deviceType}"
             android:onClick="@{minimizeOnClick}"
             app:layout_constraintTop_toBottomOf="@id/nameView"
             app:layout_constraintBottom_toTopOf="@id/lightView"
