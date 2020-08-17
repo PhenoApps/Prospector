@@ -35,10 +35,7 @@ import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.ProspectorRepository
-import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
@@ -90,32 +87,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun withData(function: CoroutineScope.(List<Experiment>, List<Sample>, List<Scan>, List<SpectralFrame>) -> Unit) {
+    private fun withData(function: CoroutineScope.(List<DeviceTypeExport>) -> Unit) {
 
-        sViewModel.experiments.observe(this@MainActivity, Observer {
+        sViewModel.deviceTypeExports.observe(this@MainActivity, Observer {
 
-            it?.let { expList ->
+            it?.let { exports ->
 
-                sViewModel.samples.observe(this@MainActivity, Observer {
+                function(exports)
 
-                    it?.let { samplesList ->
-
-                        sViewModel.scans.observe(this@MainActivity, Observer {
-
-                            it?.let { scanList ->
-
-                                sViewModel.frames.observe(this@MainActivity, Observer {
-
-                                    it?.let { frameList ->
-
-                                        function(expList, samplesList, scanList, frameList)
-
-                                    }
-                                })
-                            }
-                        })
-                    }
-                })
             }
         })
     }
@@ -143,7 +122,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     exportFile(type)
 
                 }
-
             }
 
             "1" -> exportFile("csv")
@@ -170,7 +148,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { it?.let { uri ->
 
-            withData { experiments, samples, scans, frames ->
+            withData { exports ->
 
                 launch {
 
@@ -180,14 +158,19 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                         when (exportType) {
 
+                            //TODO add all device exports
                             "CSV" -> {
 
-                                FileUtil(this@MainActivity).exportCsv(uri, experiments, samples, scans, frames, convert)
+                                exports.groupBy { it.deviceType }.forEach {
+
+                                    FileUtil(this@MainActivity).exportCsv(uri, it.value, convert)
+
+                                }
 
                             }
                             else -> {
 
-                                FileUtil(this@MainActivity).exportJson(uri, experiments, samples, scans, frames, convert)
+                                FileUtil(this@MainActivity).exportJson(uri, exports, convert)
 
                             }
                         }
@@ -382,23 +365,27 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val numbers = (0..9)
 
+        val devices = arrayOf("LinkSquare", "LinkSquareNIR")
+
+        val samples = arrayOf("toast", "mango", "grape", "popcorn")
+
+        val lightSources = arrayOf(0,1)
+
         val start = System.nanoTime()
 
         repeat(1) {
 
-            val uuid = UUID.randomUUID().toString()
+            repeat(100) {
 
-            sViewModel.insertSample(Sample(eid, uuid).apply {
-                this.note = "Developer test note ${UUID.randomUUID().toString()}"
-            }).await()
+                val uuid = samples.random()
 
-            repeat(1000) {
+                sViewModel.insertSample(Sample(eid, uuid, DateUtil().getTime(), "Developer test note ${UUID.randomUUID().toString()}")).await()
 
-                val sid = sViewModel.insertScan(Scan(eid, uuid).also {
-                    it.deviceId="1-2-3-4"
-                    it.lightSource=0
-                    it.operator="Developer"
-                }).await()
+                val sid = sViewModel.insertScan(Scan(eid, uuid, DateUtil().getTime(),
+                        deviceId="1-2-3-4",
+                        deviceType = devices.random(),
+                        lightSource=lightSources.random(),
+                        operator="Developer")).await()
 
 //                val sid2 = sViewModel.insertScan(Scan(eid, uuid).also {
 //                    it.deviceId="1-2-3-4"

@@ -20,13 +20,13 @@ data class Sample(
         val eid: Long,
 
         @ColumnInfo(name = "name")
-        var name: String) {
+        var name: String,
 
-    @ColumnInfo(name = "date")
-    var date: String = DateUtil().getTime()
+        @ColumnInfo(name = "date")
+        var date: String = DateUtil().getTime(),
 
-    @ColumnInfo(name = "note")
-    var note: String? = null
+        @ColumnInfo(name = "note")
+        var note: String = String()) {
 
     override fun equals(other: Any?): Boolean {
 
@@ -40,7 +40,7 @@ data class Sample(
 
     override fun hashCode(): Int {
 
-        return this.name.hashCode()
+        return (name+date).hashCode()
 
     }
 

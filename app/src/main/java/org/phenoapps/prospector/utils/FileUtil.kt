@@ -18,10 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.datastructures.Posting
 import java.io.*
@@ -183,10 +180,9 @@ open class FileUtil(private val ctx: Context) {
 
     /*
     TODO: add wavelength export, might need BrApi for memory reasons
-    Currently only exports pixel values
     Function must be called wrapped in a Dispatchers.IO coroutine context
      */
-    suspend fun exportCsv(uri: Uri, exps: List<Experiment>, samples: List<Sample>, scans: List<Scan>, frames: List<SpectralFrame>, convert: Boolean = false) = withContext(Dispatchers.IO) {
+    suspend fun exportCsv(uri: Uri, exports: List<DeviceTypeExport>, convert: Boolean = false) = withContext(Dispatchers.IO) {
 
         val newline = System.lineSeparator()
 
@@ -199,83 +195,65 @@ open class FileUtil(private val ctx: Context) {
 
             if (convert) {
 
-                //TODO discuss what happens when scans have different spectral ranges
-                val firstWave = frames.first().toWaveMap()
+                exports.firstOrNull()?.spectralData?.toWaveMap()?.let { firstWave ->
 
-                val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",") + ",$scanNoteHeader"
+                    val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",") + ",$scanNoteHeader"
 
-                writer.write(headers)
+                    writer.write(headers)
 
-                writer.write(newline)
+                    writer.write(newline)
 
-                exps.forEach { experiment ->
+                    exports.forEach { export ->
 
-                    samples.filter { it.eid == experiment.eid }.forEach { sample ->
+                        val data = arrayOf(
+                                export.experiment,
+                                export.sample,
+                                export.date,
+                                export.deviceType,
+                                export.deviceId,
+                                export.operator,
+                                export.lightSource
+                        )
 
-                        scans.filter { it.name == sample.name && it.eid == experiment.eid }.forEach { scan ->
+                        val wave = export.spectralData.toWaveMap()
 
-                            frames.filter { it.sid == scan.sid }.forEach { frame ->
+                        writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")},${export.note ?: ""}")
 
-                                val data = arrayOf(
-                                        experiment.name,
-                                        scan.name,
-                                        scan.date,
-                                        scan.deviceType,
-                                        scan.deviceId,
-                                        scan.operator,
-                                        scan.lightSource
-                                )
+                        writer.write(newline)
 
-                                val wave = frame.toWaveMap()
-
-                                //val frameData = frame.spectralValues.replace(" ", ",")
-
-                                writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")},${sample.note ?: ""}")
-
-                                writer.write(newline)
-                            }
-                        }
                     }
                 }
+
             } else {
-                //TODO discuss what happens when scans have different spectral ranges
-                val size = frames.first().spectralValues.length
 
-                val headers = prefixHeaders + (1..size).joinToString(",") + ",$scanNoteHeader"
+                exports.firstOrNull()?.spectralData?.split(" ")?.size?.let { size ->
 
-                writer.write(headers)
+                    val headers = prefixHeaders + (1..size).joinToString(",") + ",$scanNoteHeader"
 
-                writer.write(newline)
+                    writer.write(headers)
 
-                exps.forEach { experiment ->
+                    writer.write(newline)
 
-                    samples.filter { it.eid == experiment.eid }.forEach { sample ->
+                    exports.forEach { e ->
 
-                        scans.filter { it.name == sample.name && it.eid == experiment.eid }.forEach { scan ->
+                        val data = arrayOf(
+                                e.experiment,
+                                e.sample,
+                                e.date,
+                                e.deviceType,
+                                e.deviceId,
+                                e.operator,
+                                e.lightSource
+                        )
 
-                            frames.filter { it.sid == scan.sid }.forEach { frame ->
+                        val frameData = e.spectralData.replace(" ", ",")
 
-                                val data = arrayOf(
-                                        experiment.name,
-                                        scan.name,
-                                        scan.date,
-                                        scan.deviceType,
-                                        scan.deviceId,
-                                        scan.operator,
-                                        scan.lightSource
-                                )
+                        writer.write("${data.joinToString(",")},$frameData,${e.note}")
 
-                                val frameData = frame.spectralValues.replace(" ", ",")
-
-                                writer.write("${data.joinToString(",")},$frameData,${sample.note ?: ""}")
-
-                                writer.write(newline)
-                            }
-                        }
+                        writer.write(newline)
                     }
                 }
             }
-
         }
     }
 
@@ -412,68 +390,89 @@ open class FileUtil(private val ctx: Context) {
 
     }
 
-    //TODO convert to stream writer, large files take too much memory
-    //TODO use JSONWriter
-    suspend fun exportJson(uri: Uri, exps: List<Experiment>, samples: List<Sample>, scans: List<Scan>, frames: List<SpectralFrame>, convert: Boolean) = withContext(Dispatchers.IO) {
+    suspend fun exportJson(uri: Uri, exports: List<DeviceTypeExport>, convert: Boolean) = withContext(Dispatchers.IO) {
 
         val writer = JsonWriter(OutputStreamWriter(ctx.contentResolver.openOutputStream(uri)))
 
         writer.setIndent(" ")
 
         try {
+
             writer.beginArray()
 
-            exps.forEach { experiment ->
+            exports.groupBy { it.experiment }.forEach { entry ->
 
                 writer.beginObject()
 
-                writer.name("experimentName").value(experiment.name)
-
-                writer.name("date").value(experiment.date)
-
-                writer.name("scan")
+                writer.name(entry.key)
 
                 writer.beginArray()
 
-                scans.filter { it.eid == experiment.eid }.forEach { scan ->
+                entry.value.groupBy { it.sample }.forEach { samples ->
 
                     writer.beginObject()
 
-                    frames.filter { it.sid == scan.sid }.forEach { frame ->
+                    writer.name(samples.key)
 
-                        writer.name("spectralValues")
+                    writer.beginArray()
+
+                    samples.value.groupBy { it.lightSource }.forEach { source ->
 
                         writer.beginObject()
 
-                        if (convert) {
+                        writer.name(source.key)
 
-                            val wave = frame.toWaveMap()
+                        writer.beginArray()
 
-                            wave.forEach { key ->
+                        source.value.forEach { scan ->
 
-                                writer.name(key.first.toString()).value(key.second.toString())
+                            writer.beginObject()
+
+                            writer.name("date").value(scan.date)
+
+                            writer.name("operator").value(scan.operator)
+
+                            writer.name("spectralValues")
+
+                            writer.beginObject()
+
+                            writer.setIndent("")
+
+                            if (convert) {
+
+                                val wave = scan.spectralData.toWaveMap()
+
+                                wave.forEach { key ->
+
+                                    writer.name(key.first.toString()).value(key.second.toString())
+
+                                }
+
+                            } else {
+
+                                val tokens = scan.spectralData.split(" ")
+
+                                tokens.forEachIndexed { index, s ->
+
+                                    writer.name((index+1).toString()).value(s)
+
+                                }
 
                             }
 
-                        } else {
+                            writer.endObject()
 
-                            frame.spectralValues.split(" ").forEachIndexed { index, s ->
+                            writer.setIndent(" ")
 
-                                writer.name((index+1).toString()).value(s)
-
-                            }
-
+                            writer.endObject()
                         }
 
-                        writer.endObject()
+                        writer.endArray()
 
+                        writer.endObject()
                     }
 
-                    writer.name("sample").value(scan.name)
-                    writer.name("deviceId").value(scan.deviceId)
-                    writer.name("deviceType").value(scan.deviceType)
-                    writer.name("date").value(scan.date)
-                    writer.name("operator").value(scan.operator)
+                    writer.endArray()
 
                     writer.endObject()
 
@@ -482,7 +481,6 @@ open class FileUtil(private val ctx: Context) {
                 writer.endArray()
 
                 writer.endObject()
-
             }
 
             writer.endArray()
@@ -492,6 +490,12 @@ open class FileUtil(private val ctx: Context) {
             Log.d("ProspectorJsonError", e.message)
 
             e.printStackTrace()
+
+        } finally {
+
+            writer.flush()
+
+            writer.close()
 
         }
 

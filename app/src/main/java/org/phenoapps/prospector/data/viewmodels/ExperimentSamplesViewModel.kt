@@ -14,6 +14,7 @@ import org.phenoapps.prospector.data.models.SpectralFrame
 class ExperimentSamplesViewModel(
         private val repo: ProspectorRepository): ViewModel() {
 
+    val deviceTypeExports = repo.getDeviceTypeExports()
     val experiments = repo.getExperiments()
     val samples = repo.getSamples()
     val scans = repo.getScans()

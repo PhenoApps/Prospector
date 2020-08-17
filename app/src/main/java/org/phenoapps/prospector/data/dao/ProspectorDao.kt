@@ -12,6 +12,9 @@ interface ProspectorDao {
     @Query("SELECT DISTINCT * FROM SampleScanCount WHERE eid = :eid")
     fun getSampleScanCounts(eid: Long): LiveData<List<SampleScanCount>>
 
+    @Query("SELECT * FROM DeviceTypeExport")
+    fun getDeviceTypeExports(): LiveData<List<DeviceTypeExport>>
+
     /** Select queries **/
     @Query("SELECT DISTINCT * FROM experiments ORDER BY date DESC")
     fun getExperiments(): LiveData<List<Experiment>>

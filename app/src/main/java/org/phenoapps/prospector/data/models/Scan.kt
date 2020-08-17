@@ -24,24 +24,24 @@ data class Scan(
         @ColumnInfo(name = "name")
         var name: String,
 
+        @ColumnInfo(name = "date")
+        var date: String = DateUtil().getTime(),
+
+        @ColumnInfo(name = "deviceType")
+        var deviceType: String = "LinkSquare",
+
+        @ColumnInfo(name = "deviceId")
+        var deviceId: String? = null,
+
+        @ColumnInfo(name = "operator")
+        var operator: String? = null,
+
+        @ColumnInfo(name = "lightSource")
+        var lightSource: Int? = null,
+
         @ColumnInfo(name = "sid")
         @PrimaryKey(autoGenerate = true)
         var sid: Long? = null) {
-
-    @ColumnInfo(name = "date")
-    var date = DateUtil().getTime()
-
-    @ColumnInfo(name = "deviceType")
-    var deviceType: String = "LinkSquare"
-
-    @ColumnInfo(name = "deviceId")
-    var deviceId: String? = null
-
-    @ColumnInfo(name = "operator")
-    var operator: String? = null
-
-    @ColumnInfo(name = "lightSource")
-    var lightSource: Int? = null
 
     override fun equals(other: Any?): Boolean {
 

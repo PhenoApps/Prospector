@@ -12,7 +12,7 @@ import java.io.File
 
 
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
-        views = [SampleScanCount::class], version = 1)
+        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1)
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -37,6 +37,9 @@ abstract class ProspectorDatabase : RoomDatabase() {
         return false
     }
 
+    /**
+     * The database must enable foreign keys using pragma to cascade deletes.
+     */
     override fun init(configuration: DatabaseConfiguration) {
 
         val path = configuration.context.getDatabasePath("PROSPECTOR").path

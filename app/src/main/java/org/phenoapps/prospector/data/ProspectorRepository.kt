@@ -10,6 +10,7 @@ class ProspectorRepository
     private constructor(
             private val dao: ProspectorDao) {
 
+    fun getDeviceTypeExports() = dao.getDeviceTypeExports()
     fun getExperiments() = dao.getExperiments()
     fun getSamples() = dao.getSamples()
     fun getScans() = dao.getScans()
@@ -54,7 +55,7 @@ class ProspectorRepository
 
     suspend fun insertFrame(sid: Long, frame: SpectralFrame) = dao.insertFrame(sid, frame.frameId, frame.spectralValues, frame.lightSource)
 
-    suspend fun insertSample(sample: Sample) = dao.insertSample(sample.eid, sample.name, sample.date, sample.note ?: "")
+    suspend fun insertSample(sample: Sample) = dao.insertSample(sample.eid, sample.name, sample.date, sample.note)
 
     suspend fun insertScan(scan: Scan): Long = dao.insertScan(scan.eid, scan.name, scan.date, scan.deviceId ?: "", scan.operator ?: "", scan.deviceType, scan.lightSource ?: -1)
 
