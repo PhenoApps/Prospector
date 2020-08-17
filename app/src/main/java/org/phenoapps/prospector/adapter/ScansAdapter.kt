@@ -71,32 +71,36 @@ class ScansAdapter(val context: Context, private val viewModel: ExperimentSample
 
                     }
 
-                    val frames = data.await().first()
+                    val waitData = data.await()
 
-                    preGraph.await()
+                    if (waitData.isNotEmpty()) {
 
-                    val renderData = withContext(Dispatchers.Main) {
+                        val frames = waitData.first()
 
-                        val convert = PreferenceManager.getDefaultSharedPreferences(context)
-                                .getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                        preGraph.await()
 
-                        val wavelengths = if (!convert) {
+                        val renderData = withContext(Dispatchers.Main) {
 
-                            frames.spectralValues.split(" ").mapIndexed { index, value ->
+                            val convert = PreferenceManager.getDefaultSharedPreferences(context)
+                                    .getBoolean(CONVERT_TO_WAVELENGTHS, false)
 
-                                DataPoint(index+1.0, value.toDouble())
+                            val wavelengths = if (!convert) {
 
-                            }
+                                frames.spectralValues.split(" ").mapIndexed { index, value ->
+
+                                    DataPoint(index+1.0, value.toDouble())
+
+                                }
 
 
-                        } else frames.toWaveMap().map { DataPoint(it.first, it.second) }
+                            } else frames.toWaveMap().map { DataPoint(it.first, it.second) }
 
-                        centerViewport(graph, wavelengths)
+                            centerViewport(graph, wavelengths)
 
-                        renderPotato(graph, wavelengths)
+                            renderPotato(graph, wavelengths)
 
+                        }
                     }
-
                 }
 
                 bind(scan, View.OnClickListener {

@@ -151,11 +151,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                         }
 
-                        //mBinding?.recyclerView?.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
-                        //updateUi()
-
-                        //queueScroll()
-
                     } else  mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.adapterPosition)
 
                 }

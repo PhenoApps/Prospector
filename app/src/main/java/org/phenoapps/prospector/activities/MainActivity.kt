@@ -368,7 +368,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             launch {
 
-                //loadDeveloperData()
+                loadDeveloperData()
 
             }
         }
@@ -392,7 +392,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 this.note = "Developer test note ${UUID.randomUUID().toString()}"
             }).await()
 
-            repeat(10) {
+            repeat(1000) {
 
                 val sid = sViewModel.insertScan(Scan(eid, uuid).also {
                     it.deviceId="1-2-3-4"

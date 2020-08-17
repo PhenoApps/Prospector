@@ -4,7 +4,6 @@ import DEVICE_TYPE
 import OPERATOR
 import android.os.Bundle
 import android.view.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -27,13 +26,8 @@ import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.FileUtil
 import org.phenoapps.prospector.utils.SnackbarQueue
 
-/*
-The scan activity should import, export, and scan new samples into an experiment
-Experiment id's are passed as arguments to this activity. Argument named: "experiment" type: int
- */
 class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val mSnackbar = SnackbarQueue()
@@ -56,23 +50,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
     private var mSampleName: String? = null
 
     private lateinit var mDeviceInfo: LinkSquareAPI.LSDeviceInfo
-
-//    private var mExpScans: List<ExperimentScans> = ArrayList()
-
-    private val importScans by lazy {
-
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
-            launch {
-
-                withContext(Dispatchers.IO) {
-
-                    FileUtil(requireContext()).parseInputFile(mExpId, uri, sViewModel)
-
-                }
-            }
-        }
-    }
 
     private fun insertScan(name: String, frames: List<LSFrame>) {
 
@@ -224,8 +201,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
                                 }
                             } else ui.recyclerView.adapter?.notifyDataSetChanged()
                         }
-
-                        updateUi()
                     }
 
                 }).attachToRecyclerView(ui.recyclerView)
@@ -241,23 +216,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private fun startObservers() {
-
-        updateUi()
-
-        sDeviceViewModel.setEventListener {
-
-            requireActivity().runOnUiThread {
-
-                callScanDialog()
-
-            }
-
-        }.observe(viewLifecycleOwner, Observer {
-
-        })
-    }
-
-    private fun updateUi() {
 
         mSampleName?.let { name ->
 
@@ -279,6 +237,18 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
                 } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
             })
         }
+
+        sDeviceViewModel.setEventListener {
+
+            requireActivity().runOnUiThread {
+
+                callScanDialog()
+
+            }
+
+        }.observe(viewLifecycleOwner, Observer {
+
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -286,6 +256,12 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         inflater.inflate(R.menu.menu_scan_list, menu)
 
         super.onCreateOptionsMenu(menu, inflater)
+
+    }
+
+    private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {
+
+        sViewModel.deleteScans(exp, sample)
 
     }
 
@@ -301,9 +277,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
                         launch {
 
-                            sViewModel.deleteScans(mExpId, sample)
+                            deleteScans(mExpId, sample)
 
-                            updateUi()
                         }
                     }
                 }

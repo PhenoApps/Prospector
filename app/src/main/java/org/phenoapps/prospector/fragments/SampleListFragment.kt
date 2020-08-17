@@ -12,7 +12,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.observe
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -55,13 +55,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    override fun onDestroyView() {
-
-        coroutineContext.cancel()
-
-        super.onDestroyView()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val eid = arguments?.getLong("experiment", -1L) ?: -1L
@@ -99,7 +92,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 ui.setupButtons()
 
-                updateUi()
+                startObservers()
 
                 return ui.root
             }
@@ -169,8 +162,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     }
                 })
-
-                updateUi()
             }
         }
 
@@ -253,10 +244,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                                 deleteSample(Sample(s.eid, s.name))
 
-                                updateUi()
-
                             }
-
                         }
 
                     } else mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
@@ -272,33 +260,33 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    private fun updateUi() {
+    private fun startObservers() {
 
-        sSamples.getSampleScanCounts(mExpId).observe(viewLifecycleOwner) {
+        sSamples.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, Observer {
 
-            it?.let { date ->
+            it?.let { data ->
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
                         .submitList(when (mSortState) {
 
                             DATE_DESC -> {
 
-                                it.sortedByDescending { it.date }
+                                data.sortedByDescending { it.date }
                             }
 
                             DATE_ASC -> {
 
-                                it.sortedBy { it.date }
+                                data.sortedBy { it.date }
                             }
 
                             ALPHA_DESC -> {
 
-                                it.sortedByDescending { it.name }
+                                data.sortedByDescending { it.name }
                             }
 
                             else -> {
 
-                                it.sortedBy { it.name }
+                                data.sortedBy { it.name }
                             }
                         })
 
@@ -308,7 +296,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 }, 250)
             }
-        }
+        })
     }
 }
 
