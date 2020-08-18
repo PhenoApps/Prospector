@@ -571,7 +571,7 @@ open class FileUtil(private val ctx: Context) {
 
 
     @WorkerThread
-    fun getFilePath(context: Context, uri: Uri): String? = context.run {
+    fun getFilePath(uri: Uri): String? = ctx.run {
         when {
 
             Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ->

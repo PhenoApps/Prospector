@@ -7,6 +7,7 @@ import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
 import OPERATOR
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -21,8 +22,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.documentfile.provider.DocumentFile
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
@@ -146,7 +149,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             else -> ".json"
         }
 
-        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { it?.let { uri ->
+        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { it?.let { uri ->
 
             withData { exports ->
 
@@ -156,22 +159,46 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                         val start = System.nanoTime()
 
+                        val chosenUri = Uri.parse(uri.toString())
+
+                        val folder = DocumentFile.fromTreeUri(applicationContext, chosenUri)
+
                         when (exportType) {
 
-                            //TODO add all device exports
                             "CSV" -> {
 
-                                exports.groupBy { it.deviceType }.forEach {
+                                folder?.let {
 
-                                    FileUtil(this@MainActivity).exportCsv(uri, it.value, convert)
+                                    val docFile = it.createDirectory("Output_${DateUtil().getTime()}")
 
+                                    docFile?.let { directory ->
+
+                                        exports.groupBy { it.deviceType }.forEach {
+
+                                            directory.createFile("text/csv", "${it.key}.csv")?.let { output ->
+
+                                                FileUtil(this@MainActivity).exportCsv(output.uri, it.value, convert)
+
+                                            }
+                                        }
+                                    }
                                 }
-
                             }
                             else -> {
 
-                                FileUtil(this@MainActivity).exportJson(uri, exports, convert)
+                                folder?.let {
 
+                                    val docFile = it.createDirectory("Output_${DateUtil().getTime()}")
+
+                                    docFile?.let { directory ->
+
+                                        directory.createFile("application/json", "scans.json")?.let { output ->
+
+                                            FileUtil(this@MainActivity).exportJson(output.uri, exports, convert)
+
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -179,7 +206,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     }
                 }
             }
-        }}.launch("${defaultFileNamePrefix}_${DateUtil().getTime()}$ext")
+        }}.launch(applicationContext.filesDir.toUri())
     }
 
     private suspend fun disconnectDeviceAsync() {
