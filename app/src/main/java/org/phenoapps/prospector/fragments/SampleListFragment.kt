@@ -162,6 +162,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     }
                 })
+
+                startObservers()
             }
         }
 
