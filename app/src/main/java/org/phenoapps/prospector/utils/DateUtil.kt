@@ -13,7 +13,14 @@ class DateUtil {
     //20200603T163115Z
     fun getTime(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-                "yyyy-MM-dd_HH_mm_ss_SSS"))
+                "dd-MMM-yyyy"))
+    } else {
+        Calendar.getInstance().time.toString()
+    }
+
+    fun getScanTime(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern(
+                "dd-MMM-yy hh:mm a"))
     } else {
         Calendar.getInstance().time.toString()
     }

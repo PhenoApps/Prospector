@@ -57,7 +57,7 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{scan.lightSource == 0 ? @string/led : @string/incandescent}"
+            android:text="@{scan.lightSource == 0 ? @string/led : @string/bulb}"
             android:onClick="@{minimizeOnClick}"
             app:layout_constraintTop_toBottomOf="@id/deviceView"
             app:layout_constraintBottom_toTopOf="@id/graphView"

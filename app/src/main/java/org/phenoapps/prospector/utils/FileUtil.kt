@@ -254,6 +254,10 @@ open class FileUtil(private val ctx: Context) {
                     }
                 }
             }
+
+            writer.close()
+
+            stream.close()
         }
     }
 

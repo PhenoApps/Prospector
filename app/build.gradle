@@ -114,6 +114,15 @@ dependencies {
 
     implementation "androidx.room:room-ktx:$room_lifecycle_version"
 
+    //about fragment
+    //github repositories
+    implementation 'com.github.MFlisar:changelog:1.1.7'
+    implementation 'com.mikepenz:aboutlibraries-core:8.3.0'
+    implementation 'com.mikepenz:aboutlibraries:8.3.0'
+    //    Dont update the next lib
+    implementation 'com.github.daniel-stoneuk:material-about-library:2.4.2'
+
+
     //androidx
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'

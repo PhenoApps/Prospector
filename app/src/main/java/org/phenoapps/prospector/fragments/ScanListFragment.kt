@@ -1,19 +1,23 @@
 package org.phenoapps.prospector.fragments
 
+import CONVERT_TO_WAVELENGTHS
+import DEVICE_ALIAS
 import DEVICE_TYPE
 import OPERATOR
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
-import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ScansAdapter
@@ -25,10 +29,15 @@ import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
-import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.interfaces.GraphItemClickListener
+import org.phenoapps.prospector.utils.*
 
-class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
+class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
+
+    private var mScanId: Long = 1L
+
+    private var mScanIds: Set<Long> = HashSet<Long>()
+    private var mScanColors = HashMap<Long, String>()
 
     private val mSnackbar = SnackbarQueue()
 
@@ -49,8 +58,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mSampleName: String? = null
 
-    private lateinit var mDeviceInfo: LinkSquareAPI.LSDeviceInfo
-
     private fun insertScan(name: String, frames: List<LSFrame>) {
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -61,13 +68,11 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 val sid = sViewModel.insertScan(Scan(mExpId, name).apply {
 
-                    if (::mDeviceInfo.isInitialized) {
-
-                        deviceId = mDeviceInfo.DeviceID
-
-                    }
+                    deviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID
 
                     this.deviceType = prefs.getString(DEVICE_TYPE, "LinkSquare") ?: "LinkSquare"
+
+                    this.alias = prefs.getString(DEVICE_ALIAS, "")
 
                     this.lightSource = frame.lightSource.toInt()
 
@@ -102,8 +107,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sOnClickScan = View.OnClickListener {
 
-        callScanDialog()
+        if (sDeviceViewModel.isConnected()) {
 
+            callScanDialog()
+
+        } else {
+
+            findNavController().navigate(ScanListFragmentDirections
+                    .actionToConnectInstructions())
+        }
     }
 
     private fun callScanDialog() {
@@ -116,7 +128,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
         val dialogInterface = dialog.show()
 
-        sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, Observer {
+        sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
 
             it?.let {  frames ->
 
@@ -154,6 +166,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
             val name = arguments?.getString("sample", String()) ?: String()
 
+            ui.title = name
+
             if (eid != -1L && name.isNotBlank()) {
 
                 mExpId = eid
@@ -162,48 +176,29 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 ui.sampleName = mSampleName
 
-                ui.recyclerView.adapter = ScansAdapter(requireContext(), sViewModel)
+                //whenever the tab layout changes, update the recylcer view
+                ui.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                    override fun onTabSelected(tab: TabLayout.Tab?) {
 
-                val undoString = getString(R.string.undo)
+                        resetGraph()
 
-                ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+                        startObservers()
 
-                    override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                        return false
                     }
 
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    override fun onTabUnselected(tab: TabLayout.Tab?) {}
 
-                        Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_scan), getString(R.string.cancel), getString(R.string.ok)) { result ->
+                    override fun onTabReselected(tab: TabLayout.Tab?) {}
 
-                            if (result) {
+                })
 
-                                (ui.recyclerView.adapter as ScansAdapter)
-                                        .currentList[viewHolder.adapterPosition].also { scan ->
+                launch {
 
-                                    launch {
+                    loadGraph()
 
-                                        withContext(Dispatchers.IO) {
+                }
 
-                                            sViewModel.getSpectralValues(scan.eid, scan.sid
-                                                    ?: -1L).let { frames ->
-
-                                                sViewModel.deleteScan(scan)
-
-                                                mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
-
-                                                    reinsertScan(scan, frames)
-
-                                                })
-                                            }
-                                        }
-                                    }
-                                }
-                            } else ui.recyclerView.adapter?.notifyDataSetChanged()
-                        }
-                    }
-
-                }).attachToRecyclerView(ui.recyclerView)
+                setupRecyclerView()
 
                 startObservers()
 
@@ -215,19 +210,142 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         return mBinding?.root
     }
 
+    private fun resetGraph() {
+
+        mScanIds = HashSet<Long>()
+
+        mScanColors = HashMap()
+
+        mBinding?.let { ui ->
+
+            resetGraph(ui.graphView)
+
+        }
+    }
+
+    private fun loadGraph() {
+
+//        mBinding?.let { ui ->
+//
+//            resetGraph(ui.graphView)
+//
+//        }
+
+        mBinding?.graphView?.removeAllSeries()
+
+        mSampleName?.let { sampleId ->
+
+            mScanIds.forEach {
+
+                renderGraph(sampleId, it, mScanColors[it])
+            }
+        }
+    }
+
+    private fun renderGraph(sampleId: String, scanId: Long, color: String?) {
+
+        mBinding?.let { ui ->
+
+            sViewModel.getSpectralValuesLive(mExpId, scanId).observeOnce(viewLifecycleOwner, {
+
+                it?.let { data ->
+
+                    if (data.isNotEmpty()) {
+
+                        val convert = PreferenceManager.getDefaultSharedPreferences(context)
+                                .getBoolean(CONVERT_TO_WAVELENGTHS, true)
+
+                        val wavelengths = if (convert) data.toWaveArray() else data.toPixelArray()
+
+                        setViewportGrid(ui.graphView)
+
+                        centerViewport(ui.graphView, wavelengths)
+
+                        setViewportScalable(ui.graphView)
+
+                        renderNormal(ui.graphView, wavelengths, color)
+
+                    }
+                }
+            })
+        }
+    }
+
+    private fun setupRecyclerView() {
+
+        mBinding?.let { ui ->
+
+            ui.recyclerView.adapter = ScansAdapter(requireContext(), this)
+
+            val undoString = getString(R.string.undo)
+
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+
+                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+                    Dialogs.onOk(AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_scan), getString(R.string.cancel), getString(R.string.ok)) { result ->
+
+                        if (result) {
+
+                            (ui.recyclerView.adapter as ScansAdapter)
+                                    .currentList[viewHolder.adapterPosition].also { scan ->
+
+                                launch {
+
+                                    withContext(Dispatchers.IO) {
+
+                                        sViewModel.getSpectralValues(scan.eid, scan.sid
+                                                ?: -1L).let { frames ->
+
+                                            sViewModel.deleteScan(scan)
+
+                                            mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
+
+                                                reinsertScan(scan, frames)
+
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        } else ui.recyclerView.adapter?.notifyDataSetChanged()
+                    }
+                }
+
+            }).attachToRecyclerView(ui.recyclerView)
+        }
+    }
+
     private fun startObservers() {
 
         mSampleName?.let { name ->
 
-            sViewModel.getScans(mExpId, name).observe(viewLifecycleOwner, Observer { data ->
+            sViewModel.getScans(mExpId, name).observe(viewLifecycleOwner, { data ->
 
                 if (data.isNotEmpty()) {
+
+                    data.forEach {
+                        it?.sid?.let { id ->
+                            it?.color?.let { color ->
+
+                                mScanColors[id] = color
+
+                            }
+                        }
+                    }
 
                     mBinding?.let { ui ->
 
                         with (ui.recyclerView.adapter as ScansAdapter) {
 
-                            submitList(data)
+                            submitList(when (ui.tabLayout.selectedTabPosition) {
+                                0 -> data.filter { it.lightSource == 0 }
+                                else -> data.filter { it.lightSource == 1 }
+                            })
 
                         }
 
@@ -238,11 +356,18 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
             })
         }
 
+        /**
+         * LinkSquare API live data listener that responds to on-device button clicks.
+         */
         sDeviceViewModel.setEventListener {
 
             requireActivity().runOnUiThread {
 
-                callScanDialog()
+                if (sDeviceViewModel?.isConnected()) {
+
+                    callScanDialog()
+
+                }
 
             }
 
@@ -286,5 +411,33 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     * Listener connected to the adapter. Whenever a date is clicked it is either added to
+     * the list of viewable graphs or removed if it already exists.
+     */
+    override fun onItemClicked(id: Long, color: String?) {
+
+        mScanIds = if (id in mScanIds) mScanIds - id else mScanIds + id
+
+        loadGraph()
+    }
+
+    override fun onItemLongClicked(id: Long, color: String?) {
+
+        color?.let { nonNullColor ->
+
+            mScanColors[id] = nonNullColor
+
+            launch {
+
+                sViewModel.updateScanColor(mExpId, id, nonNullColor)
+
+            }
+
+            loadGraph()
+
+        }
     }
 }

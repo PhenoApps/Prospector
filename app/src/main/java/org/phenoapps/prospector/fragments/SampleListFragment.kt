@@ -1,16 +1,15 @@
 package org.phenoapps.prospector.fragments
 
-import ALPHA_ASC
 import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
 import android.os.Handler
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -38,7 +37,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mExpId: Long = -1L
 
-    private val sSamples: ExperimentSamplesViewModel by viewModels {
+    private val viewModel: ExperimentSamplesViewModel by viewModels {
 
         ExperimentSamplesViewModelFactory(
                 ProspectorRepository.getInstance(
@@ -49,9 +48,17 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mBinding: FragmentSampleListBinding? = null
 
-    private val sOnClickListener = View.OnClickListener {
+    private val sOnSearchClickListener = View.OnClickListener {
 
-        callInsertDialog()
+        findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeSearch(mExpId))
+
+    }
+
+    private val sOnNewClickListener = View.OnClickListener {
+
+        findNavController().navigate(SampleListFragmentDirections
+                .actionToNewSample(mExpId))
 
     }
 
@@ -72,21 +79,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
             mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_sample_list, container, false)
 
             mBinding?.let { ui ->
-
-                setFragmentResultListener("BarcodeResult") { key, bundle ->
-
-                    ui.onClick = sOnClickListener
-
-                    val code = bundle.getString("barcode_result", "") ?: ""
-
-                    if (code.isNotBlank()) {
-
-                        ui.editText.setText(code)
-
-                    }
-
-                    ui.executePendingBindings()
-                }
 
                 ui.setupRecyclerView()
 
@@ -112,13 +104,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
         when(item.itemId) {
 
-            R.id.menu_scan_code -> {
-
-                findNavController().navigate(SampleListFragmentDirections
-                        .actionToBarcodeScan())
-
-            }
-
             R.id.menu_search_sample -> {
 
                 findNavController().navigate(SampleListFragmentDirections
@@ -126,45 +111,45 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             }
 
-            R.id.menu_sort_sample -> {
-
-                item.setIcon(when (mSortState) {
-
-                    ALPHA_ASC -> {
-
-                        mSortState = DATE_DESC
-
-                        org.phenoapps.icons.R.drawable.ic_sort_by_date_descending_18dp
-
-                    }
-
-                    ALPHA_DESC -> {
-
-                        mSortState = ALPHA_ASC
-
-                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_ascending_18dp
-
-                    }
-
-                    DATE_ASC -> {
-
-                        mSortState = ALPHA_DESC
-
-                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_descending_18dp
-
-                    }
-
-                    else -> {
-
-                        mSortState = DATE_ASC
-
-                        org.phenoapps.icons.R.drawable.ic_sort_by_date_ascending_18dp
-
-                    }
-                })
-
-                startObservers()
-            }
+//            R.id.menu_sort_sample -> {
+//
+//                item.setIcon(when (mSortState) {
+//
+//                    ALPHA_ASC -> {
+//
+//                        mSortState = DATE_DESC
+//
+//                        org.phenoapps.icons.R.drawable.ic_sort_by_date_descending_18dp
+//
+//                    }
+//
+//                    ALPHA_DESC -> {
+//
+//                        mSortState = ALPHA_ASC
+//
+//                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_ascending_18dp
+//
+//                    }
+//
+//                    DATE_ASC -> {
+//
+//                        mSortState = ALPHA_DESC
+//
+//                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_descending_18dp
+//
+//                    }
+//
+//                    else -> {
+//
+//                        mSortState = DATE_ASC
+//
+//                        org.phenoapps.icons.R.drawable.ic_sort_by_date_ascending_18dp
+//
+//                    }
+//                })
+//
+//                startObservers()
+//            }
         }
 
         return super.onOptionsItemSelected(item)
@@ -172,13 +157,13 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun FragmentSampleListBinding.setupButtons() {
 
-        onClick = sOnClickListener
+        onClick = sOnNewClickListener
 
     }
 
     private suspend fun insertSample(sample: String, note: String) = withContext(Dispatchers.IO) {
 
-        sSamples.insertSample(Sample(mExpId, sample).apply {
+        viewModel.insertSample(Sample(mExpId, sample).apply {
 
             this.date = DateUtil().getTime()
 
@@ -186,35 +171,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
         }).await()
 
-    }
-
-    private fun callInsertDialog() {
-
-        val sample = mBinding?.editText?.text?.toString() ?: ""
-        val note = mBinding?.noteText?.text?.toString() ?: ""
-
-        if (sample.isNotBlank()) {
-
-            CoroutineScope(Dispatchers.IO).launch {
-
-                insertSample(sample, note)
-
-            }
-
-            mBinding?.editText?.setText("")
-            mBinding?.noteText?.setText("")
-
-            findNavController().navigate(SampleListFragmentDirections
-                    .actionToScanList(mExpId, sample))
-
-        } else {
-
-            mBinding?.let { ui ->
-
-                sSnackbarQueue.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.ask_sample_name)))
-
-            }
-        }
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
@@ -258,13 +214,26 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private suspend fun deleteSample(sample: Sample) = withContext(Dispatchers.IO) {
 
-        sSamples.deleteSample(sample.eid, sample.name)
+        viewModel.deleteSample(sample.eid, sample.name)
 
     }
 
     private fun startObservers() {
 
-        sSamples.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, Observer {
+        //set the title header
+        viewModel.experiments.observe(viewLifecycleOwner, {
+
+            it.filter { it.eid == mExpId }.first().also {
+
+                activity?.runOnUiThread {
+
+                    (activity as? AppCompatActivity)?.supportActionBar?.title = it.name
+
+                }
+            }
+        })
+
+        viewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, Observer {
 
             it?.let { data ->
 

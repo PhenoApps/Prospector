@@ -10,13 +10,18 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
-import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.databinding.ListItemExperimentBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
 
 class ExperimentAdapter(
         val context: Context
-) : ListAdapter<Experiment, ExperimentAdapter.ViewHolder>(DiffCallbacks.Companion.ExperimentDiffCallback()) {
+) : ListAdapter<ExperimentAdapter.ExperimentListItem, ExperimentAdapter.ViewHolder>(DiffCallbacks.Companion.ExperimentDiffCallback()) {
+
+    data class ExperimentListItem(val id: Long,
+                                  val date: String,
+                                  val name: String,
+                                  val sampleName: String? = String(),
+                                  val count: Int)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -33,7 +38,7 @@ class ExperimentAdapter(
 
             with(holder) {
 
-                itemView.tag = experiment.eid
+                itemView.tag = experiment.id
 
                 bind(experiment)
             }
@@ -42,18 +47,14 @@ class ExperimentAdapter(
 
     class ViewHolder(private val binding: ListItemExperimentBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(experiment: Experiment) {
+        fun bind(experiment: ExperimentListItem) {
 
             with(binding) {
 
                 clickListener = View.OnClickListener {
 
-                    experiment.eid?.let { eid ->
-
-                        Navigation.findNavController(binding.root).navigate(
-                                ExperimentListFragmentDirections.actionToSamples(eid))
-
-                    }
+                    Navigation.findNavController(binding.root).navigate(
+                            ExperimentListFragmentDirections.actionToSamples(experiment.id))
 
                 }
 

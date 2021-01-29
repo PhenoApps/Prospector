@@ -35,16 +35,18 @@ class SampleAdapter(
 
                 itemView.tag = sample.name
 
-                bind(sample)
+                bind(sample, position)
             }
         }
     }
 
     class ViewHolder(private val binding: ListItemSampleBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(sample: SampleScanCount) {
+        fun bind(sample: SampleScanCount, listPosition: Int) {
 
             with(binding) {
+
+                position = listPosition + 1
 
                 clickListener = View.OnClickListener {
 

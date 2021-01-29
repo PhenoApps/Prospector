@@ -12,12 +12,14 @@ class ProspectorRepository
 
     fun getDeviceTypeExports() = dao.getDeviceTypeExports()
     fun getExperiments() = dao.getExperiments()
+    fun getExperimentCounts() = dao.getExperimentCounts()
     fun getSamples() = dao.getSamples()
     fun getScans() = dao.getScans()
     fun getFrames() = dao.getFrames()
-    fun getSamples(eid: Long) = dao.getSamples(eid)
+    fun getSamplesLive(eid: Long) = dao.getSamplesLive(eid)
     fun getSampleScanCounts(eid: Long) = dao.getSampleScanCounts(eid)
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = dao.getSpectralValues(eid, sid)
+    fun getSamples(eid: Long): List<Sample> = dao.getSamples(eid)
     fun getSpectralValuesLive(eid: Long, sid: Long)= dao.getSpectralValuesLive(eid, sid)
 
     fun getScans(eid: Long, sid: String) = dao.getScans(eid, sid)
@@ -58,6 +60,8 @@ class ProspectorRepository
     suspend fun insertSample(sample: Sample) = dao.insertSample(sample.eid, sample.name, sample.date, sample.note)
 
     suspend fun insertScan(scan: Scan): Long = dao.insertScan(scan.eid, scan.name, scan.date, scan.deviceId ?: "", scan.operator ?: "", scan.deviceType, scan.lightSource ?: -1)
+
+    suspend fun updateScanColor(eid: Long, scanId: Long, color: String) = dao.updateScanColor(eid, scanId, color)
 
     companion object {
 

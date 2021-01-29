@@ -2,17 +2,21 @@ package org.phenoapps.prospector.fragments
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -20,7 +24,6 @@ import org.phenoapps.prospector.R
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.ProspectorRepository
-import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
@@ -39,38 +42,36 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sOnNewExpClick = View.OnClickListener {
 
-        val newExpString = getString(R.string.new_experiment_prefix)
-
-        val tryEnterNameString = getString(R.string.new_exp_must_enter_name)
-
-        mBinding?.let { ui ->
-
-            val value = ui.experimentIdEditText.text.toString().trim()
-
-            if (value.isNotBlank()) {
-
-                launch {
-
-                    val eid = sExpSamples.insertExperiment(Experiment(value)).await()
-
-                    Snackbar.make(ui.root,
-                            "$newExpString: $value.", Snackbar.LENGTH_SHORT).show()
-
-                    ui.experimentIdEditText.text.clear()
-
-                    updateUi()
-                }
-
-            } else {
-
-                Snackbar.make(ui.root,
-                        tryEnterNameString, Snackbar.LENGTH_LONG).show()
-
-            }
-        }
+        findNavController().navigate(ExperimentListFragmentDirections
+                .actionToNewExperiment())
     }
 
     private var mBinding: FragmentExperimentListBinding? = null
+
+    private val checkPermissions by lazy {
+
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+            //ensure all permissions are granted
+            if (!granted.values.all { it }) {
+                activity?.let {
+                    it.setResult(android.app.Activity.RESULT_CANCELED)
+                    it.finish()
+                }
+            } else {
+
+                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+                if (prefs.getBoolean("FIRST_LOAD", true)) {
+
+                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
+
+                    findNavController().navigate(ExperimentListFragmentDirections
+                            .actionToConnectInstructions())
+                }
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -88,28 +89,17 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             updateUi()
 
-            return ui.root
+            checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
 
         }
 
         setHasOptionsMenu(true)
 
-        return null
-    }
+        (activity as? AppCompatActivity)?.supportActionBar?.title = ""
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-//        inflater.inflate(R.menu.activity_main_toolbar, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-//        when(item.itemId) {
-//
-//        }
-        return super.onOptionsItemSelected(item)
+        return mBinding?.root
     }
 
     private fun setupButtons() {
@@ -161,7 +151,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun updateUi() {
 
-        sExpSamples.experiments.observe(viewLifecycleOwner, Observer {
+        sExpSamples.experimentCounts.observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                     ?.submitList(it)

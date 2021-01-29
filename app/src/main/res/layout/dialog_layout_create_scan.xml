@@ -23,32 +23,29 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/imageView"
+            app:layout_constraintBottom_toTopOf="@id/progressView"
             app:layout_constraintVertical_weight=".1"/>
 
         <ProgressBar
-            android:id="@+id/imageView"
+            android:id="@+id/progressView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/sampleText"
-            app:layout_constraintBottom_toTopOf="@id/emptyView"
-            app:layout_constraintVertical_weight=".1" />
+            app:layout_constraintBottom_toTopOf="@id/imageView"/>
 
-        <View
-            android:id="@+id/emptyView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <ImageView
+            android:layout_width="256dp"
+            android:layout_height="256dp"
+            android:id="@+id/imageView"
+            android:src="@drawable/instruction_linksquare_01"
+            app:layout_constraintTop_toBottomOf="@id/progressView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageView"
-            app:layout_constraintVertical_weight=".8"/>
+            app:layout_constraintEnd_toEndOf="parent"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

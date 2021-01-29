@@ -25,13 +25,19 @@ data class Scan(
         var name: String,
 
         @ColumnInfo(name = "date")
-        var date: String = DateUtil().getTime(),
+        var date: String = DateUtil().getScanTime(),
 
         @ColumnInfo(name = "deviceType")
         var deviceType: String = "LinkSquare",
 
+        @ColumnInfo(name = "color")
+        var color: String? = null,
+
         @ColumnInfo(name = "deviceId")
         var deviceId: String? = null,
+
+        @ColumnInfo(name = "alias")
+        var alias: String? = null,
 
         @ColumnInfo(name = "operator")
         var operator: String? = null,

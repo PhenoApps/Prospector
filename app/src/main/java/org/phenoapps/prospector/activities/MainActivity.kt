@@ -2,39 +2,27 @@ package org.phenoapps.prospector.activities
 
 import BULB_FRAMES
 import CONVERT_TO_WAVELENGTHS
-import EXPORT_TYPE
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
-import OPERATOR
-import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
-import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
-import androidx.documentfile.provider.DocumentFile
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
-import com.google.android.material.navigation.NavigationView
-import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
+import org.phenoapps.prospector.MainGraphDirections
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.ProspectorRepository
@@ -43,11 +31,10 @@ import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
 import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
 import org.phenoapps.prospector.databinding.ActivityMainBinding
-import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
 import org.phenoapps.prospector.utils.DateUtil
-import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.FileUtil
 import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.utils.observeOnce
 import java.io.File
 import java.util.*
 
@@ -56,6 +43,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    //flag to track when a device is connected, used to change the options menu icon
+    private var mConnected: Boolean = false
 
     private val sViewModel: ExperimentSamplesViewModel by viewModels {
 
@@ -72,27 +62,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private lateinit var mSnackbar: SnackbarQueue
 
-    private lateinit var mDrawerLayout: DrawerLayout
-
-    private lateinit var mDrawerToggle: ActionBarDrawerToggle
-
     private lateinit var mBinding: ActivityMainBinding
 
     private lateinit var mNavController: NavController
 
-    private val permissionCheck by lazy {
-
-
-        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-
-            setupActivity()
-
-        }
-    }
-
     private fun withData(function: CoroutineScope.(List<DeviceTypeExport>) -> Unit) {
 
-        sViewModel.deviceTypeExports.observe(this@MainActivity, Observer {
+        sViewModel.deviceTypeExports.observeOnce(this@MainActivity, Observer {
 
             it?.let { exports ->
 
@@ -100,37 +76,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             }
         })
-    }
-
-    /**
-     * Function that starts export depending on the preferences.
-     * Asks a dialog for export type, or immediately creates json/csv.
-     */
-    private fun askExport() {
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        val askType = getString(R.string.export_type_always_ask)
-        val jsonType = getString(R.string.export_type_brapi)
-        val csvType = getString(R.string.export_type_csv)
-
-        when (val exportType = prefs.getString(EXPORT_TYPE, "0") ?: "0") {
-
-            "0" -> {
-
-                Dialogs.askForExportType(AlertDialog.Builder(this@MainActivity),
-                        getString(R.string.ask_export_type_title),
-                        arrayOf(csvType, jsonType)) { type ->
-
-                    exportFile(type)
-
-                }
-            }
-
-            "1" -> exportFile("csv")
-
-            else -> exportFile("json")
-        }
     }
 
     /**
@@ -149,7 +94,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             else -> ".json"
         }
 
-        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { it?.let { uri ->
+        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { it?.let { uri ->
 
             withData { exports ->
 
@@ -159,54 +104,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                         val start = System.nanoTime()
 
-                        val chosenUri = Uri.parse(uri.toString())
+                        FileUtil(this@MainActivity).exportCsv(uri, exports, convert)
 
-                        val folder = DocumentFile.fromTreeUri(applicationContext, chosenUri)
-
-                        when (exportType) {
-
-                            "CSV" -> {
-
-                                folder?.let {
-
-                                    val docFile = it.createDirectory("Output_${DateUtil().getTime()}")
-
-                                    docFile?.let { directory ->
-
-                                        exports.groupBy { it.deviceType }.forEach {
-
-                                            directory.createFile("text/csv", "${it.key}.csv")?.let { output ->
-
-                                                FileUtil(this@MainActivity).exportCsv(output.uri, it.value, convert)
-
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else -> {
-
-                                folder?.let {
-
-                                    val docFile = it.createDirectory("Output_${DateUtil().getTime()}")
-
-                                    docFile?.let { directory ->
-
-                                        directory.createFile("application/json", "scans.json")?.let { output ->
-
-                                            FileUtil(this@MainActivity).exportJson(output.uri, exports, convert)
-
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Log.d("ExportTime", (1e-9*(System.nanoTime()-start)).toString())
+                        Log.d("ExportTime", (1e-9 * (System.nanoTime() - start)).toString())
                     }
                 }
             }
-        }}.launch(applicationContext.filesDir.toUri())
+        }}.launch("Output_${DateUtil().getTime()}")
     }
 
     private suspend fun disconnectDeviceAsync() {
@@ -252,43 +156,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         mNavController = Navigation.findNavController(this@MainActivity, R.id.nav_fragment)
 
-        mNavController.addOnDestinationChangedListener { _, destination, _ ->
-
-            when (destination.id) {
-
-                R.id.experiment_list_fragment -> {
-
-                    mDrawerToggle.isDrawerIndicatorEnabled = true
-
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-
-                }
-                else -> {
-
-                    mDrawerToggle.isDrawerIndicatorEnabled = false
-
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-                }
-            }
-        }
-
     }
 
     private fun setupActivity() {
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        val uuid = UUID.randomUUID().toString()
-
-        prefs.edit().putBoolean(uuid, true).apply()
-
-        if (prefs.getBoolean(uuid, false)) {
-
-            Dialogs.largeNotify(AlertDialog.Builder(this@MainActivity),
-                    getString(R.string.initial_setup_instructions)
-            )
-        }
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
 
@@ -304,60 +176,145 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         supportActionBar.apply {
             title = ""
-            this?.let {
-                it.themedContext
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
+//            this?.let {
+//                it.themedContext
+//                setDisplayHomeAsUpEnabled(true)
+//                setHomeButtonEnabled(true)
+//            }
+        }
+
+        sDeviceViewModel.isConnectedLive().observeForever {
+
+            it?.let { status ->
+
+                mConnected = status
+
+                mSnackbar.push(SnackbarQueue
+                        .SnackJob(mBinding.root,
+                                if (status) getString(R.string.connected)
+                                else getString(R.string.disconnect)))
+
+                invalidateOptionsMenu()
+            }
+        }
+    }
+
+    override fun onPause() {
+
+        sDeviceViewModel.reset(this.applicationContext)
+
+        super.onPause()
+    }
+
+    override fun onResume() {
+
+        startDeviceConnection()
+
+        super.onResume()
+    }
+
+    private fun startDeviceConnection() {
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        launch {
+
+            sDeviceViewModel.connect(this@MainActivity.applicationContext)
+
+//            //TODO: 3G might need to be disabled for connection to work
+//            sDeviceViewModel.connection(this@MainActivity.applicationContext).observeOnce(this@MainActivity, {
+//
+//                it?.let {
+//
+//                    when (it) {
+//
+//                        is String -> {
+//
+//                            if (prefs.getBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true)) {
+//
+//                                mSnackbar.push(SnackbarQueue.SnackJob(
+//                                        mBinding.root,
+//                                        getString(R.string.connection_error),
+//                                        getString(R.string.settings)) {
+//
+//                                    mNavController.navigate(ExperimentListFragmentDirections.actionToSettings())
+//                                })
+//
+//                                prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, false).apply()
+//
+//                            } else {
+//
+//                            }
+//
+//                        }
+//
+//                        is LinkSquareAPI.LSDeviceInfo -> {
+//
+////                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connected)))
+//
+//                        }
+//
+//                        else -> {
+//
+////                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connecting)))
+//
+//                        }
+//                    }
+//                }
+//            })
+        }
+
+//
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+
+        if (mConnected) {
+
+            menuInflater.inflate(R.menu.menu_top_bar_connected, menu)
+
+        } else {
+
+            menuInflater.inflate(R.menu.menu_top_bar, menu)
+
+        }
+
+        return super.onCreateOptionsMenu(menu)
+
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+
+            R.id.action_connected -> {
+
+                //closes and reinitializes the device api
+                sDeviceViewModel.reset(this)
+
+            }
+
+            R.id.action_disconnected -> {
+
+                mNavController.navigate(MainGraphDirections
+                        .actionToConnectInstructions())
+
+                startDeviceConnection()
             }
         }
 
-        //TODO: 3G might need to be disabled for connection to work
-        sDeviceViewModel.connection(this@MainActivity).observe(this@MainActivity, Observer {
-
-            it?.let {
-
-                when (it) {
-
-                    is String -> {
-
-                        if (prefs.getBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true)) {
-
-                            mSnackbar.push(SnackbarQueue.SnackJob(
-                                    mBinding.root,
-                                    getString(R.string.connection_error),
-                                    getString(R.string.settings)) {
-
-                                mNavController.navigate(ExperimentListFragmentDirections.actionToSettings())
-                            })
-
-                            prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, false).apply()
-
-                        } else {
-
-                        }
-
-                    }
-
-                    is LinkSquareAPI.LSDeviceInfo -> {
-
-                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connected)))
-
-                    }
-
-                    else -> {
-
-                        mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.connecting)))
-
-
-                    }
-                }
-            }
-        })
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+//        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
+//                .detectAll()
+//                .penaltyLog()
+//                .penaltyDeath()
+//                .build())
 
         if ("release" in BuildConfig.FLAVOR) {
 
@@ -374,14 +331,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setupActivity()
 
-        if ("demo" in BuildConfig.FLAVOR) {
-
-            launch {
-
-                loadDeveloperData()
-
-            }
-        }
+//        if ("demo" in BuildConfig.FLAVOR) {
+//
+//            launch {
+//
+////                loadDeveloperData()
+//
+//            }
+//        }
     }
 
     private suspend fun loadDeveloperData() = withContext(Dispatchers.IO) {
@@ -396,7 +353,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val samples = arrayOf("toast", "mango", "grape", "popcorn")
 
-        val lightSources = arrayOf(0,1)
+        val lightSources = arrayOf(0, 1)
 
         val start = System.nanoTime()
 
@@ -409,10 +366,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 sViewModel.insertSample(Sample(eid, uuid, DateUtil().getTime(), "Developer test note ${UUID.randomUUID().toString()}")).await()
 
                 val sid = sViewModel.insertScan(Scan(eid, uuid, DateUtil().getTime(),
-                        deviceId="1-2-3-4",
+                        deviceId = "1-2-3-4",
                         deviceType = devices.random(),
-                        lightSource=lightSources.random(),
-                        operator="Developer")).await()
+                        lightSource = lightSources.random(),
+                        operator = "Developer")).await()
 
 //                val sid2 = sViewModel.insertScan(Scan(eid, uuid).also {
 //                    it.deviceId="1-2-3-4"
@@ -443,63 +400,45 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
 
-        Log.d("Time", (1e-9*(System.nanoTime()-start)).toString())
+        Log.d("Time", (1e-9 * (System.nanoTime() - start)).toString())
 
     }
 
     private fun setupNavDrawer() {
 
-        mDrawerLayout = mBinding.drawerLayout
+        val botNavView = mBinding.bottomNavView
 
-        mDrawerToggle = object : ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        botNavView.inflateMenu(R.menu.menu_bot_nav)
 
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+        botNavView.setOnNavigationItemSelectedListener { menuItem ->
 
-                super.onDrawerSlide(drawerView, slideOffset)
-
-                closeKeyboard()
-            }
-        }
-
-        mDrawerToggle.isDrawerIndicatorEnabled = true
-
-        mDrawerLayout.addDrawerListener(mDrawerToggle)
-
-        // Setup drawer view
-        val nvDrawer = findViewById<NavigationView>(R.id.nvView)
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        nvDrawer.getHeaderView(0).apply {
-            findViewById<TextView>(R.id.navHeaderText)
-                    .text = prefs.getString(OPERATOR, "")
-        }
-
-        nvDrawer.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
 
-                R.id.action_nav_export -> {
+                R.id.action_nav_data -> {
 
-                    askExport()
+                    mNavController.navigate(MainGraphDirections
+                            .actionToExperiments())
 
                 }
                 R.id.action_nav_settings -> {
 
-                    mNavController.navigate(ExperimentListFragmentDirections.actionToSettings())
+                    mNavController.navigate(MainGraphDirections
+                            .actionToSettings())
                 }
                 R.id.action_nav_about -> {
 
-                    //mNavController.navigate(ExperimentListFragmentDirections.actionToAbout())
+                    mNavController.navigate(MainGraphDirections
+                            .actionToAboutFragment())
 
+                }
+                R.id.action_nav_export -> {
+
+                    exportFile("csv")
                 }
             }
 
-            mDrawerLayout.closeDrawers()
-
             true
         }
-
-
     }
 
     private fun closeKeyboard() {
@@ -517,72 +456,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         }
 
-        coroutineContext.cancel()
-
         super.onDestroy()
 
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
-
-        closeKeyboard()
-
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-
-            return true
-        }
-
-        when (item.itemId) {
-
-            android.R.id.home -> {
-
-                mNavController.currentDestination?.let {
-
-                    when (it.id) {
-
-                        R.id.experiment_list_fragment -> {
-
-                            dl.openDrawer(GravityCompat.START)
-
-                        }
-
-                        /**
-                         * Disable back button if the number of selected frames is less than 1.
-                         */
-                        R.id.settings_fragment -> {
-
-                            onSettingsBackPressed()
-
-                        }
-
-                        //go back to the last fragment instead of opening the navigation drawer
-                        else -> mNavController.popBackStack()
-                    }
-                }
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-        return true
-    }
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-
-        if (::mDrawerToggle.isInitialized) {
-
-            mDrawerToggle.syncState()
-
-        }
-
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
     /**
@@ -599,14 +474,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     if (doubleBackToExitPressedOnce) {
 
-                        super.onBackPressed();
+                        super.onBackPressed()
 
                         return
                     }
 
-                    this.doubleBackToExitPressedOnce = true;
+                    this.doubleBackToExitPressedOnce = true
 
-                    Toast.makeText(this, getString(R.string.double_back_press), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.double_back_press), Toast.LENGTH_SHORT).show()
 
                     Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }

@@ -2,6 +2,9 @@ package org.phenoapps.prospector.utils
 
 import android.content.Context
 import android.graphics.Color
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
@@ -12,6 +15,15 @@ import org.phenoapps.prospector.data.models.SpectralFrame
 import kotlin.random.Random
 
 val plotColor = Color.BLACK
+
+fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
+    observe(lifecycleOwner, object : Observer<T> {
+        override fun onChanged(t: T?) {
+            observer.onChanged(t)
+            removeObserver(this)
+        }
+    })
+}
 
 fun renderPotato(graph: GraphView, data: List<DataPoint>) {
 
@@ -48,14 +60,14 @@ fun List<SpectralFrame>.toPixelArray(): List<DataPoint> {
 
 fun centerViewport(graph: GraphView, data: List<DataPoint>) = with(graph) {
 
-    val minX = data.minBy { it.x }?.x ?: 440.0
+    val minX = data.minByOrNull { it.x }?.x ?: 440.0
 
     //val maxX = 440.0+600.0
-    val maxX = data.maxBy { it.x }?.x ?: minX+600.0
+    val maxX = data.maxByOrNull { it.x }?.x ?: minX+600.0
 
-    val maxY = data.map { it.y }.max() ?: 400.0
+    val maxY = data.map { it.y }.maxOrNull() ?: 400.0
 
-    val minY = data.map { it.y }.min() ?: 0.0
+    val minY = data.map { it.y }.minOrNull() ?: 0.0
 
     val marginX = maxX*.05
 
@@ -97,9 +109,15 @@ fun setViewportScalable(graph: GraphView) = with(graph){
 
 }
 
-fun renderNormal(graph: GraphView, data: List<DataPoint>) = with(graph) {
+fun resetGraph(graph: GraphView) {
 
     graph.removeAllSeries()
+
+}
+
+fun renderNormal(graph: GraphView, data: List<DataPoint>, color: String?) = with(graph) {
+
+    //graph.removeAllSeries()
 
     var prev = 0
 
@@ -120,7 +138,14 @@ fun renderNormal(graph: GraphView, data: List<DataPoint>) = with(graph) {
 
         frame += 1
 
-        plot.color = Color.rgb(Random.nextInt(255),Random.nextInt(255),Random.nextInt(255))
+        plot.thickness = 2
+
+        plot.color = if (color != null) try {
+            Color.parseColor(color)
+        } catch (e: Exception) {
+            Color.rgb(Random.nextInt(255),Random.nextInt(255),Random.nextInt(255))
+        }
+        else Color.rgb(Random.nextInt(255),Random.nextInt(255),Random.nextInt(255))
 
         graph.addSeries(plot)
 

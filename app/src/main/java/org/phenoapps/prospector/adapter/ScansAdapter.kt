@@ -1,46 +1,35 @@
 package org.phenoapps.prospector.adapter
 
-import CONVERT_TO_WAVELENGTHS
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.Navigation
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.jjoe64.graphview.GraphView
-import com.jjoe64.graphview.series.DataPoint
-import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.data.models.Scan
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.databinding.ListItemGraphedScanBinding
-import org.phenoapps.prospector.fragments.ScanListFragmentDirections
-import org.phenoapps.prospector.utils.centerViewport
-import org.phenoapps.prospector.utils.renderPotato
-import org.phenoapps.prospector.utils.setViewportGrid
-import org.phenoapps.prospector.utils.toWaveMap
+import org.phenoapps.prospector.databinding.ListItemScanBinding
+import org.phenoapps.prospector.interfaces.GraphItemClickListener
+import org.phenoapps.prospector.utils.Dialogs
 
-class ScansAdapter(val context: Context, private val viewModel: ExperimentSamplesViewModel) : ListAdapter<Scan,
+class ScansAdapter(val context: Context, private val listener: GraphItemClickListener) : ListAdapter<Scan,
         ScansAdapter.ScanGraphViewHolder>(DiffCallbacks.Companion.ScanDiffCallback()) {
-
-    private val jobMap: MutableMap<ScanGraphViewHolder, Job> = HashMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScanGraphViewHolder {
 
         return ScanGraphViewHolder(
 
-                DataBindingUtil.inflate(
+            DataBindingUtil.inflate(
 
-                        LayoutInflater.from(parent.context),
+                LayoutInflater.from(parent.context),
 
-                        R.layout.list_item_graphed_scan, parent, false
+                R.layout.list_item_scan, parent, false
 
-                )
+            )
         )
     }
 
@@ -52,77 +41,20 @@ class ScansAdapter(val context: Context, private val viewModel: ExperimentSample
 
                 itemView.tag = scan.sid
 
-                val graph = itemView.findViewById<GraphView>(R.id.graphView)
+                bind(scan) {
 
-                jobMap[holder] = viewModel.viewModelScope.launch {
+                    scan.sid?.let { id ->
 
-                    val data = async {
+                        listener.onItemClicked(id, scan.color)
 
-                        return@async withContext(Dispatchers.IO) {
-
-                            return@withContext viewModel.getSpectralValues(scan.eid, scan.sid ?: -1L)
-
-                        }
-                    }
-
-                    val preGraph = async {
-
-                        setViewportGrid(graph)
-
-                    }
-
-                    val waitData = data.await()
-
-                    if (waitData.isNotEmpty()) {
-
-                        val frames = waitData.first()
-
-                        preGraph.await()
-
-                        val renderData = withContext(Dispatchers.Main) {
-
-                            val convert = PreferenceManager.getDefaultSharedPreferences(context)
-                                    .getBoolean(CONVERT_TO_WAVELENGTHS, false)
-
-                            val wavelengths = if (!convert) {
-
-                                frames.spectralValues.split(" ").mapIndexed { index, value ->
-
-                                    DataPoint(index+1.0, value.toDouble())
-
-                                }
-
-
-                            } else frames.toWaveMap().map { DataPoint(it.first, it.second) }
-
-                            centerViewport(graph, wavelengths)
-
-                            renderPotato(graph, wavelengths)
-
-                        }
                     }
                 }
-
-                bind(scan, View.OnClickListener {
-
-                    Navigation.findNavController(itemView).navigate(
-                            ScanListFragmentDirections
-                                    .actionToScanDetail(scan.eid, scan.name, scan.sid ?: -1L))
-
-                })
-
-//                } else {
-//
-//                    itemView.visibility = View.GONE
-//
-//                }
             }
-
         }
     }
 
     inner class ScanGraphViewHolder(
-            private val binding: ListItemGraphedScanBinding) : RecyclerView.ViewHolder(binding.root) {
+            private val binding: ListItemScanBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(scan: Scan, onClick: View.OnClickListener) {
 
@@ -130,24 +62,33 @@ class ScansAdapter(val context: Context, private val viewModel: ExperimentSample
 
                 if (itemView.tag == scan.sid) {
 
-                    this.nameView.text = scan.date
+                    nameView.setOnLongClickListener {
+
+                        val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
+
+                        adapter.addAll(*arrayOf("red", "blue", "green"))
+                        Dialogs.showColorChooserDialog(adapter, AlertDialog.Builder(context),
+                                context.getString(R.string.frag_scan_list_dialog_choose_color_title)) {
+
+                            scan.sid?.let { id ->
+
+                                listener.onItemLongClicked(id, it)
+
+                            }
+                        }
+
+                        true
+                    }
+//                    this.nameView.text = scan.date
 
                     this.onClick = onClick
 
-                    this.minimizeOnClick = View.OnClickListener {
-
-                        graphView.visibility = when (graphView.visibility) {
-                            View.GONE -> View.VISIBLE
-                            else -> View.GONE
-                        }
-                    }
-
                     this.scan = scan
-
-                    this.deviceType = when(scan.deviceType) {
-                        "0" -> "LinkSquare 1"
-                        else -> "Unknown"
-                    }
+//
+//                    this.deviceType = when(scan.deviceType) {
+//                        "0" -> "LinkSquare 1"
+//                        else -> "Unknown"
+//                    }
                 }
             }
         }

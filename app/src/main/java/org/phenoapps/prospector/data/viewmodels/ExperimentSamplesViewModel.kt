@@ -16,15 +16,17 @@ class ExperimentSamplesViewModel(
 
     val deviceTypeExports = repo.getDeviceTypeExports()
     val experiments = repo.getExperiments()
+    val experimentCounts = repo.getExperimentCounts()
     val samples = repo.getSamples()
     val scans = repo.getScans()
     val frames = repo.getFrames()
 
     //non-live
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = repo.getSpectralValues(eid, sid)
+    fun getSamples(eid: Long): List<Sample> = repo.getSamples(eid)
 
     //live data
-    fun getSamples(eid: Long) = repo.getSamples(eid)
+    fun getSamplesLive(eid: Long) = repo.getSamplesLive(eid)
     fun getSampleScanCounts(eid: Long) = repo.getSampleScanCounts(eid)
     fun getScans(eid: Long, sample: String) = repo.getScans(eid, sample)
     fun getSpectralValuesLive(eid: Long, sid: Long) = repo.getSpectralValuesLive(eid, sid)
@@ -46,6 +48,8 @@ class ExperimentSamplesViewModel(
 //
 //
 //    fun spectralFrames(eid: Long, sid: String) = repo.spectralFrames(eid, sid)
+
+    suspend fun updateScanColor(eid: Long, scanId: Long, color: String) = viewModelScope.launch { repo.updateScanColor(eid, scanId, color) }
 
     fun insertScan(scan: Scan): Deferred<Long> = viewModelScope.async { return@async repo.insertScan(scan) }
 

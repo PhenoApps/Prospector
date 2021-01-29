@@ -8,7 +8,7 @@
     <!-- -->
 
 
-    <string name="scans">scans</string>
+    <string name="scans">scan(s)</string>
 
     <string name="title_activity_scan">ScanActivity</string>
     <string name="title_activity_discover">DiscoverActivity</string>
@@ -269,7 +269,7 @@
 
     <!-- LinkSquare light source types -->
     <string name="led">LED</string>
-    <string name="incandescent">Incandescent</string>
+    <string name="bulb">Bulb</string>
     <string name="pref_convert_wavelengths_title">Convert to wavelengths</string>
     <string name="pref_convert_wavelengths_summary">The LinkSquare outputs pixel arrays by default, this setting converts this data to spectral wavelengths.</string>
     <string name="ask_export_type_title">Please choose an export type.</string>
@@ -277,4 +277,74 @@
     <string name="export_device_type_header">deviceType</string>
     <string name="export_operator_header">operator</string>
     <string name="scan_barcode">Button used to scan barcodes.</string>
+    <string name="dialog_new_experiment_name_hint">New experiment name</string>
+    <string name="dialog_new_experiment_note_hint">Experiment notes</string>
+    <string name="dialog_new_experiment_title">Experiment Creator</string>
+    <string name="dialog_new_experiment_message">Please enter an experiment name.</string>
+    <string name="dialog_new_experiment_prefix">New Experiment: </string>
+    <string name="dialog_new_experiment_error">Please enter a non-empty experiment name.</string>
+    <string name="dialog_new_sample_note_hint">Sample notes:</string>
+    <string name="dialog_new_sample_name_hint">Sample name: </string>
+
+    <string name="list_item_samples_suffix">sample(s)</string>
+    <string name="dialog_new_sample_error">Sample name must not be blank.</string>
+    <string name="dialog_new_samples_prefix">New sample: </string>
+    <string name="dialog_new_sample_message">Please input a sample name.</string>
+    <string name="dialog_new_sample_title">Sample Creator</string>
+    <string name="data">Data</string>
+    <string name="device_connected">Device connection status.</string>
+    <string name="nav_label_new_sample">Sample Creator Fragment</string>
+    <string name="nav_label_new_experiment">New Experiment Creator Fragment</string>
+    <string name="frag_instructions_step_one">Ensure your device is in AP mode. If the light is red, the battery is low. If the light is blue, press the button once.</string>
+    <string name="frag_instructions_step_two">After setting your device to AP mode, select the WiFi network on your phone. LinkSquare networks start with LS, and the default password is 8 zeros.</string>
+    <string name="frag_instructions_step_three">If the light is white, you\'re connected! Next create an experiment and sample to start scanning.</string>
+    <string name="frag_instructions_step_four">Click the bottom-right button to start creating Experiments. Once an experiment is made, you can similarly make Samples and start using your spectrometer.</string>
+    <string name="frag_instructions_step_five">(Optional) To connect via IoT, go to the app settings and enter the SSID and password for your network. You can manually set what IP-address to connect to in the settings, or search for local devices.</string>
+
+    <string name="nav_label_connect_instructions">Instructions for connecting the device using AP mode.</string>
+    <string name="pref_device_alias">Device Alias</string>
+    <string name="pref_device_alias_summary" />
+    <string name="pref_wifi_mode">Connection Mode</string>
+    <string name="pref_iot_title">IoT Settings</string>
+    <string name="pref_iot_summary">You can use IoT Mode when there is an available Wi-Fi network.</string>
+    <string name="pref_device_ssid_summary">The name of your Wi-Fi network.</string>
+    <string name="pref_device_ssid">SSID</string>
+    <string name="pref_device_password">Password</string>
+    <string name="pref_device_iot_list">Connect</string>
+    <string name="pref_iot_list_no_devices">Click to start IoT device search.</string>
+    <string name="pref_device_list_num_found_summary">device(s) found.</string>
+    <string name="pref_device_iot_searching">Searching...</string>
+    <string name="frag_new_sample_dialog_duplicate_title">Sample Exists</string>
+    <string name="frag_new_sample_dialog_duplicate_message">This sample has already been created. Would you like to add additional scans to this sample or create a new sample?</string>
+    <string name="frag_new_sample_dialog_add_to_sample">Add to sample</string>
+    <string name="frag_new_sample_dialog_new_sample">Create new sample</string>
+    <string name="frag_scan_list_dialog_choose_color_title">Choose a color</string>
+    <string name="menu_bot_nav_export_title">Export</string>
+    <string name="nav_label_about">About Fragment</string>
+
+    <!-- About dialog -->
+    <string name="about_version_title">Version</string>
+    <string name="about_title_other_apps">Other PhenoApps</string>
+    <string name="about_project_lead_title">Project Lead</string>
+    <string name="about_developer_title">Developer</string>
+    <string name="about_developer_trife" translatable="false">Trevor Rife</string>
+    <string name="about_developer_trife_location" translatable="false">Kansas State University</string>
+    <string name="about_developer_trife_email" translatable="false">trife@ksu.edu</string>
+    <string name="about_email_title">Email</string>
+    <string name="about_developer_trife_website" translatable="false">https://github.com/PhenoApps/Field-Book</string>
+    <string name="about_contributors_title">Contributors</string>
+    <string name="about_contributors_developers_title">Developers</string>
+    <string name="about_translators_title">Translators</string>
+    <string name="about_translators_text" translatable="false">Irazema Fuentes-Bueno,  Sandra Dunckel,  Shuangye Wu,  Narinder Singh,  Daljit Singh,  Erena Edae,  Tatiana Danilova,  Rodrigo Pedrozo,  Cristiano Lemes da Silva,  Sophie Bouchet,  Hiroyoshi Iwata,  Goro Ishikawa,  Khaled El-Shamaa, Mokhlesur Rahman, Alice Brunazzi</string>
+    <string name="about_contributors_funding_title">Funding</string>
+    <string name="about_contributors_funding_text_first" translatable="false">Development of </string>
+    <string name="about_contributors_funding_text_after" translatable="false"> has been supported by the Collaborative Crop Research Program of The McKnight Foundation, the National Science Foundation (#1543958), and the National Institute of Food and Agriculture (#2019-67021-29931).</string>
+    <string name="about_rate">Rate this app</string>
+    <string name="about_technical_title">Technical Details</string>
+    <string name="about_github_title">GitHub</string>
+    <string name="about_licenses_title">Licenses</string>
+    <string name="about_help_translate_title">Help translate</string>
+    <string name="changelog_title">Changelog</string>
+    <string name="libraries_title">Libraries</string>
+
 </resources>

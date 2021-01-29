@@ -2,6 +2,7 @@ package org.phenoapps.prospector.utils
 
 import android.app.Activity
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import org.phenoapps.prospector.R
@@ -30,10 +31,31 @@ class Dialogs {
 
                 }
 
-                binding.imageView.isIndeterminate = true
+                binding.progressView.isIndeterminate = true
 
-                binding.imageView.visibility = View.VISIBLE
+                binding.progressView.visibility = View.VISIBLE
             }
+
+        }
+
+        fun showColorChooserDialog(adapter: ArrayAdapter<String>,
+                               builder: AlertDialog.Builder,
+                               title: String,
+                               onSuccess: (String) -> Unit) {
+
+            builder.setTitle(title)
+
+            builder.setSingleChoiceItems(adapter, 0) { dialog, item ->
+
+                onSuccess(adapter.getItem(item) ?: "")
+
+                dialog.dismiss()
+
+            }
+
+            builder.create()
+
+            builder.show()
 
         }
 
@@ -42,12 +64,15 @@ class Dialogs {
          * If the ok button is pressed the boolean parameter to the function is set to true, false otherwise.
          */
         fun booleanOption(builder: AlertDialog.Builder, title: String,
+                          message: String,
                           positiveText: String, negativeText: String,
-                          neutralText: String, function: (Boolean) -> Unit) {
+                          function: (Boolean) -> Unit) {
 
             builder.apply {
 
                 setTitle(title)
+
+                setMessage(message)
 
                 setPositiveButton(positiveText) { _, _ ->
 
@@ -55,14 +80,9 @@ class Dialogs {
 
                 }
 
-                setNeutralButton(neutralText) { _, _ ->
-
-                    function(false)
-
-                }
-
                 setNegativeButton(negativeText) { _, _ ->
 
+                    function(false)
                 }
 
                 show()

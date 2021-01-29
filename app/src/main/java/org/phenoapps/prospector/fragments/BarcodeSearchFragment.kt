@@ -123,7 +123,7 @@ class BarcodeSearchFragment : Fragment() {
 
     private fun startObservers() {
 
-        sSamples.getSamples(mExpId).observe(viewLifecycleOwner, Observer {
+        sSamples.getSamplesLive(mExpId).observe(viewLifecycleOwner, Observer {
 
             it?.let { samples ->
 

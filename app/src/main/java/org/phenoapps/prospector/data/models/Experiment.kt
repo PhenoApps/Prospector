@@ -13,6 +13,9 @@ data class Experiment(
         @ColumnInfo(name = "name")
         var name: String,
 
+        @ColumnInfo(name = "note")
+        var note: String? = null,
+
         @ColumnInfo(name = "eid")
         @PrimaryKey(autoGenerate = true)
         var eid: Long? = null) {

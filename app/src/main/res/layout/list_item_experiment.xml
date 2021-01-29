@@ -8,22 +8,20 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="experiment"
-            type="org.phenoapps.prospector.data.models.Experiment"/>
+            type="org.phenoapps.prospector.adapter.ExperimentAdapter.ExperimentListItem"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{clickListener}"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/cell">
+        android:background="@drawable/cell"
+        android:layout_marginBottom="16dp">
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/expName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
             android:text="@{experiment.name}"
             app:layout_constraintBottom_toTopOf="@id/expDate"
             app:layout_constraintEnd_toEndOf="parent"
@@ -32,14 +30,23 @@
 
         <TextView style="@style/Text.ExperimentTitle.SubTitle"
             android:id="@+id/expDate"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
             android:text="@{experiment.date}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/expSamplesCountTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/expName" />
+
+        <TextView style="@style/Text.ExperimentTitle.SubTitle"
+            android:id="@+id/expSamplesCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:text="@{experiment.sampleName.length() > 0 ? String.valueOf(experiment.count)+@string/list_item_samples_suffix : String.valueOf(0)}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/expDate" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
