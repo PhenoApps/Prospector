@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:onClick="@{clickListener}"
         android:background="@drawable/cell"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="6dp">
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/expName"

@@ -1,0 +1,9 @@
+<changelog>
+    <release
+        date="2021-02-01"
+        versionCode="1"
+        versionName="v1.0">
+        <new>Initial release</new>
+    </release>
+
+</changelog>

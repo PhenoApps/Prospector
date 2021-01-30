@@ -8,7 +8,7 @@
     <!-- -->
 
 
-    <string name="scans">scan(s)</string>
+    <string name="scans">\u00A0scan(s)</string>
 
     <string name="title_activity_scan">ScanActivity</string>
     <string name="title_activity_discover">DiscoverActivity</string>
@@ -286,7 +286,7 @@
     <string name="dialog_new_sample_note_hint">Sample notes:</string>
     <string name="dialog_new_sample_name_hint">Sample name: </string>
 
-    <string name="list_item_samples_suffix">sample(s)</string>
+    <string name="list_item_samples_suffix">\u00A0sample(s)</string>
     <string name="dialog_new_sample_error">Sample name must not be blank.</string>
     <string name="dialog_new_samples_prefix">New sample: </string>
     <string name="dialog_new_sample_message">Please input a sample name.</string>
