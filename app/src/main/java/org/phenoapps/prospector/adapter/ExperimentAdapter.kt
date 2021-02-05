@@ -13,8 +13,12 @@ import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.databinding.ListItemExperimentBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
 
+/**
+ * The adapter class used in the experiment list fragment recycler view.
+ * Nothing special here, experiments can be clicked to navigate to their respective samples list fragment.
+ */
 class ExperimentAdapter(
-        val context: Context
+        private val context: Context
 ) : ListAdapter<ExperimentAdapter.ExperimentListItem, ExperimentAdapter.ViewHolder>(DiffCallbacks.Companion.ExperimentDiffCallback()) {
 
     data class ExperimentListItem(val id: Long,
@@ -45,7 +49,7 @@ class ExperimentAdapter(
         }
     }
 
-    class ViewHolder(private val binding: ListItemExperimentBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ListItemExperimentBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(experiment: ExperimentListItem) {
 
@@ -60,6 +64,14 @@ class ExperimentAdapter(
 
                 this.experiment = experiment
 
+                //count query uses a left join, so a single sample is still counted even if no samples exist for that experiment.
+                this.sampleCount = if (experiment.count == 1 && experiment.sampleName?.isBlank() != false) {
+                    context.resources
+                            .getQuantityString(R.plurals.numberOfSamples, 0, 0)
+                } else {
+                    context.resources
+                            .getQuantityString(R.plurals.numberOfSamples, experiment.count, experiment.count)
+                }
             }
         }
     }

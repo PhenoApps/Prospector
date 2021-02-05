@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals
+        name="numberOfSamples">
+        <item quantity="one">%d sample</item>
+        <item quantity="other">%d samples</item>
+    </plurals>
+    <plurals
+        name="numberOfScans">
+        <item quantity="one">%d scan</item>
+        <item quantity="other">%d scans</item>
+    </plurals>
+</resources>

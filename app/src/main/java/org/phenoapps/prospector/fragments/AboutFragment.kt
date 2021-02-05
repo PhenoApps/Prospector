@@ -3,7 +3,6 @@ package org.phenoapps.prospector.fragments
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -21,13 +20,6 @@ import org.phenoapps.prospector.R
 
 
 class AboutFragment : MaterialAboutFragment() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        requireContext().setTheme(R.style.AppTheme)
-
-    }
 
     public override fun getMaterialAboutList(c: Context): MaterialAboutList {
 

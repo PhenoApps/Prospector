@@ -25,6 +25,4 @@ data class SpectralFrame(
         var spectralValues: String,
 
         @ColumnInfo(name = "lightSource")
-        var lightSource: Int) {
-
-}
+        var lightSource: Int)

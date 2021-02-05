@@ -15,7 +15,7 @@ import org.phenoapps.prospector.databinding.ListItemSampleBinding
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
 
 class SampleAdapter(
-        val context: Context
+        private val context: Context
 ) : ListAdapter<SampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -40,7 +40,7 @@ class SampleAdapter(
         }
     }
 
-    class ViewHolder(private val binding: ListItemSampleBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ListItemSampleBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(sample: SampleScanCount, listPosition: Int) {
 
@@ -55,7 +55,11 @@ class SampleAdapter(
 
                 }
 
+                this.scanCount = context.resources
+                        .getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
+
                 this.sample = sample
+
             }
         }
     }

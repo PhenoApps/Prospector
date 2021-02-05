@@ -13,6 +13,9 @@ data class Experiment(
         @ColumnInfo(name = "name")
         var name: String,
 
+        @ColumnInfo(name = "deviceType")
+        var deviceType: String,
+
         @ColumnInfo(name = "note")
         var note: String? = null,
 

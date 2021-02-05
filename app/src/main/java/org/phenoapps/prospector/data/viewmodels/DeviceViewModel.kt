@@ -63,7 +63,7 @@ class DeviceViewModel : ViewModel() {
 
     }
 
-    fun reset(context: Context) {
+    fun reset() {
 
         sDevice?.Close()
 
@@ -78,7 +78,7 @@ class DeviceViewModel : ViewModel() {
 
     fun getDeviceInfo() = sDevice?.GetDeviceInfo()
 
-    suspend fun disconnect() = sDevice?.Close()
+    fun disconnect() = sDevice?.Close()
 
     fun isConnected() = sDevice?.IsConnected() ?: false
 
@@ -199,36 +199,42 @@ class DeviceViewModel : ViewModel() {
     /**
      * Searches through all ip-address on the subnet 192.168.0 and attempts to connect.
      */
-    fun scanSubNet(context: Context, subnet: String) = liveData(sDeviceScope.coroutineContext) {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    fun scanSubNet() = liveData(sDeviceScope.coroutineContext) {
 
-        for (i in 2..255) {
+        for (i in 0..255) {
 
-            try {
+            for (j in 2..255) {
 
-                if (InetAddress.getByName("$subnet.$i").isReachable(250)) {
+                val address = "192.168.$i.$j"
 
-                    if (sDevice?.Connect("$subnet.$i", 18630) == 1) {
+                try {
 
-                        emit("$subnet.$i")
+                    if (InetAddress.getByName(address).isReachable(250)) {
 
-                        break
+                        if (sDevice?.Connect(address, 18630) == 1) {
 
+                            emit(address)
+
+                            break
+
+                        }
                     }
+
+                } catch (e: UnknownHostException) {
+
+                    e.printStackTrace()
+
+                } catch (e: IOException) {
+
+                    e.printStackTrace()
                 }
-
-            } catch (e: UnknownHostException) {
-
-                e.printStackTrace()
-
-            } catch (e: IOException) {
-
-                e.printStackTrace()
             }
         }
     }
 
     //0: Open, 1: WEP, 2:WPA/WPA2
-    suspend fun setWLanInfo(ssid: String, pass: String, config: Int): Deferred<Boolean> = withContext(sDeviceScope.coroutineContext) {
+    suspend fun setWLanInfoAsync(ssid: String, pass: String, config: Int): Deferred<Boolean> = withContext(sDeviceScope.coroutineContext) {
 
         async {
 
@@ -256,9 +262,9 @@ class DeviceViewModel : ViewModel() {
     companion object {
 
         //protocol types
-        val OPEN = 0
-        val WEP = 1
-        val WPA = 2
+        const val OPEN = 0
+        const val WEP = 1
+        const val WPA = 2
 
     }
 }

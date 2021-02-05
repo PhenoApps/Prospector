@@ -13,6 +13,9 @@
         <variable
             name="sample"
             type="org.phenoapps.prospector.data.models.SampleScanCount"/>
+        <variable
+            name="scanCount"
+            type="String"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,16 +30,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{String.valueOf(position)}"
+            android:layout_marginEnd="16dp"
             android:gravity="start"
-            android:visibility="gone"
             tools:text="0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sampleName"
             app:layout_constraintBottom_toTopOf="@id/sampleDate"/>
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/sampleName"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{sample.name}"
             tools:text="Chaney's Experiment"
@@ -62,7 +66,7 @@
             android:id="@+id/sampleCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{String.valueOf(sample.count)+@string/scans}"
+            android:text="@{scanCount}"
             tools:text="4"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

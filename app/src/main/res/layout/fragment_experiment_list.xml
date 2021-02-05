@@ -17,15 +17,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView style="@style/Text.Header"
-            android:visibility="gone"
-            android:background="@color/colorAccent"
-            android:id="@+id/headerTextView"
+        <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
+            android:id="@+id/experimentToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:background="@color/colorPrimaryDark"
+            app:menu="@menu/menu_experiment_list"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/recyclerView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -36,7 +34,7 @@
             android:scrollbars="vertical"
             android:layout_margin="6dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@id/headerTextView"
+            app:layout_constraintTop_toBottomOf="@id/experimentToolbar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,6 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_new_scan"
+            android:contentDescription="@string/frag_exp_list_fab_cont_descp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

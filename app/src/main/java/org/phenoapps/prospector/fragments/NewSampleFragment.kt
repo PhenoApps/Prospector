@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -19,24 +18,29 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.SampleViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.SampleViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
+import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.databinding.FragmentNewSampleBinding
 import org.phenoapps.prospector.utils.Dialogs
+import org.phenoapps.prospector.utils.SnackbarQueue
 
+/**
+ * A simple data collection fragment that creates sample models and inserts them into the db.
+ * Barcodes can be scanned using the BarcodeScanFragment, which is used to populate the sample name.
+ */
 class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mExpId: Long = -1L
 
-    private val viewModel: ExperimentSamplesViewModel by viewModels {
+    private val sViewModel: SampleViewModel by viewModels {
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .expScanDao()))
-
+        with(ProspectorDatabase.getInstance(requireContext())) {
+            SampleViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
+                    SampleRepository.getInstance(sampleDao()))
+        }
     }
 
     private val sOnBarcodeScanClick = View.OnClickListener {
@@ -68,6 +72,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mBinding: FragmentNewSampleBinding? = null
 
+    private val mSnackbar = SnackbarQueue()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         mExpId = arguments?.getLong("experiment", -1L) ?: -1L
@@ -86,7 +92,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         setHasOptionsMenu(true)
 
-        (activity as? AppCompatActivity)?.supportActionBar?.title = ""
+//        (activity as? AppCompatActivity)?.findViewById<Toolbar>(R.id.activityToolbar)?.title = ""
 
         return mBinding?.root
     }
@@ -113,22 +119,17 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
             launch {
 
-                viewModel.insertSample(Sample(mExpId, name, note = notes)).await()
+                sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
 
-                act.runOnUiThread {
+            }
 
-                    mBinding?.let { ui ->
+            activity?.runOnUiThread {
 
-                        Snackbar.make(ui.root,
-                                "$newSampleString: $name.", Snackbar.LENGTH_SHORT).show()
+                mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
 
+                clearUi()
 
-                        clearUi()
-
-                        findNavController().popBackStack()
-
-                    }
-                }
+                findNavController().popBackStack()
             }
         }
 
@@ -142,18 +143,27 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         val newSampleError: String = getString(R.string.dialog_new_sample_error)
 
-        if (name.isNotBlank()) {
+        //ensure we have a context
+        activity?.let { act ->
 
-            launch(Dispatchers.IO) {
+            //ensure the name is given
+            if (name.isNotBlank()) {
 
-                //if not sample exists with that name, insert it
-                if (viewModel.getSamples(mExpId).find { it.name == name } == null) {
+                launch(Dispatchers.IO) {
 
-                    insertSampleAndUpdate()
+                    //if not sample exists with that name, insert it
+                    if (sViewModel.getSamples(mExpId).find { it.name == name } == null) {
 
-                } else { //otherwise ask the user before inserting a duplicate
+                        insertSampleAndUpdate()
 
-                    activity?.let { act ->
+                        act.runOnUiThread {
+
+                            findNavController()
+                                    .navigate(NewSampleFragmentDirections
+                                            .actionToScanList(mExpId, name))
+                        }
+
+                    } else { //otherwise ask the user before inserting a duplicate
 
                         act.runOnUiThread {
 
@@ -178,16 +188,16 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
                         }
                     }
                 }
-            }
 
-        } else {
+            } else {
 
-            activity?.runOnUiThread {
+                act.runOnUiThread {
 
-                mBinding?.let { ui ->
+                    mBinding?.let { ui ->
 
-                    Snackbar.make(ui.root,
-                            newSampleError, Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(ui.root,
+                                newSampleError, Snackbar.LENGTH_LONG).show()
+                    }
                 }
             }
         }

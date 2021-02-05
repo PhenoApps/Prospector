@@ -2,61 +2,93 @@ package org.phenoapps.prospector.fragments
 
 import CONVERT_TO_WAVELENGTHS
 import DEVICE_ALIAS
-import DEVICE_TYPE
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NIR
 import OPERATOR
 import android.os.Bundle
-import android.view.*
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
+import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ScanViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.ScanViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
+import org.phenoapps.prospector.data.viewmodels.repository.ScanRepository
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
 
+/**
+ * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
+ * and a recycler list that allows the user to choose which graphs to render.
+ *
+ * This fragment listens for button press events from the physical spectrometer. Pressing the physical button
+ * and clicking the bottom fab on this page are ubiquitous actions.
+ *
+ * Uses two toolbars. The title toolbar is similar tothe experiment list fragmnet which controls the connection status.
+ * The second toolbar, scanToolbar, controls scan-level functionality s.a deleting scans.
+ *
+ * TODO: improve color choice using color picker
+ */
 class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
-
-    private var mScanId: Long = 1L
-
-    private var mScanIds: Set<Long> = HashSet<Long>()
-    private var mScanColors = HashMap<Long, String>()
-
-    private val mSnackbar = SnackbarQueue()
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
-    private val sViewModel: ExperimentSamplesViewModel by viewModels {
+    private var mSelectedScanId: Long = -1
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext()).expScanDao()
-                )
-        )
+    private val mSnackbar = SnackbarQueue()
+
+    private val sViewModel: ScanViewModel by viewModels {
+
+        with(ProspectorDatabase.getInstance(requireContext())) {
+            ScanViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
+                    ScanRepository.getInstance(scanDao()))
+        }
     }
 
     private var mBinding: FragmentScanListBinding? = null
 
     private var mExpId: Long = -1L
 
-    private var mSampleName: String? = null
+    private var mSampleName: String = String()
+
+    //navigate to the instructions page if the device is not connected
+    private val sOnClickScan = View.OnClickListener {
+
+        if (sDeviceViewModel.isConnected()) {
+
+            sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                callScanDialog(connectedDeviceInfo)
+
+            }
+
+        } else {
+
+            findNavController().navigate(ScanListFragmentDirections
+                    .actionToConnectInstructions())
+        }
+    }
 
     private fun insertScan(name: String, frames: List<LSFrame>) {
 
@@ -66,11 +98,13 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             frames.forEach { frame ->
 
-                val sid = sViewModel.insertScan(Scan(mExpId, name).apply {
+                val sid = sViewModel.insertScanAsync(Scan(mExpId, name).apply {
 
-                    deviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID
+                    val linkSquareApiDeviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
 
-                    this.deviceType = prefs.getString(DEVICE_TYPE, "LinkSquare") ?: "LinkSquare"
+                    deviceId = linkSquareApiDeviceId
+
+                    this.deviceType = if (linkSquareApiDeviceId.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
 
                     this.alias = prefs.getString(DEVICE_ALIAS, "")
 
@@ -91,60 +125,50 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         }
     }
 
-    private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
+    /**
+     * Dialog is only called if the current connected deviceType matches the experiment deviceType.
+     * If they match, the dialog begins which displays the status of the scan (indeterminately)
+     */
+    private fun callScanDialog(device: LinkSquareAPI.LSDeviceInfo) {
 
-        launch {
+        sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
 
-            val sid = sViewModel.insertScan(scan).await()
+            val exp = experiments?.find { it.eid == mExpId }
 
-            frames.forEach { frame ->
+            if (exp?.deviceType == resolveDeviceType(requireContext(), device)) {
 
-                sViewModel.insertFrame(sid, frame)
-
-            }
-        }
-    }
-
-    private val sOnClickScan = View.OnClickListener {
-
-        if (sDeviceViewModel.isConnected()) {
-
-            callScanDialog()
-
-        } else {
-
-            findNavController().navigate(ScanListFragmentDirections
-                    .actionToConnectInstructions())
-        }
-    }
-
-    private fun callScanDialog() {
-
-        val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning_sample, R.string.ok, R.string.close) {
-
-        }
-
-        dialog.create()
-
-        val dialogInterface = dialog.show()
-
-        sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
-
-            it?.let {  frames ->
-
-                launch {
-
-                    mSampleName?.let { sid ->
-
-                        insertScan(sid, frames)
-
-                    }
-
-                    dialogInterface.dismiss()
+                val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning_sample, R.string.ok, R.string.close) {
 
                 }
+
+                dialog.create()
+
+                val dialogInterface = dialog.show()
+
+                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
+
+                    it?.let {  frames ->
+
+                        launch {
+
+                            insertScan(mSampleName, frames)
+
+                            dialogInterface.dismiss()
+
+                        }
+                    }
+                })
+
+            } else {
+
+                mBinding?.let { ui ->
+
+                    mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
+                }
+
             }
         })
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -162,17 +186,13 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             ui.scanOnClick = sOnClickScan
 
             //check if experiment id is included in the arguments.
-            val eid = arguments?.getLong("experiment", -1L) ?: -1L
+            mExpId = arguments?.getLong("experiment", -1L) ?: -1L
 
-            val name = arguments?.getString("sample", String()) ?: String()
+            mSampleName = arguments?.getString("sample", String()) ?: String()
 
-            ui.title = name
+            ui.setupToolbar()
 
-            if (eid != -1L && name.isNotBlank()) {
-
-                mExpId = eid
-
-                mSampleName = name
+            if (mExpId != -1L && mSampleName.isNotBlank()) {
 
                 ui.sampleName = mSampleName
 
@@ -202,7 +222,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 startObservers()
 
-            }
+            } else findNavController().popBackStack()
         }
 
         setHasOptionsMenu(true)
@@ -210,64 +230,147 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         return mBinding?.root
     }
 
-    private fun resetGraph() {
+    private fun FragmentScanListBinding.setupToolbar() {
+        
+        scanToolbar.setNavigationOnClickListener {
 
-        mScanIds = HashSet<Long>()
+            findNavController().popBackStack()
 
-        mScanColors = HashMap()
+        }
 
-        mBinding?.let { ui ->
+        titleToolbar.setOnMenuItemClickListener {
 
-            resetGraph(ui.graphView)
+            when(it.itemId) {
 
+                R.id.action_connection -> {
+
+                    with (activity as? MainActivity) {
+
+                        if (this?.mConnected == true) {
+
+                            sDeviceViewModel.reset()
+                        } else {
+
+                            findNavController().navigate(ExperimentListFragmentDirections
+                                    .actionToConnectInstructions())
+
+                            this?.startDeviceConnection()
+                        }
+                    }
+                }
+            }
+
+            true
+        }
+
+        scanToolbar.setOnMenuItemClickListener {
+
+            when(it.itemId) {
+
+                R.id.delete_scans -> Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                        getString(R.string.ask_delete_all_scans),
+                        getString(R.string.cancel), getString(R.string.ok)) { booleanResult ->
+
+                    if (booleanResult) {
+
+                        launch {
+
+                            deleteScans(mExpId, mSampleName)
+
+                        }
+                    }
+                }
+            }
+
+            true
         }
     }
 
-    private fun loadGraph() {
+    /**
+     * Called whenever tab view is changed.
+     */
+    private fun resetGraph() {
 
-//        mBinding?.let { ui ->
-//
-//            resetGraph(ui.graphView)
-//
-//        }
+        mSelectedScanId = -1
 
         mBinding?.graphView?.removeAllSeries()
 
-        mSampleName?.let { sampleId ->
-
-            mScanIds.forEach {
-
-                renderGraph(sampleId, it, mScanColors[it])
-            }
-        }
+        renderGraph(mSelectedScanId)
     }
 
-    private fun renderGraph(sampleId: String, scanId: Long, color: String?) {
+    /**
+     * Called when user changes the color of a given series.
+     */
+    private fun loadGraph() {
+
+        mBinding?.graphView?.removeAllSeries()
+
+        renderGraph(mSelectedScanId)
+
+    }
+
+    /**
+     * Listens for the database spectral values and graphs them.
+     * Checks the system preferences for translating pixel data to wavelengths.
+     * "hacks" the graph view to display all data AND allow user to zoom/pan/scale
+     *      does this by manually setting the view port, then enabling scaling features
+     */
+    private fun renderGraph(selectedScanId: Long) {
 
         mBinding?.let { ui ->
 
-            sViewModel.getSpectralValuesLive(mExpId, scanId).observeOnce(viewLifecycleOwner, {
+            sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner, { scans ->
 
-                it?.let { data ->
+                when (ui.tabLayout.selectedTabPosition) {
 
-                    if (data.isNotEmpty()) {
+                    0 -> scans.filter { it.lightSource == 0 }
 
-                        val convert = PreferenceManager.getDefaultSharedPreferences(context)
-                                .getBoolean(CONVERT_TO_WAVELENGTHS, true)
+                    else -> scans.filter { it.lightSource == 1 }
 
-                        val wavelengths = if (convert) data.toWaveArray() else data.toPixelArray()
+                }.forEach { scan ->
 
-                        setViewportGrid(ui.graphView)
+                    sViewModel.getSpectralValuesLive(mExpId, scan.sid ?: -1).observeOnce(viewLifecycleOwner, { frames ->
 
-                        centerViewport(ui.graphView, wavelengths)
+                        frames?.let { data ->
 
-                        setViewportScalable(ui.graphView)
+                            if (data.isNotEmpty()) {
 
-                        renderNormal(ui.graphView, wavelengths, color)
+                                val convert = PreferenceManager.getDefaultSharedPreferences(context)
+                                        .getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
-                    }
+                                val wavelengths = if (convert) data.toWaveArray(scan.deviceType) else data.toPixelArray()
+
+                                setViewportGrid(ui.graphView, convert)
+
+                                centerViewport(ui.graphView, wavelengths, convert, scan.deviceType)
+
+                                setViewportScalable(ui.graphView)
+
+                                renderNormal(ui.graphView, wavelengths,
+                                        if ((scan.sid ?: -1) == selectedScanId) scan.color ?: "red" else "black")
+
+                            }
+                        }
+                    })
                 }
             })
+        }
+    }
+
+    /**
+     * User has options to re-import deleted scans (on swipe)
+     */
+    private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
+
+        launch {
+
+            val sid = sViewModel.insertScanAsync(scan).await()
+
+            frames.forEach { frame ->
+
+                sViewModel.insertFrame(sid, frame)
+
+            }
         }
     }
 
@@ -294,24 +397,22 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                             (ui.recyclerView.adapter as ScansAdapter)
                                     .currentList[viewHolder.adapterPosition].also { scan ->
 
-                                launch {
+                                launch(Dispatchers.IO) {
 
-                                    withContext(Dispatchers.IO) {
+                                    sViewModel.getSpectralValues(scan.eid, scan.sid
+                                            ?: -1L).let { frames ->
 
-                                        sViewModel.getSpectralValues(scan.eid, scan.sid
-                                                ?: -1L).let { frames ->
+                                        sViewModel.deleteScan(scan)
 
-                                            sViewModel.deleteScan(scan)
+                                        mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
 
-                                            mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
+                                            reinsertScan(scan, frames)
 
-                                                reinsertScan(scan, frames)
-
-                                            })
-                                        }
+                                        })
                                     }
                                 }
                             }
+
                         } else ui.recyclerView.adapter?.notifyDataSetChanged()
                     }
                 }
@@ -322,39 +423,43 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startObservers() {
 
-        mSampleName?.let { name ->
+        sDeviceViewModel.isConnectedLive().observeForever { connected ->
 
-            sViewModel.getScans(mExpId, name).observe(viewLifecycleOwner, { data ->
+            connected?.let { status ->
 
-                if (data.isNotEmpty()) {
+                with(mBinding?.titleToolbar) {
 
-                    data.forEach {
-                        it?.sid?.let { id ->
-                            it?.color?.let { color ->
+                    this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                            else R.drawable.ic_clear_black_18dp)
 
-                                mScanColors[id] = color
+                }
 
-                            }
-                        }
-                    }
-
-                    mBinding?.let { ui ->
-
-                        with (ui.recyclerView.adapter as ScansAdapter) {
-
-                            submitList(when (ui.tabLayout.selectedTabPosition) {
-                                0 -> data.filter { it.lightSource == 0 }
-                                else -> data.filter { it.lightSource == 1 }
-                            })
-
-                        }
-
-                        ui.executePendingBindings()
-
-                    }
-                } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
-            })
+            }
         }
+
+        //updates recycler view with available scans
+        sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->
+
+            if (data.isNotEmpty()) {
+
+                mBinding?.let { ui ->
+
+                    with (ui.recyclerView.adapter as ScansAdapter) {
+
+                        submitList(when (ui.tabLayout.selectedTabPosition) {
+                            0 -> data.filter { it.lightSource == 0 }
+                            else -> data.filter { it.lightSource == 1 }
+                        })
+
+                    }
+
+                    ui.executePendingBindings()
+
+                }
+            } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
+        })
+
 
         /**
          * LinkSquare API live data listener that responds to on-device button clicks.
@@ -363,25 +468,32 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             requireActivity().runOnUiThread {
 
-                if (sDeviceViewModel?.isConnected()) {
+                if (sDeviceViewModel.isConnected()) {
 
-                    callScanDialog()
+                    sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                        callScanDialog(connectedDeviceInfo)
+
+                    }
 
                 }
 
             }
 
-        }.observe(viewLifecycleOwner, Observer {
+        }.observe(viewLifecycleOwner, {})
 
+        //set the title header
+        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+
+            experiments.first { it.eid == mExpId }.also {
+
+                activity?.runOnUiThread {
+
+                    mBinding?.titleToolbar?.title = it.name
+
+                }
+            }
         })
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.menu_scan_list, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
-
     }
 
     private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {
@@ -390,36 +502,13 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-
-            R.id.delete_scans -> Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_all_scans), getString(R.string.cancel), getString(R.string.ok)) {
-
-                if (it) {
-
-                    mSampleName?.let { sample ->
-
-                        launch {
-
-                            deleteScans(mExpId, sample)
-
-                        }
-                    }
-                }
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
     /**
      * Listener connected to the adapter. Whenever a date is clicked it is either added to
      * the list of viewable graphs or removed if it already exists.
      */
     override fun onItemClicked(id: Long, color: String?) {
 
-        mScanIds = if (id in mScanIds) mScanIds - id else mScanIds + id
+        mSelectedScanId = id
 
         loadGraph()
     }
@@ -427,8 +516,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
     override fun onItemLongClicked(id: Long, color: String?) {
 
         color?.let { nonNullColor ->
-
-            mScanColors[id] = nonNullColor
 
             launch {
 

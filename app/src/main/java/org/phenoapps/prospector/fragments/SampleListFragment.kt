@@ -1,59 +1,66 @@
 package org.phenoapps.prospector.fragments
 
 import ALPHA_DESC
+import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
 import android.os.Handler
-import android.view.*
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.SampleViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.SampleViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
+import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.utils.FileUtil
+import org.phenoapps.prospector.utils.observeOnce
 
+/**
+ * Similar to the experiment fragment, this displays lists of samples for a given experiment.
+ * Sample View Model includes experiment repo to query for experiment names.
+ *
+ * User can search for samples using a barcode scanner by pressing the magnifying glass in the toolbar.
+ * Experiments can be exported here using the floppy disk in the toolbar.
+ */
 class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
+    //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
 
-    private val sSnackbarQueue = SnackbarQueue()
-
+    //fragment argument
     private var mExpId: Long = -1L
 
-    private val viewModel: ExperimentSamplesViewModel by viewModels {
+    private val sViewModel: SampleViewModel by viewModels {
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .expScanDao()))
-
+        with(ProspectorDatabase.getInstance(requireContext())) {
+            SampleViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
+                    SampleRepository.getInstance(sampleDao()))
+        }
     }
 
     private var mBinding: FragmentSampleListBinding? = null
-
-    private val sOnSearchClickListener = View.OnClickListener {
-
-        findNavController().navigate(SampleListFragmentDirections
-                .actionToBarcodeSearch(mExpId))
-
-    }
 
     private val sOnNewClickListener = View.OnClickListener {
 
@@ -66,7 +73,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
         val eid = arguments?.getLong("experiment", -1L) ?: -1L
 
-        if (eid != -1L) {
+        if (eid != -1L) { //finish fragment if an invalid eid is given
 
             setHasOptionsMenu(true)
 
@@ -84,92 +91,121 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 ui.setupButtons()
 
+                ui.setupToolbar()
+
                 startObservers()
 
                 return ui.root
             }
-        }
+
+        } else findNavController().popBackStack()
 
         return null
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    private fun FragmentSampleListBinding.setupToolbar() {
 
-        inflater.inflate(R.menu.menu_sample_list, menu)
+        samplesToolbar.setNavigationOnClickListener {
 
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+            findNavController().popBackStack()
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when(item.itemId) {
-
-            R.id.menu_search_sample -> {
-
-                findNavController().navigate(SampleListFragmentDirections
-                        .actionToBarcodeSearch(mExpId))
-
-            }
-
-//            R.id.menu_sort_sample -> {
-//
-//                item.setIcon(when (mSortState) {
-//
-//                    ALPHA_ASC -> {
-//
-//                        mSortState = DATE_DESC
-//
-//                        org.phenoapps.icons.R.drawable.ic_sort_by_date_descending_18dp
-//
-//                    }
-//
-//                    ALPHA_DESC -> {
-//
-//                        mSortState = ALPHA_ASC
-//
-//                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_ascending_18dp
-//
-//                    }
-//
-//                    DATE_ASC -> {
-//
-//                        mSortState = ALPHA_DESC
-//
-//                        org.phenoapps.icons.R.drawable.ic_sort_by_alpha_white_descending_18dp
-//
-//                    }
-//
-//                    else -> {
-//
-//                        mSortState = DATE_ASC
-//
-//                        org.phenoapps.icons.R.drawable.ic_sort_by_date_ascending_18dp
-//
-//                    }
-//                })
-//
-//                startObservers()
-//            }
         }
 
-        return super.onOptionsItemSelected(item)
+        samplesToolbar.setOnMenuItemClickListener { item ->
+
+            when(item.itemId) {
+
+                R.id.menu_search_sample -> {
+
+                    findNavController().navigate(SampleListFragmentDirections
+                            .actionToBarcodeSearch(mExpId))
+
+                }
+
+                R.id.menu_export -> {
+
+                    exportFile("csv")
+
+                }
+
+                R.id.action_connection -> {
+
+                    with (activity as? MainActivity) {
+
+                        if (this?.mConnected == true) {
+
+                            sDeviceViewModel.reset()
+                        } else {
+
+                            findNavController().navigate(ExperimentListFragmentDirections
+                                    .actionToConnectInstructions())
+
+                            this?.startDeviceConnection()
+                        }
+                    }
+                }
+            }
+
+            true
+        }
+    }
+
+    /**
+     * Uses activity results contracts to create a document and call the export function
+     * This method must queries for the device type export view and matches the exports with the
+     * current experiment id.
+     */
+    private fun exportFile(exportType: String) {
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+
+        //start observing for exportable experiments using the defined view
+        sViewModel.deviceTypeExports.observeOnce(viewLifecycleOwner, {
+
+            //only export if the view has rows, and only export the current selected experiment
+            it?.let { exports ->
+
+                exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
+
+                    //grab the first experiment as an example to find the name and device type for the filename
+                    val example = it.firstOrNull()
+
+                    example?.let { it ->
+
+                        val fileName = "${it.experiment}_${it.deviceType}_${DateUtil().getTime()}.csv"
+
+                        //use the found experiment info from the example to launch an intent to create the output file
+                        (activity as AppCompatActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { nullUri -> nullUri?.let { uri ->
+
+                            //ensure the context is not null and launch on a coroutine
+                            context?.let { ctx ->
+
+                                launch {
+
+                                    withContext(Dispatchers.IO) {
+
+                                        val start = System.nanoTime()
+
+                                        //todo experiment is not the id
+                                        FileUtil(ctx).exportCsv(uri, exportables, convert)
+
+                                        Log.d("ExportTime", (1e-9 * (System.nanoTime() - start)).toString())
+                                    }
+                                }
+                            }
+
+                        }}.launch(fileName)
+                    }
+                }
+            }
+        })
     }
 
     private fun FragmentSampleListBinding.setupButtons() {
 
         onClick = sOnNewClickListener
-
-    }
-
-    private suspend fun insertSample(sample: String, note: String) = withContext(Dispatchers.IO) {
-
-        viewModel.insertSample(Sample(mExpId, sample).apply {
-
-            this.date = DateUtil().getTime()
-
-            this.note = note
-
-        }).await()
 
     }
 
@@ -214,28 +250,43 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private suspend fun deleteSample(sample: Sample) = withContext(Dispatchers.IO) {
 
-        viewModel.deleteSample(sample.eid, sample.name)
+        sViewModel.deleteSample(sample.eid, sample.name)
 
     }
 
     private fun startObservers() {
 
-        //set the title header
-        viewModel.experiments.observe(viewLifecycleOwner, {
+        (activity as? MainActivity)?.sDeviceViewModel?.isConnectedLive()?.observeForever { connected ->
 
-            it.filter { it.eid == mExpId }.first().also {
+            connected?.let { status ->
+
+                with(mBinding?.samplesToolbar) {
+
+                    this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                            else R.drawable.ic_clear_black_18dp)
+
+                }
+
+            }
+        }
+
+        //set the title header
+        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+
+            experiments.first { it.eid == mExpId }.also {
 
                 activity?.runOnUiThread {
 
-                    (activity as? AppCompatActivity)?.supportActionBar?.title = it.name
+                    mBinding?.samplesToolbar?.title = it.name
 
                 }
             }
         })
 
-        viewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, Observer {
+        sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
-            it?.let { data ->
+            samples?.let { data ->
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
                         .submitList(when (mSortState) {

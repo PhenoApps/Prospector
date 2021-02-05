@@ -29,7 +29,8 @@
                 android:src="@drawable/icon_device_ap"
                 app:layout_constraintTop_toBottomOf="@id/stepOneTextView"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                android:contentDescription="@string/frag_instructions_step_one" />
 
             <TextView
                 android:id="@+id/stepTwoTextView"
@@ -48,7 +49,8 @@
                 android:src="@drawable/choose_ap_wifi_network"
                 app:layout_constraintTop_toBottomOf="@id/stepTwoTextView"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                android:contentDescription="@string/frag_instructions_step_two"/>
 
             <TextView
                 android:id="@+id/stepThreeTextView"
@@ -65,6 +67,7 @@
                 android:layout_width="0dp"
                 android:layout_height="256dp"
                 android:src="@drawable/icon_ap"
+                android:contentDescription="@string/frag_instructions_step_three"
                 app:layout_constraintTop_toBottomOf="@id/stepThreeTextView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
@@ -85,6 +88,7 @@
                 android:layout_height="256dp"
                 android:layout_marginTop="16dp"
                 android:src="@drawable/instructions_create_button"
+                android:contentDescription="@string/frag_instructions_step_four"
                 app:layout_constraintTop_toBottomOf="@id/stepFourTextView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
@@ -105,6 +109,7 @@
                 android:layout_height="256dp"
                 android:layout_marginTop="16dp"
                 android:src="@drawable/iot_instructions"
+                android:contentDescription="@string/frag_instructions_step_five"
                 app:layout_constraintTop_toBottomOf="@id/stepFiveTextView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>

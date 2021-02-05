@@ -9,6 +9,9 @@
         <variable
             name="experiment"
             type="org.phenoapps.prospector.adapter.ExperimentAdapter.ExperimentListItem"/>
+        <variable
+            name="sampleCount"
+            type="String"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -38,12 +41,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/expName" />
 
+        <!--            android:text="@{experiment.sampleName.length() > 0 ? String.valueOf(experiment.count)+@string/list_item_samples_suffix : String.valueOf(0)}"-->
+
         <TextView style="@style/Text.ExperimentTitle.SubTitle"
             android:id="@+id/expSamplesCountTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:text="@{experiment.sampleName.length() > 0 ? String.valueOf(experiment.count)+@string/list_item_samples_suffix : String.valueOf(0)}"
+            android:text="@{sampleCount}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/expDate" />

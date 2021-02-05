@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -16,31 +15,30 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
+import org.phenoapps.prospector.data.viewmodels.factory.ExperimentViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.databinding.FragmentNewExperimentBinding
 
+/**
+ * A simple data collection fragment that creates experiment models and inserts them into the db.
+ */
 class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private val viewModel: ExperimentSamplesViewModel by viewModels {
+    private val sViewModel: ExperimentViewModel by viewModels {
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
+        ExperimentViewModelFactory(
+                ExperimentRepository.getInstance(
                         ProspectorDatabase.getInstance(requireContext())
-                                .expScanDao()))
+                                .experimentDao()))
 
     }
 
     private val sOnNewExpClick = View.OnClickListener {
 
-        mBinding?.let { ui ->
+        mBinding?.insertExperiment()
 
-            ui.insertExperiment()
-
-            findNavController().popBackStack()
-        }
     }
 
     private val sOnCancelClick = View.OnClickListener {
@@ -62,8 +60,6 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
         setHasOptionsMenu(true)
 
-        (activity as? AppCompatActivity)?.supportActionBar?.title = ""
-
         return mBinding?.root
     }
 
@@ -75,6 +71,7 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
         val experimentName = experimentNameEditText.text.toString()
         val experimentNotes = experimentNoteEditText.text.toString()
+        val deviceType = deviceTypeSpinner.selectedItem as? String ?: ""
 
         val newExpString: String = getString(R.string.dialog_new_experiment_prefix)
         val newExpError: String = getString(R.string.dialog_new_experiment_error)
@@ -83,18 +80,21 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
             launch {
 
-                val eid = viewModel.insertExperiment(Experiment(experimentName, note = experimentNotes)).await()
+                val eid = sViewModel.insertExperimentAsync(Experiment(experimentName,
+                        deviceType = deviceType, note = experimentNotes)).await()
 
                 activity?.runOnUiThread {
 
                     mBinding?.let { ui ->
 
                         Snackbar.make(ui.root,
-                                "$newExpString: $experimentName.", Snackbar.LENGTH_SHORT).show()
+                                "$newExpString $experimentName.", Snackbar.LENGTH_SHORT).show()
 
                         experimentNameEditText.text.clear()
 
                         experimentNoteEditText.text.clear()
+
+                        findNavController().popBackStack()
 
                     }
                 }
@@ -102,13 +102,18 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
         } else {
 
-            activity?.runOnUiThread {
+            displayToast(newExpError)
 
-                mBinding?.let { ui ->
+        }
+    }
 
-                    Snackbar.make(ui.root,
-                            newExpError, Snackbar.LENGTH_LONG).show()
-                }
+    private fun displayToast(text: String) {
+
+        activity?.runOnUiThread {
+
+            mBinding?.let { ui ->
+
+                Snackbar.make(ui.root, text, Snackbar.LENGTH_SHORT).show()
             }
         }
     }

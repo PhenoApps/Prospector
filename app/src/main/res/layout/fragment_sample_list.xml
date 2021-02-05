@@ -21,30 +21,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView style="@style/Text.Header"
-            android:visibility="gone"
-            android:background="@color/colorAccent"
-            android:id="@+id/headerTextView"
-            android:text="@{title}"
+        <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
+            android:id="@+id/samplesToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:background="@color/colorPrimaryDark"
+            app:menu="@menu/menu_sample_list"
+            app:navigationIcon="@drawable/ic_subdirectory_arrow_right"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/recyclerView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
-        
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:scrollbars="vertical"
             android:layout_margin="6dp"
+            android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/headerTextView"
+            app:layout_constraintTop_toBottomOf="@id/samplesToolbar"
             tools:listitem="@layout/list_item_sample" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -56,6 +54,7 @@
             android:backgroundTint="@color/colorAccent"
             android:text="@string/add_sample"
             android:src="@drawable/ic_new_scan"
+            android:contentDescription="@string/frag_sample_fab_cont_desc"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 

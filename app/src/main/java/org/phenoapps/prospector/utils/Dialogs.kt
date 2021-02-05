@@ -8,10 +8,12 @@ import androidx.databinding.DataBindingUtil
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.databinding.DialogLayoutCreateScanBinding
 
+/**
+ * Simple helper class to access static definitions of commonly used Dialogs.
+ */
 class Dialogs {
 
     companion object {
-
 
         fun askForScan(activity: Activity, title: Int, button: Int, cancel: Int, function: () -> Unit): AlertDialog.Builder {
 
@@ -89,38 +91,6 @@ class Dialogs {
             }
         }
 
-        /**
-         * Simple alert dialog to notify the user of a message.
-         */
-        fun notify(builder: AlertDialog.Builder, title: String) {
-
-            builder.apply {
-
-                setPositiveButton("OK") { _, _ ->
-
-                }
-            }
-
-            builder.setTitle(title)
-            builder.show()
-        }
-
-        /**
-         * Simple alert dialog to notify the user of a message.
-         */
-        fun largeNotify(builder: AlertDialog.Builder, title: String) {
-
-            builder.apply {
-
-                setPositiveButton("OK") { _, _ ->
-
-                }
-            }
-
-            builder.setMessage(title)
-            builder.show()
-        }
-
         fun onOk(builder: AlertDialog.Builder, title: String, cancel: String, ok: String, function: (Boolean) -> Unit) {
 
             builder.apply {
@@ -145,23 +115,6 @@ class Dialogs {
 
                 show()
             }
-        }
-
-        fun askForExportType(builder: AlertDialog.Builder, title: String, options: Array<String>, function: (String) -> Unit) {
-
-            builder.setTitle(title)
-
-            builder.setSingleChoiceItems(options, 0) { dialog, choice ->
-
-                function(options[choice])
-
-                dialog.dismiss()
-
-            }
-
-            builder.create()
-
-            builder.show()
         }
     }
 }

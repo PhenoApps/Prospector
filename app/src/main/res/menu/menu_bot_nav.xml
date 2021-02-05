@@ -9,10 +9,6 @@
         android:icon="@drawable/ic_nv_settings"
         android:title="@string/settings" />
     <item
-        android:id="@+id/action_nav_export"
-        android:icon="@drawable/ic_export_scans"
-        android:title="@string/menu_bot_nav_export_title"/>
-    <item
         android:id="@+id/action_nav_about"
         android:icon="@drawable/ic_nv_about"
         android:title="@string/about" />

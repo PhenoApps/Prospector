@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.data.models
 
+import DEVICE_TYPE_NIR
 import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -28,7 +29,7 @@ data class Scan(
         var date: String = DateUtil().getScanTime(),
 
         @ColumnInfo(name = "deviceType")
-        var deviceType: String = "LinkSquare",
+        var deviceType: String = DEVICE_TYPE_NIR,
 
         @ColumnInfo(name = "color")
         var color: String? = null,

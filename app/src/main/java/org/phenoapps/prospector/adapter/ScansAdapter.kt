@@ -66,7 +66,7 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
 
                         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
 
-                        adapter.addAll(*arrayOf("red", "blue", "green"))
+                        adapter.addAll("red", "blue", "green")
                         Dialogs.showColorChooserDialog(adapter, AlertDialog.Builder(context),
                                 context.getString(R.string.frag_scan_list_dialog_choose_color_title)) {
 

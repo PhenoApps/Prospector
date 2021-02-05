@@ -13,25 +13,27 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
 
-
+/**
+ * Simple pref fragment that listens for connected devices and can scan subnets for IoT devices. (uses activity view model)
+ *
+ * TODO: update scan subnet with list of found devices for the user to choose from.
+ */
 class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        (activity as AppCompatActivity).supportActionBar?.title = ""
 
         startObserver()
 
@@ -49,6 +51,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         }
 
+        //sets pref summary to the inputted operator name
         findPreference<EditTextPreference>(OPERATOR)?.setOnPreferenceChangeListener { preference, newValue ->
 
             preference.summary = newValue as? String ?: ""
@@ -57,6 +60,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         }
 
+        //sets device alias
         findPreference<EditTextPreference>(DEVICE_ALIAS)?.setOnPreferenceChangeListener { preference, newValue ->
 
             launch {
@@ -144,7 +148,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         launch {
 
-            val result = sDeviceViewModel.setWLanInfo(
+            val result = sDeviceViewModel.setWLanInfoAsync(
                     ssid?.text ?: "",
                     password?.text ?: "",
                     DeviceViewModel.WPA).await()
@@ -158,51 +162,35 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
     private fun startObserver() {
 
-//        sDeviceViewModel?.isConnectedLive().observeForever {
-//
-//            findPreference<PreferenceCategory>(DEVICE_IOT)?.isEnabled = it ?: false
-//
-//        }
-
+        //this is the connect IoT button which searches the subnet
         findPreference<Preference>(DEVICE_IOT_LIST)?.setOnPreferenceClickListener { pref ->
 
             pref.summary = getString(R.string.pref_device_iot_searching)
 
-            sDeviceViewModel.scanSubNet(requireContext(), "192.168.0").observeOnce(viewLifecycleOwner, {
+            sDeviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner, {
 
                 pref.summary = it
 
                 findPreference<EditTextPreference>(DEVICE_IP)?.text = it
-
-                context?.let { ctx ->
-
-                    launch {
-
-                        sDeviceViewModel.connect(ctx)
-
-                    }
-                }
-
-//                Log.d("IoT", "$it connected")
 
             })
 
             true
         }
 
+        //this is less of a device type and more of a device info placeholder
         findPreference<Preference>(DEVICE_TYPE)?.let { etPref ->
 
             launch {
 
                 withContext(Dispatchers.IO) {
 
-                    val connected = sDeviceViewModel.isConnected()
+                    val summary = when (sDeviceViewModel.isConnected()) {
 
-                    val summary = when (connected) {
+                        true -> buildLinkSquareDeviceInfo(requireContext(),
+                                (activity as? MainActivity)?.sDeviceViewModel?.getDeviceInfo())
 
-                        true -> buildLinkSquareDeviceInfo(requireContext(), sDeviceViewModel.getDeviceInfo())
-
-                        else -> sDeviceViewModel.getDeviceError()
+                        else -> (activity as? MainActivity)?.sDeviceViewModel?.getDeviceError()
 
                     }
 

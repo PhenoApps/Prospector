@@ -45,7 +45,8 @@
             android:src="@drawable/instruction_linksquare_01"
             app:layout_constraintTop_toBottomOf="@id/progressView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/dialog_create_scan_ls_instructions_content_descp" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

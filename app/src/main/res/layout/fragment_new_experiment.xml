@@ -41,6 +41,8 @@
             android:background="@drawable/cell"
             android:hint="@string/dialog_new_experiment_name_hint"
             android:singleLine="true"
+            android:inputType="text"
+            android:autofillHints="none"
             app:layout_constraintTop_toBottomOf="@id/titleTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -56,11 +58,25 @@
             android:maxLines="8"
             android:gravity="top"
             android:singleLine="false"
-            app:layout_constraintBottom_toTopOf="@id/newExperimentCancelButton"
+            android:inputType="text"
+            android:autofillHints="none"
+            app:layout_constraintBottom_toTopOf="@id/deviceTypeSpinner"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/experimentNameEditText"
             app:layout_constraintVertical_bias="0" />
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cell"
+            android:id="@+id/deviceTypeSpinner"
+            android:layout_margin="16dp"
+            android:entries="@array/device_types_array"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintTop_toBottomOf="@id/experimentNoteEditText"/>
 
         <Button
             android:layout_width="wrap_content"
@@ -69,7 +85,9 @@
             android:id="@+id/newExperimentSaveButton"
             android:text="@string/ok"
             android:onClick="@{onSaveClick}"
+            app:layout_constraintVertical_bias="0"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
         <Button
@@ -79,7 +97,9 @@
             android:id="@+id/newExperimentCancelButton"
             android:text="@string/cancel"
             android:onClick="@{onCancelClick}"
+            app:layout_constraintVertical_bias="0"
             app:layout_constraintEnd_toStartOf="@id/newExperimentSaveButton"
+            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

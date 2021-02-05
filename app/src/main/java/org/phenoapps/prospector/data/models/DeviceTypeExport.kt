@@ -4,6 +4,7 @@ import androidx.room.DatabaseView
 
 @DatabaseView("""
 SELECT 
+    E.eid as experimentId,
     E.name as experiment, 
     S.name as sample, 
     S.date as date, 
@@ -19,6 +20,7 @@ INNER JOIN scans as S ON S.eid = E.eid AND SA.name = S.name
 INNER JOIN spectral_frames as F on F.sid = S.sid
 """)
 data class DeviceTypeExport(
+    val experimentId: Long,
     val experiment: String,
     val sample: String,
     val date: String,

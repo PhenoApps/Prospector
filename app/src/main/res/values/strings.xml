@@ -15,8 +15,6 @@
     <string name="title_activity_collection">CollectionActivity</string>
     <string name="title_activity_model">ModelActivity</string>
     <string name="select_model_title">Select Model</string>
-    <string name="connection_wifi_error">You may be connected to the wrong WiFi network. You need to join LS1–0102315.</string>
-    <string name="number_of_scans">Number of scans:</string>
     <string name="default_num_scans">2</string>
     <string name="multi_scan_description">Press SCiO button to scan.\nTo analyze, press the record in the list.</string>
     <string name="connection">Connection</string>
@@ -313,7 +311,7 @@
     <string name="pref_device_iot_list">Connect</string>
     <string name="pref_iot_list_no_devices">Click to start IoT device search.</string>
     <string name="pref_device_list_num_found_summary">device(s) found.</string>
-    <string name="pref_device_iot_searching">Searching...</string>
+    <string name="pref_device_iot_searching">Searching…</string>
     <string name="frag_new_sample_dialog_duplicate_title">Sample Exists</string>
     <string name="frag_new_sample_dialog_duplicate_message">This sample has already been created. Would you like to add additional scans to this sample or create a new sample?</string>
     <string name="frag_new_sample_dialog_add_to_sample">Add to sample</string>
@@ -346,5 +344,15 @@
     <string name="about_help_translate_title">Help translate</string>
     <string name="changelog_title">Changelog</string>
     <string name="libraries_title">Libraries</string>
+    <string name="frag_new_scan_title">Connected to device:</string>
+    <string name="frag_scan_device_type_mismatch">Connected device does not match the current experiment.</string>
+    <string name="frag_experiment_list_choose_before_export">Select an experiment before exporting.</string>
+    <string name="view_sort_by">Sort by </string>
+    <string name="activity_main_sample_data_title">Import sample data?</string>
+    <string name="dialog_create_scan_ls_instructions_content_descp">Use your device to scan your sample.</string>
+    <string name="frag_exp_list_fab_cont_descp">Click this button to create a new experiment.</string>
+    <string name="frag_new_sample_barcode_scan_cont_desc">Click this button to start scanning a barcode.</string>
+    <string name="frag_sample_fab_cont_desc">Click this button to create a new sample.</string>
+    <string name="frag_scan_fab_cont_desc">Click this button to start a device scan.</string>
 
 </resources>

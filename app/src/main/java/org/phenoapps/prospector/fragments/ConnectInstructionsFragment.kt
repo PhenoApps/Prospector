@@ -10,6 +10,10 @@ import androidx.fragment.app.Fragment
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.databinding.FragmentConnectInstructionsBinding
 
+/**
+ * A simple fragment that displays a scroll view of instructions.
+ * Includes connection instructions and basic app usage.
+ */
 class ConnectInstructionsFragment : Fragment() {
 
     private var mBinding: FragmentConnectInstructionsBinding? = null

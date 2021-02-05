@@ -6,6 +6,7 @@
     </string-array>
 
     <string-array name="device_types_array">
+        <item>@string/linksquare_nir</item>
         <item>@string/linksquare</item>
     </string-array>
 
@@ -34,4 +35,5 @@
     <string name="linksquare">LinkSquare</string>
     <string name="ap_mode">AP</string>
     <string name="iot_mode">IoT</string>
+    <string name="linksquare_nir">LinkSquareNIR</string>
 </resources>

@@ -1,3 +1,9 @@
+/**
+ * Device Types (internal unique strings used to classify which device was used for a given experiment/scan)
+ */
+const val DEVICE_TYPE_LS1 = "LinkSquare"
+
+const val DEVICE_TYPE_NIR = "LinkSquareNIR"
 
 const val packageId = "org.phenoapps.prospector"
 
