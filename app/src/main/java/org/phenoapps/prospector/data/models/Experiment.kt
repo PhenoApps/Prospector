@@ -10,7 +10,7 @@ import org.phenoapps.prospector.utils.DateUtil
 @Entity(tableName = "experiments")
 data class Experiment(
 
-        @ColumnInfo(name = "name")
+        @ColumnInfo(name = "name", index = true)
         var name: String,
 
         @ColumnInfo(name = "deviceType")

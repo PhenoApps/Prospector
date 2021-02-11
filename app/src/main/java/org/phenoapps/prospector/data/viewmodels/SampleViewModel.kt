@@ -2,17 +2,25 @@ package org.phenoapps.prospector.data.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
+import javax.inject.Inject
 
-class SampleViewModel(
+@HiltViewModel
+class SampleViewModel @Inject constructor(
         experimentRepo: ExperimentRepository,
         private val repo: SampleRepository): ViewModel() {
 
     //non-live
-    fun getSamples(eid: Long): List<Sample> = repo.getSamples(eid)
+    suspend fun getSamples(eid: Long): List<Sample> = viewModelScope.async {
+
+        return@async repo.getSamples(eid)
+
+    }.await()
 
     //live data
     fun getSamplesLive(eid: Long) = repo.getSamplesLive(eid)

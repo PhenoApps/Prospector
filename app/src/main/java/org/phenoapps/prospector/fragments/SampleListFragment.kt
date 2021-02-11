@@ -6,31 +6,32 @@ import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
-import org.phenoapps.prospector.data.ProspectorDatabase
+import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.SampleViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
-import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
@@ -44,21 +45,23 @@ import org.phenoapps.prospector.utils.observeOnce
  * User can search for samples using a barcode scanner by pressing the magnifying glass in the toolbar.
  * Experiments can be exported here using the floppy disk in the toolbar.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
 
+    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
+
     //fragment argument
     private var mExpId: Long = -1L
 
-    private val sViewModel: SampleViewModel by viewModels {
+    private var mFileName: String = ""
 
-        with(ProspectorDatabase.getInstance(requireContext())) {
-            SampleViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
-                    SampleRepository.getInstance(sampleDao()))
-        }
-    }
+    private var mExportables: List<DeviceTypeExport>? = null
+
+    private val sViewModel: SampleViewModel by viewModels()
 
     private var mBinding: FragmentSampleListBinding? = null
 
@@ -67,6 +70,35 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
         findNavController().navigate(SampleListFragmentDirections
                 .actionToNewSample(mExpId))
 
+    }
+
+    private lateinit var requestExportLauncher: ActivityResultLauncher<String>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        requestExportLauncher = registerForActivityResult(
+            ActivityResultContracts.CreateDocument()) { nullUri ->
+
+            mExportables?.let { exportables ->
+
+                context?.let {
+
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(it)
+
+                    val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+
+                    nullUri?.let { uri ->
+
+                        launch(Dispatchers.IO) {
+
+                            FileUtil(it).exportCsv(uri, exportables, convert)
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -123,8 +155,36 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                 }
 
                 R.id.menu_export -> {
+                    /**
+                     * Uses activity results contracts to create a document and call the export function
+                     * This method must queries for the device type export view and matches the exports with the
+                     * current experiment id.
+                     */
+                    //start observing for exportable experiments using the defined view
+                    sViewModel.deviceTypeExports.observeOnce(viewLifecycleOwner, {
 
-                    exportFile("csv")
+                        //only export if the view has rows, and only export the current selected experiment
+                        it?.let { exports ->
+
+                            exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
+
+                                //grab the first experiment as an example to find the name and device type for the filename
+                                val example = it.firstOrNull()
+
+                                example?.let { it ->
+
+                                    //make dates on exports unique
+                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getScanTime()}.csv"
+
+                                    mExportables = exportables
+
+                                    requestExportLauncher.launch(mFileName)
+
+
+                                }
+                            }
+                        }
+                    })
 
                 }
 
@@ -148,59 +208,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             true
         }
-    }
-
-    /**
-     * Uses activity results contracts to create a document and call the export function
-     * This method must queries for the device type export view and matches the exports with the
-     * current experiment id.
-     */
-    private fun exportFile(exportType: String) {
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-        val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
-
-        //start observing for exportable experiments using the defined view
-        sViewModel.deviceTypeExports.observeOnce(viewLifecycleOwner, {
-
-            //only export if the view has rows, and only export the current selected experiment
-            it?.let { exports ->
-
-                exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
-
-                    //grab the first experiment as an example to find the name and device type for the filename
-                    val example = it.firstOrNull()
-
-                    example?.let { it ->
-
-                        val fileName = "${it.experiment}_${it.deviceType}_${DateUtil().getTime()}.csv"
-
-                        //use the found experiment info from the example to launch an intent to create the output file
-                        (activity as AppCompatActivity).registerForActivityResult(ActivityResultContracts.CreateDocument()) { nullUri -> nullUri?.let { uri ->
-
-                            //ensure the context is not null and launch on a coroutine
-                            context?.let { ctx ->
-
-                                launch {
-
-                                    withContext(Dispatchers.IO) {
-
-                                        val start = System.nanoTime()
-
-                                        //todo experiment is not the id
-                                        FileUtil(ctx).exportCsv(uri, exportables, convert)
-
-                                        Log.d("ExportTime", (1e-9 * (System.nanoTime() - start)).toString())
-                                    }
-                                }
-                            }
-
-                        }}.launch(fileName)
-                    }
-                }
-            }
-        })
     }
 
     private fun FragmentSampleListBinding.setupButtons() {
@@ -256,7 +263,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun startObservers() {
 
-        (activity as? MainActivity)?.sDeviceViewModel?.isConnectedLive()?.observeForever { connected ->
+        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
 
             connected?.let { status ->
 
@@ -269,7 +276,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                 }
 
             }
-        }
+        })
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
@@ -312,7 +319,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             }
                         })
 
-                Handler().postDelayed({
+                Handler(Looper.getMainLooper()).postDelayed({
 
                     mBinding?.recyclerView?.scrollToPosition(0)
 

@@ -119,8 +119,6 @@ fun centerViewport(graph: GraphView, data: List<DataPoint>, converted: Boolean, 
 
     val minY = data.map { it.y }.minOrNull() ?: 0.0
 
-    println("DataPoints: $minX $maxX $minY $maxY")
-
     viewport.isXAxisBoundsManual = true
     viewport.setMinX(minX)
 
@@ -133,7 +131,6 @@ fun centerViewport(graph: GraphView, data: List<DataPoint>, converted: Boolean, 
     } else { //otherwise use all the pixel data
         viewport.setMaxX(maxX)
     }
-
 
     viewport.isYAxisBoundsManual = true
     viewport.setMinY(minY)

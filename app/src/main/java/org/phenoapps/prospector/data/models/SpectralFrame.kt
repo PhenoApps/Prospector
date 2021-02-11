@@ -15,10 +15,10 @@ import androidx.room.ForeignKey
         primaryKeys = ["fid", "sid"])
 data class SpectralFrame(
 
-        @ColumnInfo(name = "sid")
+        @ColumnInfo(name = "sid", index = true)
         var sid: Long,
 
-        @ColumnInfo(name = "fid")
+        @ColumnInfo(name = "fid", index = true)
         var frameId: Int,
 
         @ColumnInfo(name = "spectralValues")

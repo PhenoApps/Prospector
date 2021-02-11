@@ -1,6 +1,5 @@
 package org.phenoapps.prospector.fragments
 
-import DEVICE_ALIAS
 import DEVICE_IOT_LIST
 import DEVICE_IP
 import DEVICE_PASSWORD
@@ -9,17 +8,17 @@ import DEVICE_SSID
 import DEVICE_TYPE
 import OPERATOR
 import android.os.Bundle
-import android.os.Handler
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import kotlinx.coroutines.*
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
@@ -29,16 +28,11 @@ import org.phenoapps.prospector.utils.observeOnce
  *
  * TODO: update scan subnet with list of found devices for the user to choose from.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        startObserver()
-
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
@@ -60,108 +54,6 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         }
 
-        //sets device alias
-        findPreference<EditTextPreference>(DEVICE_ALIAS)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            launch {
-
-                sDeviceViewModel.setAlias(newValue as? String ?: String())
-
-            }
-
-            Handler().postDelayed({
-
-                startObserver()
-
-            }, 100)
-
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            val mode = newValue as? Boolean ?: true
-
-            preference.summary = if (mode) "AP" else "IoT"
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_PASSWORD)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            startDeviceDiscovery()
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            startDeviceDiscovery()
-
-            true
-
-        }
-
-//        findPreference<ListPreference>(DEVICE_WIFI_MODE)?.setOnPreferenceChangeListener { preference, newValue ->
-//
-//            val mode = newValue as? Boolean ?: true
-//
-//            preference.summary = if (mode) "AP" else "IoT"
-//
-//            true
-//
-//        }
-
-        findPreference<EditTextPreference>(DEVICE_IP)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            launch {
-
-                sDeviceViewModel.connect(requireContext())
-
-            }
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_PORT)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            launch {
-
-                sDeviceViewModel.connect(requireContext())
-
-            }
-
-            true
-
-        }
-    }
-
-    private fun startDeviceDiscovery() {
-
-        val ssid = findPreference<EditTextPreference>(DEVICE_SSID)
-        val password = findPreference<EditTextPreference>(DEVICE_PASSWORD)
-
-        launch {
-
-            val result = sDeviceViewModel.setWLanInfoAsync(
-                    ssid?.text ?: "",
-                    password?.text ?: "",
-                    DeviceViewModel.WPA).await()
-
-//            activity?.runOnUiThread {
-//
-//                Toast.makeText(context, "Password ${if (result) "saved" else "failed"}", Toast.LENGTH_SHORT).show()
-//            }
-        }
-    }
-
-    private fun startObserver() {
-
         //this is the connect IoT button which searches the subnet
         findPreference<Preference>(DEVICE_IOT_LIST)?.setOnPreferenceClickListener { pref ->
 
@@ -181,28 +73,117 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
         //this is less of a device type and more of a device info placeholder
         findPreference<Preference>(DEVICE_TYPE)?.let { etPref ->
 
-            launch {
+            launch(Dispatchers.IO) {
 
-                withContext(Dispatchers.IO) {
+                val summary = when (sDeviceViewModel.isConnected()) {
 
-                    val summary = when (sDeviceViewModel.isConnected()) {
+                    true -> buildLinkSquareDeviceInfo(requireContext(),
+                        sDeviceViewModel.getDeviceInfo())
 
-                        true -> buildLinkSquareDeviceInfo(requireContext(),
-                                (activity as? MainActivity)?.sDeviceViewModel?.getDeviceInfo())
+                    else -> sDeviceViewModel.getDeviceError()
 
-                        else -> (activity as? MainActivity)?.sDeviceViewModel?.getDeviceError()
+                }
 
-                    }
+                if (isAdded) {
 
-                    if (isAdded) {
+                    activity?.runOnUiThread {
 
-                        activity?.runOnUiThread {
-
-                            etPref.summary = summary
-                        }
+                        etPref.summary = summary
                     }
                 }
             }
+        }
+
+//        //sets device alias
+//        findPreference<EditTextPreference>(DEVICE_ALIAS)?.setOnPreferenceChangeListener { _, newValue ->
+//
+//            launch {
+//
+//                sDeviceViewModel.setAlias(newValue as? String ?: String())
+//
+//            }
+
+//            true
+//
+//        }
+
+        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { preference, newValue ->
+
+            val mode = newValue as? Boolean ?: true
+
+            preference.summary = if (mode) "AP" else "IoT"
+
+            true
+
+        }
+
+        findPreference<EditTextPreference>(DEVICE_PASSWORD)?.setOnPreferenceChangeListener { _, _ ->
+
+            setWLanInfo()
+
+            true
+
+        }
+
+        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { _, _ ->
+
+            setWLanInfo()
+
+            true
+
+        }
+
+//        findPreference<ListPreference>(DEVICE_WIFI_MODE)?.setOnPreferenceChangeListener { preference, newValue ->
+//
+//            val mode = newValue as? Boolean ?: true
+//
+//            preference.summary = if (mode) "AP" else "IoT"
+//
+//            true
+//
+//        }
+
+        findPreference<EditTextPreference>(DEVICE_IP)?.setOnPreferenceChangeListener { _, _ ->
+
+            launch {
+
+                sDeviceViewModel.connect(requireContext())
+
+            }
+
+            true
+
+        }
+
+        findPreference<EditTextPreference>(DEVICE_PORT)?.setOnPreferenceChangeListener { _, _ ->
+
+            launch {
+
+                sDeviceViewModel.connect(requireContext())
+
+            }
+
+            true
+
+        }
+    }
+
+    private fun setWLanInfo() {
+
+        val ssid = findPreference<EditTextPreference>(DEVICE_SSID)
+        val password = findPreference<EditTextPreference>(DEVICE_PASSWORD)
+
+        launch {
+
+            sDeviceViewModel.setWLanInfoAsync(
+                ssid?.text ?: "",
+                password?.text ?: "",
+                DeviceViewModel.WPA).await()
+
+//            activity?.runOnUiThread {
+//
+//                Toast.makeText(context, "Password ${if (result) "saved" else "failed"}", Toast.LENGTH_SHORT).show()
+//            }
         }
     }
 }

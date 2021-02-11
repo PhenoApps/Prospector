@@ -12,9 +12,8 @@ import org.phenoapps.prospector.data.dao.ScanDao
 import org.phenoapps.prospector.data.models.*
 import java.io.File
 
-
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
-        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1)
+        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1, exportSchema = false)
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -28,13 +27,17 @@ abstract class ProspectorDatabase : RoomDatabase() {
 
         }
 
-        val dir = File(db.parent)
+        db.parent?.let {
 
-        if (!dir.exists()) {
+            val dir = File(it)
 
-            dir.mkdirs()
+            if (!dir.exists()) {
 
+                dir.mkdirs()
+
+            }
         }
+
 
         return false
     }

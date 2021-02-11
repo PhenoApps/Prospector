@@ -11,15 +11,18 @@ import androidx.lifecycle.liveData
 import androidx.preference.PreferenceManager
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.net.InetAddress
 import java.net.UnknownHostException
+import javax.inject.Inject
 
 /**
  * TODO: Implement an interface for spectrometers then generalize this to devices other than LS.
  */
-class DeviceViewModel : ViewModel() {
+@HiltViewModel
+class DeviceViewModel @Inject constructor() : ViewModel() {
 
     init {
 
@@ -32,6 +35,8 @@ class DeviceViewModel : ViewModel() {
     override fun onCleared() {
 
         sDevice?.Close()
+
+        sDeviceScope.cancel()
 
         super.onCleared()
     }
@@ -55,12 +60,6 @@ class DeviceViewModel : ViewModel() {
             connect(ip, port)
 
         }
-    }
-
-    fun close(context: Context) {
-
-        sDevice?.Close()
-
     }
 
     fun reset() {
@@ -107,7 +106,7 @@ class DeviceViewModel : ViewModel() {
         emit("DONE")
     }
 
-    fun isConnectedLive() = liveData(sDeviceScope.coroutineContext) {
+    fun isConnectedLive() = liveData(sDeviceScope.coroutineContext, 5000) {
 
         var status = false
 
@@ -128,40 +127,40 @@ class DeviceViewModel : ViewModel() {
     }
 
 
-    fun connection(context: Context) = liveData(sDeviceScope.coroutineContext, 500L) {
-
-        val connecting = -1
-
-        var result: Int? = LinkSquareAPI.RET_ERR
-
-        //emit(connecting)
-
-        while (result == LinkSquareAPI.RET_ERR) {
-
-            with (manager(context)) {
-
-                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
-
-                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
-
-                result = connect(ip, port)
-
-                emit(when (result) {
-
-                    LinkSquareAPI.RET_OK -> {
-
-                        getDeviceInfo()
-
-                    }
-                    else -> {
-
-                        getDeviceError()
-
-                    }
-                })
-            }
-        }
-    }
+//    fun connection(context: Context) = liveData(sDeviceScope.coroutineContext, 500L) {
+//
+//        val connecting = -1
+//
+//        var result: Int? = LinkSquareAPI.RET_ERR
+//
+//        //emit(connecting)
+//
+//        while (result == LinkSquareAPI.RET_ERR) {
+//
+//            with (manager(context)) {
+//
+//                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
+//
+//                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
+//
+//                result = connect(ip, port)
+//
+//                emit(when (result) {
+//
+//                    LinkSquareAPI.RET_OK -> {
+//
+//                        getDeviceInfo()
+//
+//                    }
+//                    else -> {
+//
+//                        getDeviceError()
+//
+//                    }
+//                })
+//            }
+//        }
+//    }
 
     fun scan(context: Context) = liveData<List<LSFrame>> {
 

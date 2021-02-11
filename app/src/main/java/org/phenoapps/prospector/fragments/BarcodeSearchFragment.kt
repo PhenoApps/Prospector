@@ -14,13 +14,11 @@ import androidx.navigation.fragment.findNavController
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.SampleViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
-import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
 
 /**
@@ -28,15 +26,11 @@ import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
  * for a sample name that matches the scanned barcode. If it exists the fragment
  * immediately navigates to the sample specific page.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class BarcodeSearchFragment : Fragment() {
 
-    private val sViewModel: SampleViewModel by viewModels {
-
-        with(ProspectorDatabase.getInstance(requireContext())) {
-            SampleViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
-                    SampleRepository.getInstance(sampleDao()))
-        }
-    }
+    private val sViewModel: SampleViewModel by viewModels()
 
     private var mSamples: List<Sample> = ArrayList()
 

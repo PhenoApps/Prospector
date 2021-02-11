@@ -12,17 +12,15 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.SampleViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
-import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.databinding.FragmentNewSampleBinding
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.SnackbarQueue
@@ -31,21 +29,17 @@ import org.phenoapps.prospector.utils.SnackbarQueue
  * A simple data collection fragment that creates sample models and inserts them into the db.
  * Barcodes can be scanned using the BarcodeScanFragment, which is used to populate the sample name.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mExpId: Long = -1L
 
-    private val sViewModel: SampleViewModel by viewModels {
-
-        with(ProspectorDatabase.getInstance(requireContext())) {
-            SampleViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
-                    SampleRepository.getInstance(sampleDao()))
-        }
-    }
+    private val sViewModel: SampleViewModel by viewModels()
 
     private val sOnBarcodeScanClick = View.OnClickListener {
 
-        setFragmentResultListener("BarcodeResult") { key, bundle ->
+        setFragmentResultListener("BarcodeResult") { _, bundle ->
 
             val code = bundle.getString("barcode_result", "") ?: ""
 
@@ -60,7 +54,11 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sOnSaveClick = View.OnClickListener {
 
-        mBinding?.insertSample()
+        launch {
+
+            mBinding?.insertSample()
+
+        }
 
     }
 
@@ -84,7 +82,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_new_sample, null, true)
 
-        mBinding?.let { ui ->
+        mBinding?.let { _ ->
 
             setupButtons()
 
@@ -99,7 +97,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun FragmentNewSampleBinding.clearUi() {
 
-        activity?.let { act ->
+        activity?.let { _ ->
 
             sampleNameEditText.text.clear()
 
@@ -137,7 +135,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     //checks if sample name is not empty
     //also checks if the name already exists and prompts the user to navigate to that sample
-    private fun FragmentNewSampleBinding.insertSample() {
+    private suspend fun FragmentNewSampleBinding.insertSample() {
 
         val name = sampleNameEditText.text.toString()
 
@@ -149,41 +147,38 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
             //ensure the name is given
             if (name.isNotBlank()) {
 
-                launch(Dispatchers.IO) {
+                //if not sample exists with that name, insert it
+                if (sViewModel.getSamples(mExpId).find { it.name == name } == null) {
 
-                    //if not sample exists with that name, insert it
-                    if (sViewModel.getSamples(mExpId).find { it.name == name } == null) {
+                    insertSampleAndUpdate()
 
-                        insertSampleAndUpdate()
+                    act.runOnUiThread {
 
-                        act.runOnUiThread {
+                        findNavController()
+                                .navigate(NewSampleFragmentDirections
+                                        .actionToScanList(mExpId, name))
+                    }
 
-                            findNavController()
-                                    .navigate(NewSampleFragmentDirections
-                                            .actionToScanList(mExpId, name))
-                        }
+                } else { //otherwise ask the user before inserting a duplicate
 
-                    } else { //otherwise ask the user before inserting a duplicate
+                    act.runOnUiThread {
 
-                        act.runOnUiThread {
+                        Dialogs.booleanOption(AlertDialog.Builder(act),
+                                act.getString(R.string.frag_new_sample_dialog_duplicate_title),
+                                act.getString(R.string.frag_new_sample_dialog_duplicate_message),
+                                act.getString(R.string.frag_new_sample_dialog_add_to_sample),
+                                act.getString(R.string.frag_new_sample_dialog_new_sample)) {
 
-                            Dialogs.booleanOption(AlertDialog.Builder(act),
-                                    act.getString(R.string.frag_new_sample_dialog_duplicate_title),
-                                    act.getString(R.string.frag_new_sample_dialog_duplicate_message),
-                                    act.getString(R.string.frag_new_sample_dialog_add_to_sample),
-                                    act.getString(R.string.frag_new_sample_dialog_new_sample)) {
+                            if (it) {
 
-                                if (it) {
+                                findNavController()
+                                        .navigate(NewSampleFragmentDirections
+                                                .actionToScanList(mExpId, name))
 
-                                    findNavController()
-                                            .navigate(NewSampleFragmentDirections
-                                                    .actionToScanList(mExpId, name))
+                            } else {
 
-                                } else {
+                                clearUi()
 
-                                    clearUi()
-
-                                }
                             }
                         }
                     }

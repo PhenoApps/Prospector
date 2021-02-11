@@ -6,6 +6,7 @@ import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -15,18 +16,14 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
-import org.phenoapps.prospector.MainGraphDirections
+import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.MainViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
-import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
-import org.phenoapps.prospector.data.viewmodels.repository.ScanRepository
 import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.utils.*
 import java.io.File
@@ -38,6 +35,7 @@ import java.util.*
  *
  * Bottom toolbar navigation is controlled here.
  */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
 //    private val mFirebaseAnalytics by lazy {
@@ -46,15 +44,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     //flag to track when a device is connected, used to change the options menu icon
     var mConnected: Boolean = false
 
-    private val sViewModel: MainActivityViewModel by viewModels {
-
-        with(ProspectorDatabase.getInstance(this)) {
-            MainViewModelFactory(
-                    ExperimentRepository.getInstance(this.experimentDao()),
-                    SampleRepository.getInstance(this.sampleDao()),
-                    ScanRepository.getInstance(this.scanDao()))
-        }
-    }
+    private val sViewModel: MainActivityViewModel by viewModels()
 
     /**
      * This activity view model is used throughout all the fragments to update connection status.
@@ -111,14 +101,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
 
                 if (it) {
-                    launch {
-                        loadSampleData()
+
+                    runOnUiThread {
+
+                        launch {
+                            loadSampleData()
+                        }
                     }
                 }
             }
         }
 
-        sDeviceViewModel.isConnectedLive().observeForever {
+        sDeviceViewModel.isConnectedLive().observe(this, {
 
             it?.let { status ->
 
@@ -129,7 +123,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                                 if (status) getString(R.string.connected)
                                 else getString(R.string.disconnect)))
             }
-        }
+        })
 
     }
 
@@ -141,9 +135,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             //TODO add firebase analytics event on error
 
-            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
 
-                Log.e("ProspectorCrash", throwable.message)
+                Log.e("ProspectorCrash", throwable.message ?: "Unknown Error")
 
                 throwable.printStackTrace()
 
@@ -154,58 +148,56 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     }
 
-    private suspend fun loadSampleData() = withContext(Dispatchers.IO) {
+    private suspend fun loadSampleData() {
 
-        launch(Dispatchers.IO) {
+        //make sample experiment
+        val eid = sViewModel.insertExperimentAsync(
+                Experiment("SampleDataFruit", DEVICE_TYPE_NIR, "sample data")).await()
 
-            //make sample experiment
-            val eid = sViewModel.insertExperimentAsync(
-                    Experiment("SampleDataFruit", DEVICE_TYPE_NIR, "sample data")).await()
+        //make banana peel and orange peel samples
+        sViewModel.insertSampleAsync(
+                Sample(eid, "orange peel", note = "sample data")).await()
 
-            //make banana peel and orange peel samples
-            sViewModel.insertSampleAsync(
-                    Sample(eid, "orange peel", note = "sample data")).await()
+        sViewModel.insertSampleAsync(
+                Sample(eid, "banana peel", note = "sample data")).await()
 
-            sViewModel.insertSampleAsync(
-                    Sample(eid, "banana peel", note = "sample data")).await()
+        //open the sample assets file
+        assets.open("banana_and_orange.csv").reader().readLines().forEachIndexed { index, line ->
 
-            //open the sample assets file
-            assets.open("banana_and_orange.csv").reader().readLines().forEachIndexed { index, line ->
+            //skip the header, otherwise insert the rows
+            if (index > 0) {
 
-                //skip the header, otherwise insert the rows
-                if (index > 0) {
+                val tokens = line.split(",")
 
-                    val tokens = line.split(",")
+                try {
 
-                    try {
+                    //val experimentName = tokens[0]
+                    val sampleName = tokens[1]
+                    val scanDate = tokens[2]
+                    val deviceType = tokens[3]
+                    val deviceId = tokens[4]
+                    val operator = tokens[5]
+                    val lightSource = tokens[6]
 
-                        val experimentName = tokens[0]
-                        val sampleName = tokens[1]
-                        val scanDate = tokens[2]
-                        val deviceType = tokens[3]
-                        val deviceId = tokens[4]
-                        val operator = tokens[5]
-                        val lightSource = tokens[6]
+                    //for each scan insert using coroutines
+                    //get the tokens between the lightsource and experiment note headers
+                    val waveRange = tokens.subList(6, tokens.size-1).joinToString(" ")
 
-                        //for each scan insert using coroutines
-                        //get the tokens between the lightsource and experiment note headers
-                        val waveRange = tokens.subList(6, tokens.size-1).joinToString(" ")
+                    val sid = sViewModel.insertScanAsync(Scan(eid, sampleName, scanDate, deviceType,
+                            deviceId = deviceId,
+                            operator = operator,
+                            lightSource = lightSource.toInt())).await()
 
-                        val sid = sViewModel.insertScanAsync(Scan(eid, sampleName, scanDate, deviceType,
-                                deviceId = deviceId,
-                                operator = operator,
-                                lightSource = lightSource.toInt())).await()
+                    sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, 0))
 
-                        sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, 0))
+                } catch (e: Exception) {
 
-                    } catch (e: Exception) {
+                    e.printStackTrace()
 
-                        e.printStackTrace()
-
-                    }
                 }
             }
         }
+
 
     }
 
@@ -221,19 +213,20 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                 R.id.action_nav_data -> {
 
-                    mNavController.navigate(MainGraphDirections
-                            .actionToExperiments())
+                    mNavController.navigate(NavigationRootDirections
+                        .actionToExperiments())
 
                 }
                 R.id.action_nav_settings -> {
 
-                    mNavController.navigate(MainGraphDirections
-                            .actionToSettings())
+                    mNavController.navigate(NavigationRootDirections
+                        .actionToSettings())
+
                 }
                 R.id.action_nav_about -> {
 
-                    mNavController.navigate(MainGraphDirections
-                            .actionToAboutFragment())
+                    mNavController.navigate(NavigationRootDirections
+                        .actionToAboutFragment())
 
                 }
             }
@@ -305,7 +298,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     Toast.makeText(this, getString(R.string.double_back_press), Toast.LENGTH_SHORT).show()
 
-                    Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+                    Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
                 R.id.settings_fragment -> {
 

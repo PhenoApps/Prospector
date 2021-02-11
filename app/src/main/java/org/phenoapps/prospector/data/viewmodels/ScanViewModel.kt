@@ -2,6 +2,7 @@ package org.phenoapps.prospector.data.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -9,8 +10,10 @@ import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.data.viewmodels.repository.ScanRepository
+import javax.inject.Inject
 
-class ScanViewModel(
+@HiltViewModel
+class ScanViewModel @Inject constructor(
         experimentRepo: ExperimentRepository,
         private val repo: ScanRepository): ViewModel() {
 

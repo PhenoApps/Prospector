@@ -2,6 +2,7 @@ package org.phenoapps.prospector.data.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -12,14 +13,16 @@ import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.data.viewmodels.repository.SampleRepository
 import org.phenoapps.prospector.data.viewmodels.repository.ScanRepository
+import javax.inject.Inject
 
 /**
  * required repos/functions used for loading sample data
  */
-class MainActivityViewModel(
-        private val experimentRepo: ExperimentRepository,
-        private val sampleRepo: SampleRepository,
-        private val scanRepo: ScanRepository): ViewModel() {
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(
+    private val experimentRepo: ExperimentRepository,
+    private val sampleRepo: SampleRepository,
+    private val scanRepo: ScanRepository): ViewModel() {
 
     fun insertExperimentAsync(exp: Experiment) = viewModelScope.async {
 

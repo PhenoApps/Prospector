@@ -3,9 +3,9 @@ package org.phenoapps.prospector.data.viewmodels.repository
 import org.phenoapps.prospector.data.dao.ScanDao
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
+import javax.inject.Inject
 
-class ScanRepository
-    private constructor(
+class ScanRepository @Inject constructor(
             private val dao: ScanDao) {
 
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = dao.getSpectralValues(eid, sid)
@@ -24,14 +24,4 @@ class ScanRepository
 
     suspend fun updateScanColor(eid: Long, scanId: Long, color: String) = dao.updateScanColor(eid, scanId, color)
 
-    companion object {
-
-        @Volatile private var instance: ScanRepository? = null
-
-        fun getInstance(dao: ScanDao) =
-                instance ?: synchronized(this) {
-                    instance ?: ScanRepository(dao)
-                        .also { instance = it }
-                }
-    }
 }

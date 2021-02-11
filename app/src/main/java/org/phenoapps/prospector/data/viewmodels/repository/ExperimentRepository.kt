@@ -2,10 +2,10 @@ package org.phenoapps.prospector.data.viewmodels.repository
 
 import org.phenoapps.prospector.data.dao.ExperimentDao
 import org.phenoapps.prospector.utils.DateUtil
+import javax.inject.Inject
 
-class ExperimentRepository
-    private constructor(
-            private val dao: ExperimentDao) {
+class ExperimentRepository @Inject constructor(
+    private val dao: ExperimentDao) {
 
     fun getExperiments() = dao.getExperiments()
 
@@ -27,14 +27,4 @@ class ExperimentRepository
 
     }
 
-    companion object {
-
-        @Volatile private var instance: ExperimentRepository? = null
-
-        fun getInstance(dao: ExperimentDao) =
-                instance ?: synchronized(this) {
-                    instance ?: ExperimentRepository(dao)
-                        .also { instance = it }
-                }
-    }
 }

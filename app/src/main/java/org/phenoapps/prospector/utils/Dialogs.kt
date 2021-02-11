@@ -15,7 +15,7 @@ class Dialogs {
 
     companion object {
 
-        fun askForScan(activity: Activity, title: Int, button: Int, cancel: Int, function: () -> Unit): AlertDialog.Builder {
+        fun askForScan(activity: Activity, title: Int, cancel: Int): AlertDialog.Builder {
 
             val binding = DataBindingUtil.inflate<DialogLayoutCreateScanBinding>(activity.layoutInflater, R.layout.dialog_layout_create_scan, null, false)
 
@@ -27,7 +27,7 @@ class Dialogs {
 
                 setCancelable(false)
 
-                setNegativeButton(cancel) { dialog, it ->
+                setNegativeButton(cancel) { dialog, _ ->
 
                     dialog.dismiss()
 

@@ -24,7 +24,7 @@ interface SampleDao {
     fun getSamplesLive(eid: Long): LiveData<List<Sample>>
 
     @Query("SELECT DISTINCT * FROM samples WHERE samples.eid = :eid")
-    fun getSamples(eid: Long): List<Sample>
+    suspend fun getSamples(eid: Long): List<Sample>
 
     /**
      * Inserts

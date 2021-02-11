@@ -22,18 +22,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ScanViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ScanViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
-import org.phenoapps.prospector.data.viewmodels.repository.ScanRepository
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
@@ -50,6 +48,8 @@ import org.phenoapps.prospector.utils.*
  *
  * TODO: improve color choice using color picker
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
@@ -58,13 +58,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private val mSnackbar = SnackbarQueue()
 
-    private val sViewModel: ScanViewModel by viewModels {
-
-        with(ProspectorDatabase.getInstance(requireContext())) {
-            ScanViewModelFactory(ExperimentRepository.getInstance(experimentDao()),
-                    ScanRepository.getInstance(scanDao()))
-        }
-    }
+    private val sViewModel: ScanViewModel by viewModels()
 
     private var mBinding: FragmentScanListBinding? = null
 
@@ -137,9 +131,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             if (exp?.deviceType == resolveDeviceType(requireContext(), device)) {
 
-                val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning_sample, R.string.ok, R.string.close) {
-
-                }
+                val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning, R.string.close)
 
                 dialog.create()
 
@@ -423,7 +415,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startObservers() {
 
-        sDeviceViewModel.isConnectedLive().observeForever { connected ->
+        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
 
             connected?.let { status ->
 
@@ -436,7 +428,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                 }
 
             }
-        }
+        })
 
         //updates recycler view with available scans
         sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->

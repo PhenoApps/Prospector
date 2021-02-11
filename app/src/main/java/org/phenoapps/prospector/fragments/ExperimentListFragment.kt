@@ -16,17 +16,16 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
 
@@ -34,6 +33,8 @@ import org.phenoapps.prospector.utils.Dialogs
  * The main data fragment that displays the top-level experiment hierarchy.
  * Whenever the data bot nav button is pressed, the app navigates to this fragment.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
@@ -42,14 +43,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      * Used to query experiment list
      * This is a common pattern to use the fragment delegates to load view models.
      */
-    private val sViewModel: ExperimentViewModel by viewModels {
-
-        ExperimentViewModelFactory(
-                ExperimentRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .experimentDao()))
-
-    }
+    private val sViewModel: ExperimentViewModel by viewModels()
 
     /**
      * Navigates to the new experiment fragment whenever the fab button is pressed.
@@ -118,7 +112,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
         }
 
         //use the activity view model to access the current connection status
-        sDeviceViewModel.isConnectedLive().observeForever { connected ->
+        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
 
             connected?.let { status ->
 
@@ -131,7 +125,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
                 }
 
             }
-        }
+        })
 
         return mBinding?.root
     }
@@ -143,7 +137,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun FragmentExperimentListBinding.setupToolbar() {
 
-        experimentToolbar.setOnMenuItemClickListener { item ->
+        experimentToolbar.setOnMenuItemClickListener {
 
             if (sDeviceViewModel.isConnected()) {
 

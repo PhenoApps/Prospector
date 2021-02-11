@@ -10,30 +10,24 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentViewModelFactory
-import org.phenoapps.prospector.data.viewmodels.repository.ExperimentRepository
 import org.phenoapps.prospector.databinding.FragmentNewExperimentBinding
 
 /**
  * A simple data collection fragment that creates experiment models and inserts them into the db.
  */
+@WithFragmentBindings
+@AndroidEntryPoint
 class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private val sViewModel: ExperimentViewModel by viewModels {
-
-        ExperimentViewModelFactory(
-                ExperimentRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .experimentDao()))
-
-    }
+    private val sViewModel: ExperimentViewModel by viewModels()
 
     private val sOnNewExpClick = View.OnClickListener {
 
@@ -80,7 +74,7 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
             launch {
 
-                val eid = sViewModel.insertExperimentAsync(Experiment(experimentName,
+                sViewModel.insertExperimentAsync(Experiment(experimentName,
                         deviceType = deviceType, note = experimentNotes)).await()
 
                 activity?.runOnUiThread {

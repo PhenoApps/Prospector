@@ -19,10 +19,10 @@ import org.phenoapps.prospector.utils.DateUtil
         ])
 data class Scan(
 
-        @ColumnInfo(name = "eid")
+        @ColumnInfo(name = "eid", index = true)
         var eid: Long,
 
-        @ColumnInfo(name = "name")
+        @ColumnInfo(name = "name", index = true)
         var name: String,
 
         @ColumnInfo(name = "date")

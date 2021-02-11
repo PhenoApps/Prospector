@@ -1,6 +1,7 @@
 package org.phenoapps.prospector.utils
 
 import android.os.Handler
+import android.os.Looper
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import java.util.*
@@ -15,7 +16,7 @@ class SnackbarQueue {
 
     private var isShowing: Boolean = false
 
-    private val mHandler = Handler()
+    private val mHandler = Handler(Looper.getMainLooper())
 
     private var mQueue: ArrayList<SnackJob> = ArrayList()
 

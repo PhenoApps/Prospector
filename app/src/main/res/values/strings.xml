@@ -3,291 +3,80 @@
 
     <!-- Don't translate region -->
 
-    <string name="packageName">org.phenoapps.prospector</string>
-
     <!-- -->
 
 
-    <string name="scans">\u00A0scan(s)</string>
-
-    <string name="title_activity_scan">ScanActivity</string>
-    <string name="title_activity_discover">DiscoverActivity</string>
-    <string name="title_activity_collection">CollectionActivity</string>
-    <string name="title_activity_model">ModelActivity</string>
-    <string name="select_model_title">Select Model</string>
-    <string name="default_num_scans">2</string>
-    <string name="multi_scan_description">Press SCiO button to scan.\nTo analyze, press the record in the list.</string>
-    <string name="connection">Connection</string>
-    <string name="ask_which_device">Which device would you like to connect to?</string>
-    <string name="scio_sdk_test_application">SCiO SDK Test Application</string>
-    <string name="cloud_api">Cloud API</string>
-    <string name="login">Login</string>
-    <string name="logout">LOGOUT</string>
-    <string name="clear_scans">CLEAR SCANS</string>
-    <string name="scio_version">SCiO Version</string>
-    <string name="analyze">Analyze</string>
-    <string name="get_models">Get Models</string>
-    <string name="get_cp_models">Get CP Models</string>
-    <string name="username">Username</string>
-    <string name="default_username">-</string>
-    <string name="selected_model">Selected Model</string>
-    <string name="default_model">-</string>
-    <string name="scio_device_api">SCiO Device API</string>
-    <string name="discover">Discover</string>
-    <string name="connect">Connect</string>
     <string name="connected">Connected</string>
 
-    <string name="calibrate">Calibrate</string>
-    <string name="is_calibration_needed">Is Calibration Needed</string>
-    <string name="scan">Scan</string>
-    <string name="read_battery">Read Battery</string>
-    <string name="rename">Rename</string>
     <string name="disconnect">Disconnect</string>
-    <string name="scio_name">SCiO Name</string>
-    <string name="default_scio_name">-</string>
-    <string name="scio_address">SCiO Address</string>
-    <string name="default_scio_address">-</string>
-    <string name="status">Status</string>
-    <string name="default_scio_status">-</string>
-    <string name="scio_sensor_api">SCiO Sensor API</string>
-    <string name="get_id">Get ID</string>
-    <string name="default_scio_status_sensor">-</string>
-    <string name="examples">Examples</string>
-    <string name="cached_multi_scanning_example">Cached Multi Scanning Example</string>
-    <string name="version_number">1.0</string>
-    <string name="linksquareapi">LinkSquareAPI</string>
-    <string name="result">Result:</string>
     <string name="close">Close</string>
-    <string name="model">Model</string>
-    <string name="ask_which_model">Which model would you like to use?\n* Long press to select multiple models *</string>
-    <string name="done">Done</string>
-    <string name="new_scan">New scan</string>
-    <string name="view_scans">View scans</string>
-    <string name="export">Export</string>
-    <string name="import_scans">Import</string>
-    <string name="name">Name</string>
-    <string name="fat">Fat</string>
-    <string name="hard_cheese">Hard Cheese</string>
-    <string name="required_scans">Required scans:</string>
-    <string name="default_item_details">5</string>
-    <string name="default_attribute_value_grams">34.04 gr</string>
-    <string name="scan_three_more_times">Scan 3 more times</string>
-    <string name="rename_scan">Rename Scan</string>
-    <string name="edit_scan">Edit Scan</string>
-    <string name="delete_scan">Delete Scan</string>
     <string name="delete_all">Delete All</string>
-    <string name="available">Available</string>
-    <string name="not_available">Not Available</string>
-    <string name="ask_perform_scan">Please perform a scan before analyzing.</string>
-    <string name="please_wait">Please Wait</string>
-    <string name="analyzing">Analyzing…</string>
-    <string name="error_while_analyzing">Error while analyzing: </string>
-    <string name="additional_scan_notes">Additional Scan Notes</string>
-    <string name="result_ok">Result: OK.</string>
-    <string name="result_ok_newline">Result: OK.\n</string>
-    <string name="scan_without_space">Scan</string>
-    <string name="more_times">" more times"</string>
-    <string name="scan_session_complete">Scan session complete</string>
-    <string name="unknown_material">Unknown Material</string>
-    <string name="import_button_text">Import</string>
-    <string name="will_analyze_models">Will analyze the following model/s: </string>
-    <string name="success_exclamation">Success!</string>
-    <string name="unsuccessful_upload">Unsuccessful upload.</string>
-    <string name="alert">Alert</string>
-    <string name="link_square_device_button">LinkSquare Device Button!</string>
-    <string name="link_square_network_timeout">LinkSquare Network Timeout!</string>
-    <string name="linksquare_network_closed">LinkSquare Network Closed!</string>
-    <string name="scan_name_no_spaces">Scan name cannot contain spaces.</string>
-    <string name="sample_name">Sample Name</string>
     <string name="ok">OK</string>
-    <string name="duplicate_sample_name">Duplicate Sample Name</string>
-    <string name="ask_add_to_existing">Add this scan to the existing sample?</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="scan_qr_code">Scan QR Code</string>
-    <string name="alias_label">Alias:</string>
-    <string name="sw_ver_label">SW Ver:</string>
-    <string name="hw_ver_label">HW Ver:</string>
-    <string name="device_id_label">DeviceID:</string>
-    <string name="op_mode_label">OPMode:</string>
-    <string name="select_output_format">Select Output Format</string>
-    <string name="database_csv">Database CSV</string>
-    <string name="scio_format">SCiO Format</string>
-    <string name="brapi_format">BrAPI Format</string>
-    <string name="export_file_message">"Exported to CSV. File located at "</string>
-    <string name="export_to_scio_message">Exported to SCiO Format. File located at </string>
-    <string name="select_import_method">Select Import Method</string>
-    <string name="example_data">Example Data</string>
-    <string name="after_example_data_added">Example data added to database.</string>
-    <string name="sample3_already_exists">Data was not added because sample_3 already exists in the database.</string>
-    <string name="sample2_already_exists">Data was not added because sample_2 already exists in the database.</string>
-    <string name="sample1_already_exists">Data was not added because sample_1 already exists in the database.</string>
-    <string name="successfully_exported">Successfully exported.</string>
-    <string name="file_not_created">File could not be created.</string>
     <string name="ask_delete_all_scans">Are you sure you want to delete all scans?</string>
-    <string name="ask_export_to_default">Export to Default Location?</string>
-    <string name="show_exported_scio_format">Exported to SCiO Format. File located at </string>
-    <string name="show_exported_brapi_format">Exported to BrAPI Format. File located at </string>
-    <string name="file_inaccessible">file_inaccessible</string>
-    <string name="show_file_not_directory"> is not a directory</string>
-    <string name="updated_sample_name">Updated Sample Name</string>
-    <string name="choose_scans_to_display">Choose Scans to Display</string>
     <string name="ask_delete_scan">Are you sure you want to delete this scan?</string>
-    <string name="not_applicable">N/A</string>
-    <string name="no_value">No Value</string>
-    <string name="one_model_selected">One model selected</string>
-    <string name="models_selected"> models selected</string>
-    <string name="selected_with_space"> selected</string>
-    <string name="select_models">Select Models</string>
-    <string name="error_retrieving_cp_models">Error retrieving CP models: </string>
-    <string name="was_selected_with_space"> was selected</string>
-    <string name="user_not_logged_in">Can not retrieve model. User is not logged in</string>
-    <string name="found_scio_device">found scio device: </string>
-    <string name="ask_scio_device">Select SCiO Device</string>
-    <string name="ask_scio_requires_calibration">SCiO Sensor Requires calibration? </string>
-    <string name="scio_not_available">SCiO Sensor not available</string>
-    <string name="calibrating">Calibrating…</string>
-    <string name="scio_calibrated_success">SCiO was calibrated successfully</string>
-    <string name="error_while_calibrating">Error while calibrating</string>
-    <string name="timeout_while_calibrating">Timeout while calibrating</string>
-    <string name="scio_sensor_not_available">SCiO Sensor not available</string>
-    <string name="scio_sensor_id_labe">\"SCiO Sensor ID: \"</string>
-    <string name="error_while_retrieving_model">Error while retrieving models</string>
-    <string name="cannot_retrieve_model">Cannot retrieve model. User is not logged in</string>
-    <string name="scan_analyze_success">Scan analyzed successfully.</string>
-    <string name="scan_analyze_fail">\"Scan analysis failed: \"</string>
-    <string name="ask_calibrate_device">Please calibrate the device.</string>
-    <string name="scio_scan_failed">SCiO scan failed.</string>
-    <string name="scio_timed_out">SCiO timed out while scanning.</string>
-    <string name="button_cancel">Cancel</string>
-    <string name="button_ok">OK</string>
-
-    <string name="experiment_name_header">experiment</string>
 
     <string name="scan_name_header">scanid</string>
     <string name="scan_date_header">scandate</string>
     <string name="scan_device_id_header">deviceid</string>
-    <string name="spec_frame_id_header">frameid</string>
     <string name="spec_light_source_header">lightsource</string>
-    <string name="spec_spectral_count_header">spectralcount</string>
-    <string name="spec_spectral_values_header">spectralvalues</string>
     <string name="scan_note_header">scannote</string>
-    <string name="horizontal_axis">Frames</string>
-    <string name="vertical_axis">Intensity (A.U)</string>
-    <string name="ask_sample_name">Please type or scan a sample name.</string>
-    <string name="ask_new_scan_name">Please enter a name for the new scan.</string>
-    <string name="num_bulb">Number of bulb frames</string>
-    <string name="num_led">Number of LED frames</string>
-    <string name="scan_name_barcode_content_desc">The barcode generated from the inputted name.</string>
-    <string name="add_experiment">Add Experiment</string>
-    <string name="experiment_name">Experiment Name</string>
-    <string name="experiment_id">Experiment ID</string>
     <string name="alias_header">Alias</string>
     <string name="device_id_header">Device ID</string>
     <string name="device_type_header">Device Type</string>
     <string name="hw_version_header">HW Version</string>
     <string name="op_mode_header">OP Mode</string>
     <string name="sw_version_header">SW Version</string>
-    <string name="attempting_connect">Attempting to connect to device.</string>
     <string name="preferences_profile_title">Profile</string>
     <string name="pref_operator_title">Operator</string>
     <string name="pref_scanning_title">Device Settings</string>
     <string name="pref_led_frames_title">LED Frames</string>
     <string name="pref_led_frames_summary">The number of frames per scan.</string>
     <string name="pref_bulb_frames_title">Bulb Frames</string>
-    <string name="pref_auto_name_scan_title">Automatically name scans</string>
     <string name="nav_label_experiment_list">Experiment List Fragment</string>
     <string name="nav_label_scan_list">List of scans for a given experiment.</string>
     <string name="nav_label_settings">Settings Fragment</string>
     <string name="about">About</string>
 
     <!-- nav drawer -->
-    <string name="drawer_open">Open</string>
-    <string name="drawer_close">Close</string>
     <string name="double_back_press">Press back again to exit</string>
-    <string name="nav_label_scan_detail">Scan Detail Fragment</string>
 
     <!-- scan detail fragment -->
-    <string name="off">Autosize Off</string>
-    <string name="autosize">Autosize On</string>
     <string name="undo">Undo</string>
 
     <!-- new scan dialog -->
-    <string name="uuid">UUID</string>
     <string name="pref_device_ip">Device IP Address</string>
     <string name="pref_device_default_ip">192.168.1.1</string>
     <string name="pref_device_ip_summary">The IP address used to connect to the operator\'s device.</string>
-    <string name="pref_device_port">Device Port</string>
-    <string name="pref_device_default_port">18630</string>
-    <string name="pref_device_port_summary">The web socket port number used by the operator\'s device.</string>
 
     <!-- export settings strings -->
-    <string name="export_type_always_ask">Always Ask</string>
-    <string name="export_type_csv">CSV</string>
-    <string name="export_type_brapi">BrAPI</string>
-    <string name="pref_export_type">Export Type</string>
-    <string name="loading">Loading…</string>
-    <string name="default_csv_export_file_name">scans</string>
-    <string name="new_experiment_prefix">"New experiment "</string>
-    <string name="new_exp_must_enter_name">Please try to enter an experiment name.</string>
-    <string name="connecting">Connecting…</string>
-    <string name="device_error_prefix">Device Error:</string>
-    <string name="connection_error">Connection error.</string>
-    <string name="why_with_question_mark">Why?</string>
-    <string name="still_connected">Still connected.</string>
-    <string name="filterByScanNameHint">Filter By Name</string>
-    <string name="on">On</string>
-    <string name="camera_off">Scan Barcode</string>
-    <string name="camera_on">Turn off</string>
     <string name="nav_label_sample_list">Sample Fragment</string>
     <string name="add_sample">Add Sample</string>
-    <string name="scanning_sample">Scanning Sample…</string>
     <string name="cancel">Cancel</string>
-    <string name="sampleNameHint">Sample Name</string>
-    <string name="sampleNoteHint">Note</string>
     <string name="settings">Settings</string>
     <string name="search_for_sample">Search For Sample</string>
     <string name="barcode_scan_fragment_label">Barcode scan fragment for searching sample ids.</string>
     <string name="settings_error_num_frames_must_exceed_zero">Please enter at least one bulb or LED frame.</string>
-    <string name="sort_by_name">Sort by Name</string>
-    <string name="sort_by_date">Sort by Date</string>
-    <string name="in_ascending_order">in ascending order.</string>
-    <string name="in_descending_order">in descending order.</string>
     <string name="ask_delete_experiment">Delete this experiment?</string>
-    <string name="initial_setup_instructions">
-        This app currently only supports LinkSquare Spectrometers.\n
-        Please follow these instructions for proper use:\n
-        1. Turn on your LinkSquare, ensure the device is charged.\n
-        2. Connect to the LinkSquare Wi-fi on your phone/tablet.\n
-        \t\tTypically these networks start with "LS" and have a default password of eight zeroes.\n
-        3. Prospector should notify you if the connection is successful.\n
-        4. If an error is shown, go to the settings page to verify your LinkSquare settings are correct.\n
-    </string>
-    <string name="pref_device_type">Device Type</string>
+    <string name="pref_device_type">Device Information</string>
 
     <!-- LinkSquare light source types -->
     <string name="led">LED</string>
     <string name="bulb">Bulb</string>
     <string name="pref_convert_wavelengths_title">Convert to wavelengths</string>
     <string name="pref_convert_wavelengths_summary">The LinkSquare outputs pixel arrays by default, this setting converts this data to spectral wavelengths.</string>
-    <string name="ask_export_type_title">Please choose an export type.</string>
     <string name="export_experiment_name_header">experiment</string>
     <string name="export_device_type_header">deviceType</string>
     <string name="export_operator_header">operator</string>
-    <string name="scan_barcode">Button used to scan barcodes.</string>
     <string name="dialog_new_experiment_name_hint">New experiment name</string>
     <string name="dialog_new_experiment_note_hint">Experiment notes</string>
     <string name="dialog_new_experiment_title">Experiment Creator</string>
-    <string name="dialog_new_experiment_message">Please enter an experiment name.</string>
     <string name="dialog_new_experiment_prefix">New Experiment: </string>
     <string name="dialog_new_experiment_error">Please enter a non-empty experiment name.</string>
     <string name="dialog_new_sample_note_hint">Sample notes:</string>
     <string name="dialog_new_sample_name_hint">Sample name: </string>
 
-    <string name="list_item_samples_suffix">\u00A0sample(s)</string>
     <string name="dialog_new_sample_error">Sample name must not be blank.</string>
     <string name="dialog_new_samples_prefix">New sample: </string>
-    <string name="dialog_new_sample_message">Please input a sample name.</string>
     <string name="dialog_new_sample_title">Sample Creator</string>
     <string name="data">Data</string>
     <string name="device_connected">Device connection status.</string>
@@ -300,9 +89,6 @@
     <string name="frag_instructions_step_five">(Optional) To connect via IoT, go to the app settings and enter the SSID and password for your network. You can manually set what IP-address to connect to in the settings, or search for local devices.</string>
 
     <string name="nav_label_connect_instructions">Instructions for connecting the device using AP mode.</string>
-    <string name="pref_device_alias">Device Alias</string>
-    <string name="pref_device_alias_summary" />
-    <string name="pref_wifi_mode">Connection Mode</string>
     <string name="pref_iot_title">IoT Settings</string>
     <string name="pref_iot_summary">You can use IoT Mode when there is an available Wi-Fi network.</string>
     <string name="pref_device_ssid_summary">The name of your Wi-Fi network.</string>
@@ -310,7 +96,6 @@
     <string name="pref_device_password">Password</string>
     <string name="pref_device_iot_list">Connect</string>
     <string name="pref_iot_list_no_devices">Click to start IoT device search.</string>
-    <string name="pref_device_list_num_found_summary">device(s) found.</string>
     <string name="pref_device_iot_searching">Searching…</string>
     <string name="frag_new_sample_dialog_duplicate_title">Sample Exists</string>
     <string name="frag_new_sample_dialog_duplicate_message">This sample has already been created. Would you like to add additional scans to this sample or create a new sample?</string>
@@ -324,35 +109,28 @@
     <string name="about_version_title">Version</string>
     <string name="about_title_other_apps">Other PhenoApps</string>
     <string name="about_project_lead_title">Project Lead</string>
-    <string name="about_developer_title">Developer</string>
     <string name="about_developer_trife" translatable="false">Trevor Rife</string>
     <string name="about_developer_trife_location" translatable="false">Kansas State University</string>
     <string name="about_developer_trife_email" translatable="false">trife@ksu.edu</string>
     <string name="about_email_title">Email</string>
-    <string name="about_developer_trife_website" translatable="false">https://github.com/PhenoApps/Field-Book</string>
     <string name="about_contributors_title">Contributors</string>
     <string name="about_contributors_developers_title">Developers</string>
-    <string name="about_translators_title">Translators</string>
-    <string name="about_translators_text" translatable="false">Irazema Fuentes-Bueno,  Sandra Dunckel,  Shuangye Wu,  Narinder Singh,  Daljit Singh,  Erena Edae,  Tatiana Danilova,  Rodrigo Pedrozo,  Cristiano Lemes da Silva,  Sophie Bouchet,  Hiroyoshi Iwata,  Goro Ishikawa,  Khaled El-Shamaa, Mokhlesur Rahman, Alice Brunazzi</string>
     <string name="about_contributors_funding_title">Funding</string>
     <string name="about_contributors_funding_text_first" translatable="false">Development of </string>
     <string name="about_contributors_funding_text_after" translatable="false"> has been supported by the Collaborative Crop Research Program of The McKnight Foundation, the National Science Foundation (#1543958), and the National Institute of Food and Agriculture (#2019-67021-29931).</string>
     <string name="about_rate">Rate this app</string>
     <string name="about_technical_title">Technical Details</string>
     <string name="about_github_title">GitHub</string>
-    <string name="about_licenses_title">Licenses</string>
     <string name="about_help_translate_title">Help translate</string>
     <string name="changelog_title">Changelog</string>
     <string name="libraries_title">Libraries</string>
-    <string name="frag_new_scan_title">Connected to device:</string>
     <string name="frag_scan_device_type_mismatch">Connected device does not match the current experiment.</string>
-    <string name="frag_experiment_list_choose_before_export">Select an experiment before exporting.</string>
-    <string name="view_sort_by">Sort by </string>
     <string name="activity_main_sample_data_title">Import sample data?</string>
     <string name="dialog_create_scan_ls_instructions_content_descp">Use your device to scan your sample.</string>
     <string name="frag_exp_list_fab_cont_descp">Click this button to create a new experiment.</string>
     <string name="frag_new_sample_barcode_scan_cont_desc">Click this button to start scanning a barcode.</string>
     <string name="frag_sample_fab_cont_desc">Click this button to create a new sample.</string>
     <string name="frag_scan_fab_cont_desc">Click this button to start a device scan.</string>
+    <string name="scanning">Scanning</string>
 
 </resources>

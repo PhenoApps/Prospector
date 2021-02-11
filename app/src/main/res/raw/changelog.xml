@@ -1,9 +1,6 @@
 <changelog>
-    <release
-        date="2021-02-01"
-        versionCode="1"
-        versionName="v1.0">
-        <new>Initial release</new>
+    <!-- example with filters in rows -->
+    <release versionCode="100" versionName="v1.0.0" date="2-10-2021">
+        <info filter="Initial release">Release</info>
     </release>
-
 </changelog>
