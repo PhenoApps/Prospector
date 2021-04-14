@@ -146,9 +146,8 @@ dependencies {
     implementation "com.jjoe64:graphview:$graphview_version"
 
     //local
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 
-    implementation project(path: ':LinkSquareAPI')
     implementation project(path: ':PhenoIcons')
 
 }

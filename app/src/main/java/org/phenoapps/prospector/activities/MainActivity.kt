@@ -152,17 +152,31 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         //make sample experiment
         val eid = sViewModel.insertExperimentAsync(
-                Experiment("SampleDataFruit", DEVICE_TYPE_NIR, "sample data")).await()
+                Experiment("Samples", DEVICE_TYPE_NIR, "Example data loaded on first install.")).await()
 
-        //make banana peel and orange peel samples
-        sViewModel.insertSampleAsync(
-                Sample(eid, "orange peel", note = "sample data")).await()
+        val samples = listOf("Light Red Kidney Beans",
+                "Navy Beans",
+                "Pinto Beans",
+                "Dark Red Kidney Beans",
+                "Red Beans",
+                "Great Northern Beans",
+                "White Kidney Beans",
+                "Black Beans",
+                "Sorghum",
+                "Corn",
+                "Soybean",
+                "Wheat"
+        )
 
-        sViewModel.insertSampleAsync(
-                Sample(eid, "banana peel", note = "sample data")).await()
+        for (s in samples) {
+
+            sViewModel.insertSampleAsync(
+                Sample(eid, s, note = "sample data")).await()
+
+        }
 
         //open the sample assets file
-        assets.open("banana_and_orange.csv").reader().readLines().forEachIndexed { index, line ->
+        assets.open("examples.csv").reader().readLines().forEachIndexed { index, line ->
 
             //skip the header, otherwise insert the rows
             if (index > 0) {

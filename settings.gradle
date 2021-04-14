@@ -1,2 +1,2 @@
 include ':PhenoIcons'
-include ':app', ':LinkSquareAPI'
+include ':app'
