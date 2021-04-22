@@ -23,6 +23,15 @@
       "contributions": [
         "code",
         "ideas"
+    },
+    {
+      "login": "jmh579",
+      "name": "Jenna Hershberger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/33294076?v=4",
+      "profile": "http://jmh579.github.io",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
