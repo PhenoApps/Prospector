@@ -23,6 +23,7 @@
       "contributions": [
         "code",
         "ideas"
+      ]
     },
     {
       "login": "jmh579",
@@ -30,7 +31,17 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/33294076?v=4",
       "profile": "http://jmh579.github.io",
       "contributions": [
-        "ideas"
+        "ideas",
+        "research"
+      ]
+    },
+    {
+    "login": "bnn678",
+      "name": "Brandon Shaver",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23563750?v=4",
+      "profile": "https://github.com/bnn678",
+      "contributions": [
+        "code"
       ]
     }
   ],
