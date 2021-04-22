@@ -1,4 +1,4 @@
-# Prospector <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="50"></a>
+# Prospector <a href="https://play.google.com/store/apps/details?id=org.phenoapps.prospector"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="50"></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -8,8 +8,6 @@ Prospector is an Android app capable of capturing, storing, visualizing, and exp
 Development of Prospector has been supported by the National Science Foundation under Grant No. (1543958). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
 ## Contributors
-### Developers
-Chaney Courtney
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -21,13 +19,9 @@ Chaney Courtney
     <td align="center"><a href="https://github.com/bnn678"><img src="https://avatars.githubusercontent.com/u/23563750?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brandon Shaver</b></sub></a><br /><a href="https://github.com/PhenoApps/Prospector/commits?author=bnn678" title="Code">💻</a></td>
   </tr>
 </table>
-
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-Trevor Rife
 
 ## License
     Licensed under the GNU General Public License version 3 (GPLv3)
