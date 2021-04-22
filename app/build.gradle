@@ -75,7 +75,6 @@ android {
         }
         full {
             dimension "version"
-            applicationIdSuffix ".full"
         }
     }
 
