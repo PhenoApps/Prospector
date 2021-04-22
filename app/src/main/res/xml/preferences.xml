@@ -12,13 +12,13 @@
             android:title="@string/pref_operator_title"
             android:key="org.phenoapps.prospector.OPERATOR" />
 
-        <ListPreference
-            android:icon="@drawable/ic_nv_export"
-            android:title="@string/pref_export_type"
-            android:defaultValue="0"
-            android:key="org.phenoapps.prospector.EXPORT_TYPE"
-            android:entryValues="@array/export_indices_array"
-            android:entries="@array/export_types_array"/>
+<!--        <ListPreference-->
+<!--            android:icon="@drawable/ic_nv_export"-->
+<!--            android:title="@string/pref_export_type"-->
+<!--            android:defaultValue="0"-->
+<!--            android:key="org.phenoapps.prospector.EXPORT_TYPE"-->
+<!--            android:entryValues="@array/export_indices_array"-->
+<!--            android:entries="@array/export_types_array"/>-->
 
     </PreferenceCategory>
 
@@ -28,13 +28,21 @@
         android:summary=""
         app:iconSpaceReserved="false">
 
-        <ListPreference
+        <Preference
             android:title="@string/pref_device_type"
-            android:key="org.phenoapps.prospector.DEVICE_TYPE"
-            android:defaultValue="0"
-            android:entryValues="@array/device_indices_array"
-            android:entries="@array/device_types_array">
-        </ListPreference>
+            android:key="org.phenoapps.prospector.DEVICE_TYPE"/>
+
+<!--        <ListPreference-->
+<!--            android:title="@string/pref_wifi_mode"-->
+<!--            android:key="org.phenoapps.prospector.DEVICE_WIFI_MODE"-->
+<!--            android:entries="@array/device_wifi_mode_indices"-->
+<!--            android:entryValues="@array/device_wifi_mode"-->
+<!--            android:defaultValue="0"/>-->
+
+<!--        <EditTextPreference-->
+<!--            android:key="org.phenoapps.prospector.DEVICE_ALIAS"-->
+<!--            android:title="@string/pref_device_alias"-->
+<!--            android:summary="@string/pref_device_alias_summary" />-->
 
         <EditTextPreference
             android:icon="@drawable/ic_settings_input_antenna_black_18dp"
@@ -43,12 +51,12 @@
             android:defaultValue="@string/pref_device_default_ip"
             android:summary="@string/pref_device_ip_summary" />
 
-        <EditTextPreference
-            android:icon="@drawable/ic_settings_input_svideo_black_18dp"
-            android:key="org.phenoapps.prospector.DEVICE_PORT"
-            android:title="@string/pref_device_port"
-            android:defaultValue="@string/pref_device_default_port"
-            android:summary="@string/pref_device_port_summary" />
+<!--        <EditTextPreference-->
+<!--            android:icon="@drawable/ic_settings_input_svideo_black_18dp"-->
+<!--            android:key="org.phenoapps.prospector.DEVICE_PORT"-->
+<!--            android:title="@string/pref_device_port"-->
+<!--            android:defaultValue="@string/pref_device_default_port"-->
+<!--            android:summary="@string/pref_device_port_summary" />-->
 
         <SeekBarPreference
             android:icon="@drawable/ic_wb_iridescent_24px"
@@ -69,10 +77,36 @@
             android:summary="@string/pref_led_frames_summary"/>
 
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="org.phenoapps.prospector.CONVERT_TO_WAVELENGTHS"
             android:title="@string/pref_convert_wavelengths_title"
             android:summary="@string/pref_convert_wavelengths_summary"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="org.phenoapps.prospector.DEVICE_IOT"
+        android:enabled="true"
+        android:title="@string/pref_iot_title"
+        android:summary="@string/pref_iot_summary"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference
+            android:key="org.phenoapps.prospector.DEVICE_SSID"
+            android:title="@string/pref_device_ssid"
+            android:icon="@drawable/ic_wifi"
+            android:summary="@string/pref_device_ssid_summary" />
+
+        <EditTextPreference
+            android:key="org.phenoapps.prospector.DEVICE_PASSWORD"
+            android:inputType="textPassword"
+            android:icon="@drawable/ic_lock"
+            android:title="@string/pref_device_password"/>
+
+        <Preference
+            android:key="org.phenoapps.prospector.DEVICE_IOT_LIST"
+            android:icon="@drawable/ic_connection"
+            android:title="@string/pref_device_iot_list"/>
+
     </PreferenceCategory>
 
 </PreferenceScreen>

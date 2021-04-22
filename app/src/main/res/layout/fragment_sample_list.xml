@@ -8,6 +8,10 @@
         <import type="android.view.View"/>
 
         <variable
+            name="title"
+            type="String" />
+        
+        <variable
             name="onClick"
             type="View.OnClickListener" />
 
@@ -17,69 +21,42 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <EditText
-            android:id="@+id/editText"
+        <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
+            android:id="@+id/samplesToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:singleLine="true"
-            android:background="@drawable/cell"
-            android:hint="@string/sampleNameHint"
-            android:selectAllOnFocus="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:background="@color/colorPrimary"
+            app:menu="@menu/menu_sample_list"
+            app:navigationIcon="@drawable/ic_back_arrow"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/noteText" />
-
-        <EditText
-            android:id="@+id/noteText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:singleLine="false"
-            android:inputType="textMultiLine"
-            android:maxLength="2000"
-            android:maxLines="4"
-            android:minLines="4"
-            android:background="@drawable/cell"
-            android:hint="@string/sampleNoteHint"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editText"/>
-
-        <Button
-            android:id="@+id/submitButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:onClick="@{onClick}"
-            android:text="@string/add_sample"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/noteText" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_margin="6dp"
             android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/submitButton"
+            app:layout_constraintTop_toBottomOf="@id/samplesToolbar"
             tools:listitem="@layout/list_item_sample" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/addSampleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{onClick}"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/colorAccent"
+            android:text="@string/add_sample"
+            android:src="@drawable/ic_new_scan"
+            android:contentDescription="@string/frag_sample_fab_cont_desc"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -10,8 +10,14 @@ import org.phenoapps.prospector.utils.DateUtil
 @Entity(tableName = "experiments")
 data class Experiment(
 
-        @ColumnInfo(name = "name")
+        @ColumnInfo(name = "name", index = true)
         var name: String,
+
+        @ColumnInfo(name = "deviceType")
+        var deviceType: String,
+
+        @ColumnInfo(name = "note")
+        var note: String? = null,
 
         @ColumnInfo(name = "eid")
         @PrimaryKey(autoGenerate = true)

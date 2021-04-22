@@ -15,9 +15,17 @@ import androidx.navigation.fragment.findNavController
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
 
+/**
+ * A barcode fragment that uses Zebra SDK. Specifically, this fragment returns the first scanned
+ * barcode as a fragment result. The bundle includes the key "barcode_result" which is a String.
+ */
+@WithFragmentBindings
+@AndroidEntryPoint
 class BarcodeScanFragment : Fragment() {
 
     private var mBinding: FragmentBarcodeScanBinding? = null
@@ -50,6 +58,9 @@ class BarcodeScanFragment : Fragment() {
 
                     cameraSettings.isBarcodeSceneModeEnabled = true
 
+                    /**
+                     * This is where the barcode result callback occurs and the fragment returns on success.
+                     */
                     decodeSingle(object : BarcodeCallback {
 
                         override fun barcodeResult(result: BarcodeResult) {

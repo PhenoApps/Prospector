@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string-array name="device_indices_array">
-        <item>0</item>
-    </string-array>
-
     <string-array name="device_types_array">
+        <item>@string/linksquare_nir</item>
         <item>@string/linksquare</item>
     </string-array>
 
-    <string-array name="export_indices_array">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
+<!--    <string-array name="device_wifi_mode_indices">-->
+<!--        <item>0</item>-->
+<!--        <item>1</item>-->
+<!--    </string-array>-->
 
-    <string-array name="export_types_array">
-        <item>@string/export_type_always_ask</item>
-        <item>@string/export_type_csv</item>
-        <item>@string/export_type_brapi</item>
-    </string-array>
+<!--    <string-array name="device_wifi_mode">-->
+<!--        <item>@string/ap_mode</item>-->
+<!--        <item>@string/iot_mode</item>-->
+<!--    </string-array>-->
+
+<!--    <string name="ap_mode">AP</string>-->
+<!--    <string name="iot_mode">IoT</string>-->
 
     <string name="linksquare">LinkSquare</string>
+    <string name="linksquare_nir">LinkSquareNIR</string>
 </resources>

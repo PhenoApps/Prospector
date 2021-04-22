@@ -3,13 +3,18 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_graph"
+    android:id="@+id/navigation_root"
     app:startDestination="@+id/experiment_list_fragment">
 
     <fragment
         android:id="@+id/settings_fragment"
         android:name="org.phenoapps.prospector.fragments.SettingsFragment"
         android:label="@string/nav_label_settings"/>
+
+    <fragment
+        android:id="@+id/about_fragment"
+        android:name="org.phenoapps.prospector.fragments.AboutFragment"
+        android:label="@string/nav_label_about"/>
 
     <fragment
         android:id="@+id/barcode_scan_fragment"
@@ -34,24 +39,24 @@
 
     </fragment>
 
-    <fragment
-        android:id="@+id/scan_detail_fragment"
-        android:name="org.phenoapps.prospector.fragments.ScanDetailFragment"
-        android:label="@string/nav_label_scan_detail">
+<!--    <fragment-->
+<!--        android:id="@+id/scan_detail_fragment"-->
+<!--        android:name="org.phenoapps.prospector.fragments.ScanDetailFragment"-->
+<!--        android:label="@string/nav_label_scan_detail">-->
 
-        <argument android:name="experiment"
-            android:defaultValue="-1L"
-            app:argType="long"/>
+<!--        <argument android:name="experiment"-->
+<!--            android:defaultValue="-1L"-->
+<!--            app:argType="long"/>-->
 
-        <argument android:name="sample"
-            android:defaultValue=""
-            app:argType="string"/>
+<!--        <argument android:name="sample"-->
+<!--            android:defaultValue=""-->
+<!--            app:argType="string"/>-->
 
-        <argument android:name="scan"
-            android:defaultValue="-1L"
-            app:argType="long"/>
+<!--        <argument android:name="scan"-->
+<!--            android:defaultValue="-1L"-->
+<!--            app:argType="long"/>-->
 
-    </fragment>
+<!--    </fragment>-->
 
     <fragment
         android:id="@+id/scan_list_fragment"
@@ -65,11 +70,11 @@
         <argument android:name="sample"
             app:argType="string"/>
 
-        <action
-            android:id="@+id/action_to_scan_detail"
-            app:destination="@id/scan_detail_fragment"
-            app:popUpTo="@id/scan_list_fragment">
-        </action>
+<!--        <action-->
+<!--            android:id="@+id/action_to_scan_detail"-->
+<!--            app:destination="@id/scan_detail_fragment"-->
+<!--            app:popUpTo="@id/scan_list_fragment">-->
+<!--        </action>-->
 
     </fragment>
 
@@ -86,10 +91,65 @@
         </action>
 
         <action
+            android:id="@+id/action_to_new_experiment"
+            app:destination="@id/new_experiment_fragment"
+            app:popUpTo="@id/experiment_list_fragment">
+        </action>
+
+        <action
             android:id="@+id/action_to_samples"
             app:destination="@+id/sample_list_fragment"
             app:popUpTo="@id/experiment_list_fragment">
         </action>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/new_experiment_fragment"
+        android:name="org.phenoapps.prospector.fragments.NewExperimentFragment"
+        android:label="@string/nav_label_new_experiment"
+        tools:layout="@layout/fragment_new_experiment">
+
+        <action
+            android:id="@+id/action_to_experiments"
+            app:destination="@id/experiment_list_fragment"
+            app:popUpTo="@id/experiment_list_fragment">
+        </action>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/connect_instructions_fragment"
+        android:name="org.phenoapps.prospector.fragments.ConnectInstructionsFragment"
+        android:label="@string/nav_label_connect_instructions"
+        tools:layout="@layout/fragment_connect_instructions" />
+
+    <fragment
+        android:id="@+id/new_sample_fragment"
+        android:name="org.phenoapps.prospector.fragments.NewSampleFragment"
+        android:label="@string/nav_label_new_sample"
+        tools:layout="@layout/fragment_new_sample">
+
+        <argument android:name="experiment"
+            android:defaultValue="-1L"
+            app:argType="long"/>
+
+        <action
+            android:id="@+id/action_to_samples"
+            app:destination="@id/sample_list_fragment"
+            app:popUpTo="@id/sample_list_fragment">
+        </action>
+
+        <action
+            android:id="@+id/action_to_scan_list"
+            app:destination="@id/scan_list_fragment"
+            app:popUpTo="@id/sample_list_fragment">
+        </action>
+
+        <action
+            android:id="@+id/action_to_barcode_scanner"
+            app:destination="@id/barcode_scan_fragment"
+            app:popUpToInclusive="@id/scan_list_fragment"/>
 
     </fragment>
 
@@ -119,12 +179,35 @@
             app:popUpTo="@id/sample_list_fragment">
         </action>
 
+        <action
+            android:id="@+id/action_to_new_sample"
+            app:destination="@id/new_sample_fragment"
+            app:popUpTo="@id/sample_list_fragment"/>
+
     </fragment>
 
     <action
         android:id="@+id/action_to_settings"
         app:destination="@id/settings_fragment"
         app:popUpTo="@id/experiment_list_fragment">
+    </action>
+
+    <action
+        android:id="@+id/action_to_experiments"
+        app:destination="@id/experiment_list_fragment"
+        app:popUpTo="@id/experiment_list_fragment">
+    </action>
+
+    <action
+        android:id="@+id/action_to_connect_instructions"
+        app:destination="@id/connect_instructions_fragment"
+        app:launchSingleTop="true">
+    </action>
+
+    <action
+        android:id="@+id/action_to_about_fragment"
+        app:destination="@id/about_fragment"
+        app:launchSingleTop="true">
     </action>
 
 </navigation>

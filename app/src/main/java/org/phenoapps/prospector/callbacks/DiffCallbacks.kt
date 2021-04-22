@@ -1,7 +1,7 @@
 package org.phenoapps.prospector.callbacks
 
 import androidx.recyclerview.widget.DiffUtil
-import org.phenoapps.prospector.data.models.Experiment
+import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.models.Scan
 
@@ -14,14 +14,14 @@ class DiffCallbacks {
 
     companion object {
 
-        class ExperimentDiffCallback : DiffUtil.ItemCallback<Experiment>() {
+        class ExperimentDiffCallback : DiffUtil.ItemCallback<ExperimentAdapter.ExperimentListItem>() {
 
-            override fun areItemsTheSame(oldItem: Experiment, newItem: Experiment): Boolean {
-                return oldItem.eid == newItem.eid
+            override fun areItemsTheSame(oldItem: ExperimentAdapter.ExperimentListItem, newItem: ExperimentAdapter.ExperimentListItem): Boolean {
+                return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: Experiment, newItem: Experiment): Boolean {
-                return oldItem.eid == newItem.eid
+            override fun areContentsTheSame(oldItem: ExperimentAdapter.ExperimentListItem, newItem: ExperimentAdapter.ExperimentListItem): Boolean {
+                return oldItem.id == newItem.id
             }
         }
 

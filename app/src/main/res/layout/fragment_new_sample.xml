@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="onSaveClick"
+            type="View.OnClickListener" />
+
+        <variable
+            name="onCancelClick"
+            type="View.OnClickListener" />
+
+        <variable
+            name="onBarcodeScanClick"
+            type="View.OnClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView style="@style/Text.ExperimentTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/titleTextView"
+            android:text="@string/dialog_new_sample_title"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/sampleNameEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <EditText
+            android:id="@+id/sampleNameEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cell"
+            android:layout_margin="16dp"
+            android:hint="@string/dialog_new_sample_name_hint"
+            android:singleLine="true"
+            android:inputType="text"
+            android:autofillHints="none"
+            app:layout_constraintHorizontal_weight="3"
+            app:layout_constraintTop_toBottomOf="@id/titleTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/scanBarcodeButton"/>
+
+        <ImageButton
+            android:id="@+id/scanBarcodeButton"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/cell"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_barcode_scan"
+            android:onClick="@{onBarcodeScanClick}"
+            android:contentDescription="@string/frag_new_sample_barcode_scan_cont_desc"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@id/sampleNameEditText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/sampleNameEditText"
+            app:layout_constraintBottom_toBottomOf="@id/sampleNameEditText"/>
+
+        <EditText
+            android:id="@+id/sampleNoteEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cell"
+            android:layout_margin="16dp"
+            android:hint="@string/dialog_new_sample_note_hint"
+            android:minLines="4"
+            android:maxLines="8"
+            android:singleLine="false"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:autofillHints="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sampleNameEditText"
+            app:layout_constraintVertical_bias="0" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/newSampleSaveButton"
+            android:text="@string/ok"
+            android:onClick="@{onSaveClick}"
+            app:layout_constraintTop_toBottomOf="@id/sampleNoteEditText"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/newSampleCancelButton"
+            android:text="@string/cancel"
+            android:onClick="@{onCancelClick}"
+            app:layout_constraintEnd_toStartOf="@id/newSampleSaveButton"
+            app:layout_constraintTop_toBottomOf="@id/sampleNoteEditText"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

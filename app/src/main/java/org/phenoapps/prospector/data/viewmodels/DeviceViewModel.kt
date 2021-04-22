@@ -8,24 +8,37 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.*
+import java.io.IOException
+import java.net.InetAddress
+import java.net.UnknownHostException
+import javax.inject.Inject
 
 /**
  * TODO: Implement an interface for spectrometers then generalize this to devices other than LS.
  */
-class DeviceViewModel : ViewModel() {
+@HiltViewModel
+class DeviceViewModel @Inject constructor() : ViewModel() {
 
     init {
 
         System.loadLibrary("LinkSquareAPI")
 
+    }
+
+    private val sDeviceScope = CoroutineScope(Dispatchers.IO)
+
+    override fun onCleared() {
+
+        sDevice?.Close()
+
+        sDeviceScope.cancel()
+
+        super.onCleared()
     }
 
     private fun manager(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
@@ -49,7 +62,7 @@ class DeviceViewModel : ViewModel() {
         }
     }
 
-    fun reset(context: Context) {
+    fun reset() {
 
         sDevice?.Close()
 
@@ -58,81 +71,96 @@ class DeviceViewModel : ViewModel() {
             it?.Initialize()
 
         }
-
-        connection(context)
     }
 
     fun getDeviceError() = sDevice?.GetLSError()
 
     fun getDeviceInfo() = sDevice?.GetDeviceInfo()
 
-    suspend fun disconnect() = sDevice?.Close()
+    fun disconnect() = sDevice?.Close()
 
     fun isConnected() = sDevice?.IsConnected() ?: false
 
-    fun setEventListener(onClick: () -> Unit) = liveData(Dispatchers.IO, 2000L) {
+    fun setEventListener(onClick: () -> Unit) = liveData(sDeviceScope.coroutineContext, 2000L) {
 
         sDevice.let { device ->
 
-            device?.SetEventListener(object : LinkSquareAPI.LinkSquareAPIListener {
+            device?.SetEventListener { eventType, _ ->
 
-                override fun LinkSquareEventCallback(eventType: LinkSquareAPI.EventType?, var2: Int) {
-                    when (eventType) {
+                when (eventType) {
 
-                        LinkSquareAPI.EventType.Button -> {
+                    LinkSquareAPI.EventType.Button -> {
 
-                            onClick()
+                        onClick()
 
-                        }
-                        else -> {
+                    }
+                    else -> {
 
-                            Log.d("ProspectorLSDevice", eventType?.name)
+                        Log.d("ProspectorLSDevice", eventType?.name ?: "?")
 
-                        }
                     }
                 }
-            })
+            }
         }
 
         emit("DONE")
     }
 
-    fun connection(context: Context) = liveData(Dispatchers.IO, 2000L) {
+    fun isConnectedLive() = liveData(sDeviceScope.coroutineContext, 5000) {
 
-        val connecting = -1
+        var status = false
 
-        var result: Int? = LinkSquareAPI.RET_ERR
+        while(true) {
 
-        //emit(connecting)
+            val nextStatus = sDevice?.IsConnected() ?: false
 
-        while (result == LinkSquareAPI.RET_ERR) {
+            if (status != nextStatus) {
 
-            with (manager(context)) {
+                status = nextStatus
 
-                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
+                emit(status)
 
-                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
+                delay(2000)
 
-                result = connect(ip, port)
-
-                emit(when (result) {
-
-                    LinkSquareAPI.RET_OK -> {
-
-                        getDeviceInfo()
-
-                    }
-                    else -> {
-
-                        getDeviceError()
-
-                    }
-                })
             }
-
-            delay(1000L)
         }
     }
+
+
+//    fun connection(context: Context) = liveData(sDeviceScope.coroutineContext, 500L) {
+//
+//        val connecting = -1
+//
+//        var result: Int? = LinkSquareAPI.RET_ERR
+//
+//        //emit(connecting)
+//
+//        while (result == LinkSquareAPI.RET_ERR) {
+//
+//            with (manager(context)) {
+//
+//                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
+//
+//                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
+//
+//                result = connect(ip, port)
+//
+//                emit(when (result) {
+//
+//                    LinkSquareAPI.RET_OK -> {
+//
+//                        getDeviceInfo()
+//
+//                    }
+//                    else -> {
+//
+//                        getDeviceError()
+//
+//                    }
+//                })
+//            }
+//        }
+//    }
 
     fun scan(context: Context) = liveData<List<LSFrame>> {
 
@@ -150,7 +178,7 @@ class DeviceViewModel : ViewModel() {
 
     }
 
-    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext(Dispatchers.IO) {
+    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext(sDeviceScope.coroutineContext) {
 
         val frames = ArrayList<LSFrame>()
 
@@ -160,10 +188,82 @@ class DeviceViewModel : ViewModel() {
 
     }
 
-    private suspend fun connect(ip: String, port: Int) = withContext(viewModelScope.coroutineContext + Dispatchers.IO + Job()) {
+    suspend fun connect(ip: String, port: Int) = withContext(sDeviceScope.coroutineContext) {
 
         sDevice?.Connect(ip, port)
 
     }
 
+    //adapted from https://stackoverflow.com/questions/13198669/any-way-to-discover-android-devices-on-your-network
+    /**
+     * Searches through all ip-address on the subnet 192.168.0 and attempts to connect.
+     */
+    @Suppress("BlockingMethodInNonBlockingContext")
+    fun scanSubNet() = liveData(sDeviceScope.coroutineContext) {
+
+        for (i in 0..255) {
+
+            for (j in 2..255) {
+
+                val address = "192.168.$i.$j"
+
+                try {
+
+                    if (InetAddress.getByName(address).isReachable(250)) {
+
+                        if (sDevice?.Connect(address, 18630) == 1) {
+
+                            emit(address)
+
+                            break
+
+                        }
+                    }
+
+                } catch (e: UnknownHostException) {
+
+                    e.printStackTrace()
+
+                } catch (e: IOException) {
+
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    //0: Open, 1: WEP, 2:WPA/WPA2
+    suspend fun setWLanInfoAsync(ssid: String, pass: String, config: Int): Deferred<Boolean> = withContext(sDeviceScope.coroutineContext) {
+
+        async {
+
+            try {
+
+                sDevice?.SetWLanInfo(ssid, pass, config.toByte())
+
+                true
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+
+                false
+
+            }
+        }
+    }
+
+    suspend fun setAlias(alias: String) = withContext(sDeviceScope.coroutineContext) {
+
+        sDevice?.SetAlias(alias)
+    }
+
+    companion object {
+
+        //protocol types
+        const val OPEN = 0
+        const val WEP = 1
+        const val WPA = 2
+
+    }
 }

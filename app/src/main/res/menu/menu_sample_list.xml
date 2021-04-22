@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/menu_scan_code"
-        android:icon="@drawable/ic_barcode_scan"
-        app:showAsAction="always"
-        android:title="@string/scan_barcode"/>
     <item
         android:id="@+id/menu_search_sample"
         android:icon="@drawable/ic_tb_white_search"
         app:showAsAction="always"
-        android:title="@string/search_for_sample" />
+        android:title="@string/search_for_sample"
+        tools:ignore="AlwaysShowAction" />
     <item
-        android:id="@+id/menu_sort_sample"
-        android:icon="@drawable/ic_sort_by_date_descending_18dp"
+        android:id="@+id/menu_export"
+        android:icon="@drawable/ic_export_scans"
         app:showAsAction="always"
-        android:title="@string/sort_by_date" />
+        android:title="@string/menu_bot_nav_export_title"/>
+    <item
+        android:id="@+id/action_connection"
+        android:icon="@drawable/ic_clear_black_18dp"
+        app:showAsAction="always"
+        android:title="@string/device_connected"/>
 </menu>

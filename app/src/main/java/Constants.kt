@@ -1,3 +1,9 @@
+/**
+ * Device Types (internal unique strings used to classify which device was used for a given experiment/scan)
+ */
+const val DEVICE_TYPE_LS1 = "LinkSquare"
+
+const val DEVICE_TYPE_NIR = "LinkSquareNIR"
 
 const val packageId = "org.phenoapps.prospector"
 
@@ -7,6 +13,18 @@ const val packageId = "org.phenoapps.prospector"
 const val OPERATOR = "$packageId.OPERATOR"
 
 const val DEVICE_IP = "$packageId.DEVICE_IP"
+
+const val DEVICE_WIFI_MODE = "$packageId.DEVICE_WIFI_MODE"
+
+const val DEVICE_SSID = "$packageId.DEVICE_SSID"
+
+const val DEVICE_PASSWORD = "$packageId.DEVICE_PASSWORD"
+
+const val DEVICE_IOT_LIST = "$packageId.DEVICE_IOT_LIST"
+
+const val DEVICE_IOT = "$packageId.DEVICE_IOT"
+
+const val DEVICE_ALIAS = "$packageId.DEVICE_ALIAS"
 
 const val DEVICE_PORT = "$packageId.DEVICE_PORT"
 

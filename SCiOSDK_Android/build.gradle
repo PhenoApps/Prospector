@@ -1,2 +1,0 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('SCiOSDK_Android-v1.1.1.1-20190113.aar'))

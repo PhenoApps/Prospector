@@ -16,10 +16,10 @@ import org.phenoapps.prospector.utils.DateUtil
                 parentColumns = ["eid"], childColumns = ["eid"])])
 data class Sample(
 
-        @ColumnInfo(name = "eid")
+        @ColumnInfo(name = "eid", index = true)
         val eid: Long,
 
-        @ColumnInfo(name = "name")
+        @ColumnInfo(name = "name", index = true)
         var name: String,
 
         @ColumnInfo(name = "date")

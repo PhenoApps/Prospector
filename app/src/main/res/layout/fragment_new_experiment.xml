@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="onSaveClick"
+            type="View.OnClickListener" />
+
+        <variable
+            name="onCancelClick"
+            type="View.OnClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView style="@style/Text.ExperimentTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/titleTextView"
+            android:text="@string/dialog_new_experiment_title"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/experimentNameEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <EditText
+            android:id="@+id/experimentNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@drawable/cell"
+            android:hint="@string/dialog_new_experiment_name_hint"
+            android:singleLine="true"
+            android:inputType="text"
+            android:autofillHints="none"
+            app:layout_constraintTop_toBottomOf="@id/titleTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <EditText
+            android:id="@+id/experimentNoteEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@drawable/cell"
+            android:hint="@string/dialog_new_experiment_note_hint"
+            android:minLines="4"
+            android:maxLines="8"
+            android:gravity="top"
+            android:singleLine="false"
+            android:inputType="text"
+            android:autofillHints="none"
+            app:layout_constraintBottom_toTopOf="@id/deviceTypeSpinner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/experimentNameEditText"
+            app:layout_constraintVertical_bias="0" />
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cell"
+            android:id="@+id/deviceTypeSpinner"
+            android:layout_margin="16dp"
+            android:entries="@array/device_types_array"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintTop_toBottomOf="@id/experimentNoteEditText"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/newExperimentSaveButton"
+            android:text="@string/ok"
+            android:onClick="@{onSaveClick}"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:id="@+id/newExperimentCancelButton"
+            android:text="@string/cancel"
+            android:onClick="@{onCancelClick}"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintEnd_toStartOf="@id/newExperimentSaveButton"
+            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

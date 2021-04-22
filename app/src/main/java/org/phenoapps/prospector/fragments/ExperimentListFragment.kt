@@ -1,76 +1,91 @@
 package org.phenoapps.prospector.fragments
 
 import android.os.Bundle
-import android.os.Handler
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
-import org.phenoapps.prospector.data.models.Experiment
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
+import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
 
+/**
+ * The main data fragment that displays the top-level experiment hierarchy.
+ * Whenever the data bot nav button is pressed, the app navigates to this fragment.
+ */
+@WithFragmentBindings
+@AndroidEntryPoint
 class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
-    private val sExpSamples: ExperimentSamplesViewModel by viewModels {
+    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .expScanDao()))
+    /**
+     * Used to query experiment list
+     * This is a common pattern to use the fragment delegates to load view models.
+     */
+    private val sViewModel: ExperimentViewModel by viewModels()
 
-    }
-
+    /**
+     * Navigates to the new experiment fragment whenever the fab button is pressed.
+     */
     private val sOnNewExpClick = View.OnClickListener {
 
-        val newExpString = getString(R.string.new_experiment_prefix)
-
-        val tryEnterNameString = getString(R.string.new_exp_must_enter_name)
-
-        mBinding?.let { ui ->
-
-            val value = ui.experimentIdEditText.text.toString().trim()
-
-            if (value.isNotBlank()) {
-
-                launch {
-
-                    val eid = sExpSamples.insertExperiment(Experiment(value)).await()
-
-                    Snackbar.make(ui.root,
-                            "$newExpString: $value.", Snackbar.LENGTH_SHORT).show()
-
-                    ui.experimentIdEditText.text.clear()
-
-                    updateUi()
-                }
-
-            } else {
-
-                Snackbar.make(ui.root,
-                        tryEnterNameString, Snackbar.LENGTH_LONG).show()
-
-            }
-        }
+        findNavController().navigate(ExperimentListFragmentDirections
+                .actionToNewExperiment())
     }
 
     private var mBinding: FragmentExperimentListBinding? = null
+
+    /**
+     * All permissions are checked here, if one is not accepted the app finishes.
+     * Also here is where the instructions page is loaded (if on cold load)
+     */
+    private val checkPermissions by lazy {
+
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+            //ensure all permissions are granted
+            if (!granted.values.all { it }) {
+                activity?.let {
+                    it.setResult(android.app.Activity.RESULT_CANCELED)
+                    it.finish()
+                }
+            } else {
+
+                //check cold load
+                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+                if (prefs.getBoolean("FIRST_LOAD", true)) {
+
+                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
+
+                    //navigate to instructions page
+                    findNavController().navigate(ExperimentListFragmentDirections
+                            .actionToConnectInstructions())
+                }
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -84,32 +99,60 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             ui.setupRecyclerView()
 
+            ui.setupToolbar()
+
             setupButtons()
 
             updateUi()
 
-            return ui.root
+            checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
 
         }
 
-        setHasOptionsMenu(true)
+        //use the activity view model to access the current connection status
+        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
 
-        return null
+            connected?.let { status ->
+
+                with(mBinding?.experimentToolbar) {
+
+                    this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                                else R.drawable.ic_clear_black_18dp)
+
+                }
+
+            }
+        })
+
+        return mBinding?.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    /**
+     * Set button click events for the toolbar. This only includes the connection button.
+     * When clicked if disconnected -> navigate to instructions page and attempt to connect
+     * otherwise -> disconnect
+     */
+    private fun FragmentExperimentListBinding.setupToolbar() {
 
-//        inflater.inflate(R.menu.activity_main_toolbar, menu)
+        experimentToolbar.setOnMenuItemClickListener {
 
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+            if (sDeviceViewModel.isConnected()) {
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+                sDeviceViewModel.reset()
 
-//        when(item.itemId) {
-//
-//        }
-        return super.onOptionsItemSelected(item)
+            } else {
+
+                findNavController().navigate(ExperimentListFragmentDirections
+                        .actionToConnectInstructions())
+
+                (activity as? MainActivity)?.startDeviceConnection()
+            }
+
+            true
+        }
     }
 
     private fun setupButtons() {
@@ -118,67 +161,60 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+    /**
+     * Swipe event listener for the recycler view. This deletes experiments.
+     */
+    private val sItemTouch = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+
+        override fun onMove(recyclerView: RecyclerView,
+                            viewHolder: RecyclerView.ViewHolder,
+                            target: RecyclerView.ViewHolder): Boolean { return false }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+            //whenever an item is swiped to be removed, call a dialog to verify this action to the user
+            Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                    getString(R.string.ask_delete_experiment),
+                    getString(R.string.cancel),
+                    getString(R.string.ok)) {
+
+                if (it) {
+
+                    val id = viewHolder.itemView.tag as Long
+
+                    launch {
+
+                        sViewModel.deleteExperiment(id)
+
+                    }
+
+                } else  mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.adapterPosition)
+            }
+        }
+    }
+
     private fun FragmentExperimentListBinding.setupRecyclerView() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         recyclerView.adapter = ExperimentAdapter(requireContext())
 
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-
-            override fun onMove(recyclerView: RecyclerView,
-                                viewHolder: RecyclerView.ViewHolder,
-                                target: RecyclerView.ViewHolder): Boolean {
-
-                return false
-
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
-                Dialogs.onOk(AlertDialog.Builder(requireContext()),
-                        getString(R.string.ask_delete_experiment),
-                        getString(R.string.cancel),
-                        getString(R.string.ok)) {
-
-                    if (it) {
-
-                        val id = viewHolder.itemView.tag as Long
-
-                        launch {
-
-                            sExpSamples.deleteExperiment(id)
-
-                        }
-
-                    } else  mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.adapterPosition)
-
-                }
-            }
-
-        }).attachToRecyclerView(recyclerView)
+        ItemTouchHelper(sItemTouch).attachToRecyclerView(recyclerView)
     }
 
+    /**
+     * Live data observer for the experiments list. This will update automatically when new experiments are added.
+     * experimentCount is a live data query that also counts the number of samples in each experiment.
+     * The query uses a left join which counts experiments as '1' even though they have no samples;
+     * therefore, further logic is added in the adapter to ensure the count is 0 or 1.
+     */
     private fun updateUi() {
 
-        sExpSamples.experiments.observe(viewLifecycleOwner, Observer {
+        sViewModel.experimentCounts.observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                     ?.submitList(it)
 
-            //queueScroll()
         })
-    }
-
-    private fun queueScroll() {
-
-        mBinding?.let { ui ->
-
-            Handler().postDelayed({
-
-                ui.recyclerView.scrollToPosition(0)
-
-            }, 250)
-        }
     }
 }

@@ -10,31 +10,29 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
 
+/**
+ * Similar to the barcode scan fragment, this loads all current samples and searches
+ * for a sample name that matches the scanned barcode. If it exists the fragment
+ * immediately navigates to the sample specific page.
+ */
+@WithFragmentBindings
+@AndroidEntryPoint
 class BarcodeSearchFragment : Fragment() {
 
-    private val sSamples: ExperimentSamplesViewModel by viewModels {
+    private val sViewModel: SampleViewModel by viewModels()
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext())
-                                .expScanDao()))
-
-    }
-
-    private var mSamples: List<Sample> = ArrayList<Sample>()
+    private var mSamples: List<Sample> = ArrayList()
 
     private var mExpId = -1L
 
@@ -98,6 +96,7 @@ class BarcodeSearchFragment : Fragment() {
 
         val eid = arguments?.getLong("experiment", -1L) ?: -1L
 
+        //error checking to ensure this fragment was called correctly
         if (eid != -1L) {
 
             val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -121,9 +120,10 @@ class BarcodeSearchFragment : Fragment() {
         return null
     }
 
+    //listens for the current samples list
     private fun startObservers() {
 
-        sSamples.getSamples(mExpId).observe(viewLifecycleOwner, Observer {
+        sViewModel.getSamplesLive(mExpId).observe(viewLifecycleOwner, {
 
             it?.let { samples ->
 

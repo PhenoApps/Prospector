@@ -6,13 +6,14 @@ import androidx.room.Database
 import androidx.room.DatabaseConfiguration
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import org.phenoapps.prospector.data.dao.ProspectorDao
+import org.phenoapps.prospector.data.dao.ExperimentDao
+import org.phenoapps.prospector.data.dao.SampleDao
+import org.phenoapps.prospector.data.dao.ScanDao
 import org.phenoapps.prospector.data.models.*
 import java.io.File
 
-
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
-        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1)
+        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1, exportSchema = false)
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -26,13 +27,17 @@ abstract class ProspectorDatabase : RoomDatabase() {
 
         }
 
-        val dir = File(db.parent)
+        db.parent?.let {
 
-        if (!dir.exists()) {
+            val dir = File(it)
 
-            dir.mkdirs()
+            if (!dir.exists()) {
 
+                dir.mkdirs()
+
+            }
         }
+
 
         return false
     }
@@ -61,7 +66,9 @@ abstract class ProspectorDatabase : RoomDatabase() {
         super.init(configuration)
     }
 
-    abstract fun expScanDao(): ProspectorDao
+    abstract fun experimentDao(): ExperimentDao
+    abstract fun sampleDao(): SampleDao
+    abstract fun scanDao(): ScanDao
 
     companion object {
 

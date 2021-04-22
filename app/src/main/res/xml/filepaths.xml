@@ -6,4 +6,7 @@
     <external-path
         name="export"
         path="."/>
+    <external-path
+        name="storage"
+        path="/storage/"/>
 </paths>

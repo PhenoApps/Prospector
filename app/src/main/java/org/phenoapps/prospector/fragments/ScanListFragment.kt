@@ -1,55 +1,88 @@
 package org.phenoapps.prospector.fragments
 
-import DEVICE_TYPE
+import CONVERT_TO_WAVELENGTHS
+import DEVICE_ALIAS
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NIR
 import OPERATOR
 import android.os.Bundle
-import android.view.*
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
-import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.ProspectorRepository
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
-import org.phenoapps.prospector.data.viewmodels.ExperimentSamplesViewModel
-import org.phenoapps.prospector.data.viewmodels.factory.ExperimentSamplesViewModelFactory
+import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
-import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.interfaces.GraphItemClickListener
+import org.phenoapps.prospector.utils.*
 
-class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
-
-    private val mSnackbar = SnackbarQueue()
+/**
+ * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
+ * and a recycler list that allows the user to choose which graphs to render.
+ *
+ * This fragment listens for button press events from the physical spectrometer. Pressing the physical button
+ * and clicking the bottom fab on this page are ubiquitous actions.
+ *
+ * Uses two toolbars. The title toolbar is similar tothe experiment list fragmnet which controls the connection status.
+ * The second toolbar, scanToolbar, controls scan-level functionality s.a deleting scans.
+ *
+ * TODO: improve color choice using color picker
+ */
+@WithFragmentBindings
+@AndroidEntryPoint
+class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
-    private val sViewModel: ExperimentSamplesViewModel by viewModels {
+    private var mSelectedScanId: Long = -1
 
-        ExperimentSamplesViewModelFactory(
-                ProspectorRepository.getInstance(
-                        ProspectorDatabase.getInstance(requireContext()).expScanDao()
-                )
-        )
-    }
+    private val mSnackbar = SnackbarQueue()
+
+    private val sViewModel: ScanViewModel by viewModels()
 
     private var mBinding: FragmentScanListBinding? = null
 
     private var mExpId: Long = -1L
 
-    private var mSampleName: String? = null
+    private var mSampleName: String = String()
 
-    private lateinit var mDeviceInfo: LinkSquareAPI.LSDeviceInfo
+    //navigate to the instructions page if the device is not connected
+    private val sOnClickScan = View.OnClickListener {
+
+        if (sDeviceViewModel.isConnected()) {
+
+            sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                callScanDialog(connectedDeviceInfo)
+
+            }
+
+        } else {
+
+            findNavController().navigate(ScanListFragmentDirections
+                    .actionToConnectInstructions())
+        }
+    }
 
     private fun insertScan(name: String, frames: List<LSFrame>) {
 
@@ -59,15 +92,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
             frames.forEach { frame ->
 
-                val sid = sViewModel.insertScan(Scan(mExpId, name).apply {
+                val sid = sViewModel.insertScanAsync(Scan(mExpId, name).apply {
 
-                    if (::mDeviceInfo.isInitialized) {
+                    val linkSquareApiDeviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
 
-                        deviceId = mDeviceInfo.DeviceID
+                    deviceId = linkSquareApiDeviceId
 
-                    }
+                    this.deviceType = if (linkSquareApiDeviceId.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
 
-                    this.deviceType = prefs.getString(DEVICE_TYPE, "LinkSquare") ?: "LinkSquare"
+                    this.alias = prefs.getString(DEVICE_ALIAS, "")
 
                     this.lightSource = frame.lightSource.toInt()
 
@@ -86,53 +119,48 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
+    /**
+     * Dialog is only called if the current connected deviceType matches the experiment deviceType.
+     * If they match, the dialog begins which displays the status of the scan (indeterminately)
+     */
+    private fun callScanDialog(device: LinkSquareAPI.LSDeviceInfo) {
 
-        launch {
+        sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
 
-            val sid = sViewModel.insertScan(scan).await()
+            val exp = experiments?.find { it.eid == mExpId }
 
-            frames.forEach { frame ->
+            if (exp?.deviceType == resolveDeviceType(requireContext(), device)) {
 
-                sViewModel.insertFrame(sid, frame)
+                val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning, R.string.close)
 
-            }
-        }
-    }
+                dialog.create()
 
-    private val sOnClickScan = View.OnClickListener {
+                val dialogInterface = dialog.show()
 
-        callScanDialog()
+                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
 
-    }
+                    it?.let {  frames ->
 
-    private fun callScanDialog() {
+                        launch {
 
-        val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning_sample, R.string.ok, R.string.close) {
+                            insertScan(mSampleName, frames)
 
-        }
+                            dialogInterface.dismiss()
 
-        dialog.create()
-
-        val dialogInterface = dialog.show()
-
-        sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, Observer {
-
-            it?.let {  frames ->
-
-                launch {
-
-                    mSampleName?.let { sid ->
-
-                        insertScan(sid, frames)
-
+                        }
                     }
+                })
 
-                    dialogInterface.dismiss()
+            } else {
 
+                mBinding?.let { ui ->
+
+                    mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
                 }
+
             }
         })
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -150,64 +178,43 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
             ui.scanOnClick = sOnClickScan
 
             //check if experiment id is included in the arguments.
-            val eid = arguments?.getLong("experiment", -1L) ?: -1L
+            mExpId = arguments?.getLong("experiment", -1L) ?: -1L
 
-            val name = arguments?.getString("sample", String()) ?: String()
+            mSampleName = arguments?.getString("sample", String()) ?: String()
 
-            if (eid != -1L && name.isNotBlank()) {
+            ui.setupToolbar()
 
-                mExpId = eid
-
-                mSampleName = name
+            if (mExpId != -1L && mSampleName.isNotBlank()) {
 
                 ui.sampleName = mSampleName
 
-                ui.recyclerView.adapter = ScansAdapter(requireContext(), sViewModel)
+                //whenever the tab layout changes, update the recylcer view
+                ui.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                    override fun onTabSelected(tab: TabLayout.Tab?) {
 
-                val undoString = getString(R.string.undo)
+                        resetGraph()
 
-                ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+                        startObservers()
 
-                    override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                        return false
                     }
 
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    override fun onTabUnselected(tab: TabLayout.Tab?) {}
 
-                        Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_scan), getString(R.string.cancel), getString(R.string.ok)) { result ->
+                    override fun onTabReselected(tab: TabLayout.Tab?) {}
 
-                            if (result) {
+                })
 
-                                (ui.recyclerView.adapter as ScansAdapter)
-                                        .currentList[viewHolder.adapterPosition].also { scan ->
+                launch {
 
-                                    launch {
+                    loadGraph()
 
-                                        withContext(Dispatchers.IO) {
+                }
 
-                                            sViewModel.getSpectralValues(scan.eid, scan.sid
-                                                    ?: -1L).let { frames ->
-
-                                                sViewModel.deleteScan(scan)
-
-                                                mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
-
-                                                    reinsertScan(scan, frames)
-
-                                                })
-                                            }
-                                        }
-                                    }
-                                }
-                            } else ui.recyclerView.adapter?.notifyDataSetChanged()
-                        }
-                    }
-
-                }).attachToRecyclerView(ui.recyclerView)
+                setupRecyclerView()
 
                 startObservers()
 
-            }
+            } else findNavController().popBackStack()
         }
 
         setHasOptionsMenu(true)
@@ -215,48 +222,270 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
         return mBinding?.root
     }
 
-    private fun startObservers() {
+    private fun FragmentScanListBinding.setupToolbar() {
+        
+        scanToolbar.setNavigationOnClickListener {
 
-        mSampleName?.let { name ->
+            findNavController().popBackStack()
 
-            sViewModel.getScans(mExpId, name).observe(viewLifecycleOwner, Observer { data ->
-
-                if (data.isNotEmpty()) {
-
-                    mBinding?.let { ui ->
-
-                        with (ui.recyclerView.adapter as ScansAdapter) {
-
-                            submitList(data)
-
-                        }
-
-                        ui.executePendingBindings()
-
-                    }
-                } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
-            })
         }
 
+        titleToolbar.setOnMenuItemClickListener {
+
+            when(it.itemId) {
+
+                R.id.action_connection -> {
+
+                    with (activity as? MainActivity) {
+
+                        if (this?.mConnected == true) {
+
+                            sDeviceViewModel.reset()
+                        } else {
+
+                            findNavController().navigate(ExperimentListFragmentDirections
+                                    .actionToConnectInstructions())
+
+                            this?.startDeviceConnection()
+                        }
+                    }
+                }
+            }
+
+            true
+        }
+
+        scanToolbar.setOnMenuItemClickListener {
+
+            when(it.itemId) {
+
+                R.id.delete_scans -> Dialogs.onOk(AlertDialog.Builder(requireContext()),
+                        getString(R.string.ask_delete_all_scans),
+                        getString(R.string.cancel), getString(R.string.ok)) { booleanResult ->
+
+                    if (booleanResult) {
+
+                        launch {
+
+                            deleteScans(mExpId, mSampleName)
+
+                        }
+                    }
+                }
+            }
+
+            true
+        }
+    }
+
+    /**
+     * Called whenever tab view is changed.
+     */
+    private fun resetGraph() {
+
+        mSelectedScanId = -1
+
+        mBinding?.graphView?.removeAllSeries()
+
+        renderGraph(mSelectedScanId)
+    }
+
+    /**
+     * Called when user changes the color of a given series.
+     */
+    private fun loadGraph() {
+
+        mBinding?.graphView?.removeAllSeries()
+
+        renderGraph(mSelectedScanId)
+
+    }
+
+    /**
+     * Listens for the database spectral values and graphs them.
+     * Checks the system preferences for translating pixel data to wavelengths.
+     * "hacks" the graph view to display all data AND allow user to zoom/pan/scale
+     *      does this by manually setting the view port, then enabling scaling features
+     */
+    private fun renderGraph(selectedScanId: Long) {
+
+        mBinding?.let { ui ->
+
+            sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner, { scans ->
+
+                when (ui.tabLayout.selectedTabPosition) {
+
+                    0 -> scans.filter { it.lightSource == 0 }
+
+                    else -> scans.filter { it.lightSource == 1 }
+
+                }.forEach { scan ->
+
+                    sViewModel.getSpectralValuesLive(mExpId, scan.sid ?: -1).observeOnce(viewLifecycleOwner, { frames ->
+
+                        frames?.let { data ->
+
+                            if (data.isNotEmpty()) {
+
+                                val convert = PreferenceManager.getDefaultSharedPreferences(context)
+                                        .getBoolean(CONVERT_TO_WAVELENGTHS, true)
+
+                                val wavelengths = if (convert) data.toWaveArray(scan.deviceType) else data.toPixelArray()
+
+                                setViewportGrid(ui.graphView, convert)
+
+                                centerViewport(ui.graphView, wavelengths, convert, scan.deviceType)
+
+                                setViewportScalable(ui.graphView)
+
+                                renderNormal(ui.graphView, wavelengths,
+                                        if ((scan.sid ?: -1) == selectedScanId) scan.color ?: "red" else "black")
+
+                            }
+                        }
+                    })
+                }
+            })
+        }
+    }
+
+    /**
+     * User has options to re-import deleted scans (on swipe)
+     */
+    private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
+
+        launch {
+
+            val sid = sViewModel.insertScanAsync(scan).await()
+
+            frames.forEach { frame ->
+
+                sViewModel.insertFrame(sid, frame)
+
+            }
+        }
+    }
+
+    private fun setupRecyclerView() {
+
+        mBinding?.let { ui ->
+
+            ui.recyclerView.adapter = ScansAdapter(requireContext(), this)
+
+            val undoString = getString(R.string.undo)
+
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+
+                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+                    Dialogs.onOk(AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_scan), getString(R.string.cancel), getString(R.string.ok)) { result ->
+
+                        if (result) {
+
+                            (ui.recyclerView.adapter as ScansAdapter)
+                                    .currentList[viewHolder.adapterPosition].also { scan ->
+
+                                launch(Dispatchers.IO) {
+
+                                    sViewModel.getSpectralValues(scan.eid, scan.sid
+                                            ?: -1L).let { frames ->
+
+                                        sViewModel.deleteScan(scan)
+
+                                        mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
+
+                                            reinsertScan(scan, frames)
+
+                                        })
+                                    }
+                                }
+                            }
+
+                        } else ui.recyclerView.adapter?.notifyDataSetChanged()
+                    }
+                }
+
+            }).attachToRecyclerView(ui.recyclerView)
+        }
+    }
+
+    private fun startObservers() {
+
+        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
+
+            connected?.let { status ->
+
+                with(mBinding?.titleToolbar) {
+
+                    this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                            else R.drawable.ic_clear_black_18dp)
+
+                }
+
+            }
+        })
+
+        //updates recycler view with available scans
+        sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->
+
+            if (data.isNotEmpty()) {
+
+                mBinding?.let { ui ->
+
+                    with (ui.recyclerView.adapter as ScansAdapter) {
+
+                        submitList(when (ui.tabLayout.selectedTabPosition) {
+                            0 -> data.filter { it.lightSource == 0 }
+                            else -> data.filter { it.lightSource == 1 }
+                        })
+
+                    }
+
+                    ui.executePendingBindings()
+
+                }
+            } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
+        })
+
+
+        /**
+         * LinkSquare API live data listener that responds to on-device button clicks.
+         */
         sDeviceViewModel.setEventListener {
 
             requireActivity().runOnUiThread {
 
-                callScanDialog()
+                if (sDeviceViewModel.isConnected()) {
+
+                    sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                        callScanDialog(connectedDeviceInfo)
+
+                    }
+
+                }
 
             }
 
-        }.observe(viewLifecycleOwner, Observer {
+        }.observe(viewLifecycleOwner, {})
 
+        //set the title header
+        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+
+            experiments.first { it.eid == mExpId }.also {
+
+                activity?.runOnUiThread {
+
+                    mBinding?.titleToolbar?.title = it.name
+
+                }
+            }
         })
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.menu_scan_list, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
-
     }
 
     private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {
@@ -265,26 +494,29 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    /**
+     * Listener connected to the adapter. Whenever a date is clicked it is either added to
+     * the list of viewable graphs or removed if it already exists.
+     */
+    override fun onItemClicked(id: Long, color: String?) {
 
-        when (item.itemId) {
+        mSelectedScanId = id
 
-            R.id.delete_scans -> Dialogs.onOk(androidx.appcompat.app.AlertDialog.Builder(requireContext()), getString(R.string.ask_delete_all_scans), getString(R.string.cancel), getString(R.string.ok)) {
+        loadGraph()
+    }
 
-                if (it) {
+    override fun onItemLongClicked(id: Long, color: String?) {
 
-                    mSampleName?.let { sample ->
+        color?.let { nonNullColor ->
 
-                        launch {
+            launch {
 
-                            deleteScans(mExpId, sample)
+                sViewModel.updateScanColor(mExpId, id, nonNullColor)
 
-                        }
-                    }
-                }
             }
-        }
 
-        return super.onOptionsItemSelected(item)
+            loadGraph()
+
+        }
     }
 }
