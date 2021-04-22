@@ -1,6 +1,6 @@
 # Prospector <a href="https://play.google.com/store/apps/details?id=org.phenoapps.intercross"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="50"></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Prospector is an Android app capable of capturing, storing, visualizing, and exporting data from LinkSquare handheld NIR spectrometers. Prospector provides fast, reliable capture of scans for phenotype prediction with a standardized user interface and data export format that has been adopted by BreedBase, a common breeding database (https://breedbase.org/). Prospector will allow breeders to rapidly apply NIRS for phenotyping, thereby streamlining the selection process and improving plant breeding productivity.
