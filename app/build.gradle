@@ -3,7 +3,20 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'dagger.hilt.android.plugin'
+
 android {
+    signingConfigs {
+        playStoreConfig {
+            Properties keystoreProps = new Properties()
+            keystoreProps.load(new FileInputStream(file('keystore.config')))
+
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
+            storePassword keystoreProps['storePassword']
+            storeFile file('prospector.keystore.jks')
+        }
+    }
+
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
     defaultConfig {
@@ -38,7 +51,7 @@ android {
             debuggable false
             jniDebuggable false
             renderscriptDebuggable false
-            //signingConfig playStoreConfig //Add your own signing config
+            signingConfig signingConfigs.playStoreConfig //Add your own signing config
             pseudoLocalesEnabled false
             zipAlignEnabled true
             shrinkResources true
@@ -63,7 +76,6 @@ android {
         full {
             dimension "version"
             applicationIdSuffix ".full"
-            versionNameSuffix "-full"
         }
     }
 
@@ -149,6 +161,5 @@ dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 
     implementation project(path: ':PhenoIcons')
-
 }
 
