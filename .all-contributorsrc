@@ -6,7 +6,37 @@
   "commit": false,
   "contributors": [
     {
-      "login": "bnn678",
+      "login": "trife",
+      "name": "Trevor Rife",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1869534?v=4",
+      "profile": "https://github.com/trife",
+      "contributions": [
+        "projectManagement",
+        "design"
+      ]
+    },
+    {
+      "login": "chaneylc",
+      "name": "Chaney Courtney",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5421632?v=4",
+      "profile": "https://github.com/chaneylc",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "jmh579",
+      "name": "Jenna Hershberger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/33294076?v=4",
+      "profile": "http://jmh579.github.io",
+      "contributions": [
+        "ideas",
+        "research"
+      ]
+    },
+    {
+    "login": "bnn678",
       "name": "Brandon Shaver",
       "avatar_url": "https://avatars.githubusercontent.com/u/23563750?v=4",
       "profile": "https://github.com/bnn678",
