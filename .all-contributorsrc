@@ -14,6 +14,15 @@
         "projectManagement",
         "design"
       ]
+    },
+    {
+      "login": "chaneylc",
+      "name": "Chaney Courtney",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5421632?v=4",
+      "profile": "https://github.com/chaneylc",
+      "contributions": [
+        "code",
+        "ideas"
     }
   ],
   "contributorsPerLine": 7,
