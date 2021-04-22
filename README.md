@@ -15,6 +15,8 @@ Chaney Courtney
 <!-- markdownlint-disable -->
 <table>
   <tr>
+    <td align="center"><a href="https://github.com/trife"><img src="https://avatars.githubusercontent.com/u/1869534?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Trevor Rife</b></sub></a><br /><a href="#projectManagement-trife" title="Project Management">📆</a> <a href="#design-trife" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/chaneylc"><img src="https://avatars.githubusercontent.com/u/5421632?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chaney Courtney</b></sub></a><br /><a href="https://github.com/PhenoApps/Prospector/commits?author=chaneylc" title="Code">💻</a> <a href="#ideas-chaneylc" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="http://jmh579.github.io"><img src="https://avatars.githubusercontent.com/u/33294076?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jenna Hershberger</b></sub></a><br /><a href="#ideas-jmh579" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
