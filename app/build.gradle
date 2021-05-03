@@ -46,7 +46,6 @@ android {
 
         release {
             clean
-            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "proguard-rules.pro"
             debuggable false
             jniDebuggable false
@@ -54,7 +53,6 @@ android {
             signingConfig signingConfigs.playStoreConfig //Add your own signing config
             pseudoLocalesEnabled false
             zipAlignEnabled true
-            shrinkResources true
         }
 
         debug {
