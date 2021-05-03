@@ -1,2 +1,0 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('LinkSquareAPI_V1.5.2.aar'))

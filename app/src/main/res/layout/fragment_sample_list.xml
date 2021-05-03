@@ -25,9 +25,9 @@
             android:id="@+id/samplesToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorPrimary"
             app:menu="@menu/menu_sample_list"
-            app:navigationIcon="@drawable/ic_subdirectory_arrow_right"
+            app:navigationIcon="@drawable/ic_back_arrow"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
