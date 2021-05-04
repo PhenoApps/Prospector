@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     signingConfigs {
@@ -68,12 +70,10 @@ android {
 
         demo {
             dimension "version"
-            applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
         }
         full {
             dimension "version"
-            applicationIdSuffix ".full"
         }
     }
 
@@ -92,6 +92,9 @@ kapt {
 }
 
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:27.1.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     kapt 'com.android.databinding:compiler:3.1.4'
 
