@@ -20,11 +20,13 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
+import com.jjoe64.graphview.series.DataPoint
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
+import org.apache.commons.math.stat.StatUtils
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
@@ -35,6 +37,8 @@ import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
+import java.util.*
+
 
 /**
  * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
@@ -114,7 +118,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                         frame.raw_data.joinToString(" ") { value -> value.toString() },
                         frame.lightSource.toInt())
                 )
-
             }
         }
     }
@@ -330,7 +333,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                                 val convert = PreferenceManager.getDefaultSharedPreferences(context)
                                         .getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
-                                val wavelengths = if (convert) data.toWaveArray(scan.deviceType) else data.toPixelArray()
+                                //trim actual values based on specs
+                                val wavelengths = (if (convert) data.toWaveArray(scan.deviceType).filter {
+
+                                    it.x <= when(scan.deviceType) {
+
+                                        DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
+
+                                        else -> LinkSquareRange.max
+                                    }
+
+                                } else data.toPixelArray()).movingAverageSmooth()
 
                                 setViewportGrid(ui.graphView, convert)
 
@@ -447,6 +460,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     }
 
                     ui.executePendingBindings()
+
+                    resetGraph()
 
                 }
             } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)

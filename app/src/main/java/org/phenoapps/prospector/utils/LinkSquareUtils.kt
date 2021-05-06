@@ -11,6 +11,7 @@ import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
+import org.apache.commons.math.stat.StatUtils
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.SpectralFrame
 
@@ -61,6 +62,29 @@ fun List<SpectralFrame>.toWaveArray(deviceType: String): List<DataPoint> {
 
     })
 
+}
+
+fun List<DataPoint>.movingAverageSmooth(): List<DataPoint> {
+
+    //moving average smoothing
+    val data = this.map { it.y }.toDoubleArray()
+
+    val smooth = arrayListOf<DataPoint>()
+
+    val windowSize = 32
+
+    val frameSize = this.size-1
+
+    for (i in indices) {
+
+        smooth.add(DataPoint(this[i].x, when {
+            i > frameSize - windowSize -> StatUtils.mean(data, i, frameSize - i + 1)
+            else -> StatUtils.mean(data, i, windowSize)
+        }))
+
+    }
+
+    return smooth
 }
 
 /**
@@ -128,8 +152,13 @@ fun centerViewport(graph: GraphView, data: List<DataPoint>, converted: Boolean, 
             DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
             else -> LinkSquareRange.max
         })
+        viewport.setMinX(when(deviceType) {
+            DEVICE_TYPE_NIR -> LinkSquareNIRRange.min
+            else -> LinkSquareRange.min
+        })
     } else { //otherwise use all the pixel data
         viewport.setMaxX(maxX)
+        viewport.setMinX(minX)
     }
 
     viewport.isYAxisBoundsManual = true
@@ -146,6 +175,8 @@ fun setViewportGrid(graph: GraphView, convert: Boolean) = with(graph){
     gridLabelRenderer.gridStyle = GridLabelRenderer.GridStyle.BOTH
     gridLabelRenderer.isHorizontalLabelsVisible=true
     gridLabelRenderer.isVerticalLabelsVisible=true
+    gridLabelRenderer.labelsSpace = 1
+    //gridLabelRenderer.padding = 1
     gridLabelRenderer.verticalAxisTitle = "Intensity (a.u)"
     gridLabelRenderer.horizontalAxisTitle = if (convert) "Wavelength (nm)" else "Pixel (px)"
     gridLabelRenderer.numHorizontalLabels = 5
@@ -162,9 +193,9 @@ fun setViewportScalable(graph: GraphView) = with(graph){
     viewport.isYAxisBoundsManual = false
 
     // Enable scaling
-    viewport.isScalable = true
+    //viewport.isScalable = true
     viewport.isScrollable = true
-    viewport.setScalableY(true)
+    //viewport.setScalableY(true)
     viewport.setScrollableY(true)
 
 }
