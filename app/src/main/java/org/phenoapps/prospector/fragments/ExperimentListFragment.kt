@@ -56,37 +56,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mBinding: FragmentExperimentListBinding? = null
 
-    /**
-     * All permissions are checked here, if one is not accepted the app finishes.
-     * Also here is where the instructions page is loaded (if on cold load)
-     */
-    private val checkPermissions by lazy {
-
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
-
-            //ensure all permissions are granted
-            if (!granted.values.all { it }) {
-                activity?.let {
-                    it.setResult(android.app.Activity.RESULT_CANCELED)
-                    it.finish()
-                }
-            } else {
-
-                //check cold load
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-                if (prefs.getBoolean("FIRST_LOAD", true)) {
-
-                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
-
-                    //navigate to instructions page
-                    findNavController().navigate(ExperimentListFragmentDirections
-                            .actionToConnectInstructions())
-                }
-            }
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -104,10 +73,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             setupButtons()
 
             updateUi()
-
-            checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
 
         }
 

@@ -9,12 +9,14 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -25,6 +27,7 @@ import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
 import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.util.*
@@ -81,13 +84,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setupDirs()
 
-        mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
-
         mSnackbar = SnackbarQueue()
 
         setupBotNav()
-
-        setupNavController()
 
         //on first load ask user if they want to load sample data
         if (prefs.getBoolean("FIRST_LOAD", true)) {
@@ -127,6 +126,41 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     }
 
+    /**
+     * All permissions are checked here, if one is not accepted the app finishes.
+     * Also here is where the instructions page is loaded (if on cold load)
+     */
+    private val checkPermissions by lazy {
+
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+            //ensure all permissions are granted
+            if (!granted.values.all { it }) {
+
+                setResult(android.app.Activity.RESULT_CANCELED)
+
+                finish()
+
+            } else {
+
+                //check cold load
+                val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+                if (prefs.getBoolean("FIRST_LOAD", true)) {
+
+                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
+
+                    //navigate to instructions page
+                    mNavController.navigate(
+                        ExperimentListFragmentDirections
+                        .actionToConnectInstructions())
+                }
+
+                setupActivity()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -144,7 +178,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
 
-        setupActivity()
+        mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
+
+        setupNavController()
+
+        checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
 
     }
 
