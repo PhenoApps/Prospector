@@ -33,10 +33,7 @@ import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
-import org.phenoapps.prospector.utils.DateUtil
-import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.FileUtil
-import org.phenoapps.prospector.utils.observeOnce
+import org.phenoapps.prospector.utils.*
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -72,10 +69,35 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+    private lateinit var mSnackbar: SnackbarQueue
+
     private lateinit var requestExportLauncher: ActivityResultLauncher<String>
+    private lateinit var requestPermissionsLauncher: ActivityResultLauncher<Array<String>>
+
+    private fun resetPermissionLauncher() {
+        //check permissions before trying to export the file
+        requestPermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+            //ensure all permissions are granted
+            if (!granted.values.all { it }) {
+
+                mBinding?.root?.let { view ->
+                    mSnackbar.push(
+                        SnackbarQueue
+                            .SnackJob(view, getString(R.string.must_accept_permissions_to_export)))
+                }
+
+            } else requestExportLauncher.launch(mFileName)
+
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mSnackbar = SnackbarQueue()
+
+        resetPermissionLauncher()
 
         requestExportLauncher = registerForActivityResult(
             ActivityResultContracts.CreateDocument()) { nullUri ->
@@ -178,9 +200,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                                     mExportables = exportables
 
-                                    requestExportLauncher.launch(mFileName)
-
-
+                                    requestPermissionsLauncher.launch(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
                                 }
                             }
                         }

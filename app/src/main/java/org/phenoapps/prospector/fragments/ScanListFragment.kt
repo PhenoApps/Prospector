@@ -20,13 +20,11 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import com.jjoe64.graphview.series.DataPoint
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
-import org.apache.commons.math.stat.StatUtils
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
@@ -38,7 +36,6 @@ import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
 import java.util.*
-
 
 /**
  * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
@@ -140,9 +137,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 val dialogInterface = dialog.show()
 
-                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
+                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner) {
 
-                    it?.let {  frames ->
+                    it?.let { frames ->
 
                         launch {
 
@@ -152,7 +149,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         }
                     }
-                })
+                }
 
             } else {
 
@@ -272,6 +269,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             deleteScans(mExpId, mSampleName)
 
+                            resetGraph()
                         }
                     }
                 }
@@ -318,9 +316,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 when (ui.tabLayout.selectedTabPosition) {
 
-                    0 -> scans.filter { it.lightSource == 0 }
+                    0 -> scans.filter { it.lightSource == 1 } //bulb
 
-                    else -> scans.filter { it.lightSource == 1 }
+                    else -> scans.filter { it.lightSource == 0 } //led
 
                 }.forEach { scan ->
 
@@ -453,8 +451,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     with (ui.recyclerView.adapter as ScansAdapter) {
 
                         submitList(when (ui.tabLayout.selectedTabPosition) {
-                            0 -> data.filter { it.lightSource == 0 }
-                            else -> data.filter { it.lightSource == 1 }
+                            0 -> data.filter { it.lightSource == 1 } //bulb first
+                            else -> data.filter { it.lightSource == 0 } //led second
                         })
 
                     }
