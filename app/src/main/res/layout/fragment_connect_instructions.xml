@@ -66,11 +66,12 @@
                 android:id="@+id/stepThreeImageView"
                 android:layout_width="0dp"
                 android:layout_height="256dp"
-                android:src="@drawable/icon_ap"
                 android:contentDescription="@string/frag_instructions_step_three"
-                app:layout_constraintTop_toBottomOf="@id/stepThreeTextView"
+                android:src="@drawable/icon_ap"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintTop_toBottomOf="@id/stepThreeTextView" />
 
             <TextView
                 android:id="@+id/stepFourTextView"

@@ -141,5 +141,6 @@
     <string name="accept_permissions">App Permissions</string>
     <string name="frag_instructions_step_zero">Prospector requires camera permissions for scanning barcodes, and external storage permissions for saving files.</string>
     <string name="must_accept_permissions_to_export">Permissions must be accepted to export.</string>
+    <string name="samples_loaded">Samples loaded.</string>
 
 </resources>

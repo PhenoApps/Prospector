@@ -426,20 +426,28 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startObservers() {
 
-        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
+        val check = object : TimerTask() {
 
-            connected?.let { status ->
+            override fun run() {
 
-                with(mBinding?.titleToolbar) {
+                activity?.runOnUiThread {
 
-                    this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                    with(mBinding?.titleToolbar) {
+
+                        this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
                             else R.drawable.ic_clear_black_18dp)
 
+                    }
                 }
-
             }
-        })
+        }
+
+        Timer().cancel()
+
+        Timer().purge()
+
+        Timer().scheduleAtFixedRate(check, 0, 1500)
 
         //updates recycler view with available scans
         sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->

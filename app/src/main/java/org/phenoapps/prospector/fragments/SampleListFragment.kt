@@ -34,6 +34,7 @@ import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.utils.*
+import java.util.*
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -284,20 +285,29 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun startObservers() {
 
-        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
+        //use the activity view model to access the current connection status
+        val check = object : TimerTask() {
 
-            connected?.let { status ->
+            override fun run() {
 
-                with(mBinding?.samplesToolbar) {
+                activity?.runOnUiThread {
 
-                    this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                    with(mBinding?.samplesToolbar) {
+
+                        this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
                             else R.drawable.ic_clear_black_18dp)
 
+                    }
                 }
-
             }
-        })
+        }
+
+        Timer().cancel()
+
+        Timer().purge()
+
+        Timer().scheduleAtFixedRate(check, 0, 1500)
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->

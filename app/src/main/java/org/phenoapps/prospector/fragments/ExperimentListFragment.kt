@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +27,7 @@ import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
+import java.util.*
 
 /**
  * The main data fragment that displays the top-level experiment hierarchy.
@@ -75,22 +75,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             updateUi()
 
         }
-
-        //use the activity view model to access the current connection status
-        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
-
-            connected?.let { status ->
-
-                with(mBinding?.experimentToolbar) {
-
-                    this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
-                                else R.drawable.ic_clear_black_18dp)
-
-                }
-
-            }
-        })
 
         return mBinding?.root
     }
@@ -180,6 +164,35 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                     ?.submitList(it)
 
+            mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
         })
+
+
+        //use the activity view model to access the current connection status
+        val check = object : TimerTask() {
+
+            override fun run() {
+
+                activity?.runOnUiThread {
+
+                    with(mBinding?.experimentToolbar) {
+
+                        this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(
+                                if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
+                                else R.drawable.ic_clear_black_18dp
+                            )
+
+                    }
+                }
+            }
+        }
+
+        Timer().cancel()
+
+        Timer().purge()
+
+        Timer().scheduleAtFixedRate(check, 0, 1500)
+
     }
 }

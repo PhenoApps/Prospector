@@ -4,19 +4,19 @@ import BULB_FRAMES
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -27,7 +27,6 @@ import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
-import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
 import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.util.*
@@ -101,63 +100,56 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                 if (it) {
 
-                    runOnUiThread {
+                    startLoadSampleData()
 
-                        launch {
-                            loadSampleData()
-                        }
+                }
+            }
+        }
+
+        startConnectionWatcher()
+    }
+
+    private fun startConnectionWatcher() {
+
+        val check = object : TimerTask() {
+
+            override fun run() {
+
+                runOnUiThread {
+
+                    val last = mConnected
+
+                    mConnected = sDeviceViewModel.isConnected()
+
+                    if (last != mConnected) {
+                        mSnackbar.push(
+                            SnackbarQueue
+                                .SnackJob(
+                                    mBinding.root,
+                                    if (mConnected) getString(R.string.connected)
+                                    else getString(R.string.disconnect)
+                                )
+                        )
                     }
                 }
             }
         }
 
-        sDeviceViewModel.isConnectedLive().observe(this, {
+        Timer().cancel()
 
-            it?.let { status ->
+        Timer().purge()
 
-                mConnected = status
-
-                mSnackbar.push(SnackbarQueue
-                        .SnackJob(mBinding.root,
-                                if (status) getString(R.string.connected)
-                                else getString(R.string.disconnect)))
-            }
-        })
-
+        Timer().scheduleAtFixedRate(check, 0, 1500)
     }
 
-    /**
-     * All permissions are checked here, if one is not accepted the app finishes.
-     * Also here is where the instructions page is loaded (if on cold load)
-     */
-    private val checkPermissions by lazy {
+    private fun startLoadSampleData() {
 
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        lifecycleScope.launch {
 
-            //ensure all permissions are granted
-            if (!granted.values.all { it }) {
+            loadSampleData()
 
-                setResult(android.app.Activity.RESULT_CANCELED)
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
 
-                finish()
-
-            } else {
-
-                //check cold load
-                val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-                if (prefs.getBoolean("FIRST_LOAD", true)) {
-
-                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
-
-                    //navigate to instructions page
-                    mNavController.navigate(
-                        ExperimentListFragmentDirections
-                        .actionToConnectInstructions())
-                }
-
-                setupActivity()
-            }
         }
     }
 
@@ -182,10 +174,20 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setupNavController()
 
-        checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
-            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        //check cold load, load sample data and navigate to intro activity
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
+        if (prefs.getBoolean("FIRST_LOAD", true)) {
+
+            prefs.edit().putBoolean("FIRST_LOAD", false).apply()
+
+            startLoadSampleData()
+
+            startActivity(Intent(this, IntroActivity::class.java))
+
+        }
+
+        setupActivity()
     }
 
     private suspend fun loadSampleData() {
@@ -215,44 +217,49 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         }
 
-        //open the sample assets file
-        assets.open("examples.csv").reader().readLines().forEachIndexed { index, line ->
+        withContext(Dispatchers.IO) {
 
-            //skip the header, otherwise insert the rows
-            if (index > 0) {
+            //open the sample assets file
+            assets.open("examples.csv").reader().readLines().forEachIndexed { index, line ->
 
-                val tokens = line.split(",")
+                //skip the header, otherwise insert the rows
+                if (index > 0) {
 
-                try {
+                    val tokens = line.split(",")
 
-                    //val experimentName = tokens[0]
-                    val sampleName = tokens[1]
-                    val scanDate = tokens[2]
-                    val deviceType = tokens[3]
-                    val deviceId = tokens[4]
-                    val operator = tokens[5]
-                    val lightSource = tokens[6]
+                    try {
 
-                    //for each scan insert using coroutines
-                    //get the tokens between the lightsource and experiment note headers
-                    val waveRange = tokens.subList(6, tokens.size-1).joinToString(" ")
+                        //val experimentName = tokens[0]
+                        val sampleName = tokens[1]
+                        val scanDate = tokens[2]
+                        val deviceType = tokens[3]
+                        val deviceId = tokens[4]
+                        val operator = tokens[5]
+                        val lightSource = tokens[6]
 
-                    val sid = sViewModel.insertScanAsync(Scan(eid, sampleName, scanDate, deviceType,
-                            deviceId = deviceId,
-                            operator = operator,
-                            lightSource = lightSource.toInt())).await()
+                        //for each scan insert using coroutines
+                        //get the tokens between the lightsource and experiment note headers
+                        val waveRange = tokens.subList(6, tokens.size - 1).joinToString(" ")
 
-                    sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, 0))
+                        val sid = sViewModel.insertScanAsync(
+                            Scan(
+                                eid, sampleName, scanDate, deviceType,
+                                deviceId = deviceId,
+                                operator = operator,
+                                lightSource = lightSource.toInt()
+                            )
+                        ).await()
 
-                } catch (e: Exception) {
+                        sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, 0))
 
-                    e.printStackTrace()
+                    } catch (e: Exception) {
 
+                        e.printStackTrace()
+
+                    }
                 }
             }
         }
-
-
     }
 
     private fun setupBotNav() {
@@ -291,7 +298,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun startDeviceConnection() {
 
-        launch {
+        lifecycleScope.launch {
 
             sDeviceViewModel.connect(this@MainActivity.applicationContext)
 
@@ -300,7 +307,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun stopDeviceConnection() {
 
-        launch {
+        lifecycleScope.launch {
 
             sDeviceViewModel.disconnect()
 
