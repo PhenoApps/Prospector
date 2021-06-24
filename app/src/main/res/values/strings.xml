@@ -132,5 +132,15 @@
     <string name="frag_sample_fab_cont_desc">Click this button to create a new sample.</string>
     <string name="frag_scan_fab_cont_desc">Click this button to start a device scan.</string>
     <string name="scanning">Scanning</string>
+    <string name="welcome">Welcome to Prospector</string>
+    <string name="choose_network">Choose a network</string>
+    <string name="device_mode">Choose a device mode</string>
+    <string name="prospector_workflow">Prospector workflow</string>
+    <string name="iot_compatible">IoT Compatible</string>
+    <string name="check_connection">Check connection</string>
+    <string name="accept_permissions">App Permissions</string>
+    <string name="frag_instructions_step_zero">Prospector requires camera permissions for scanning barcodes, and external storage permissions for saving files.</string>
+    <string name="must_accept_permissions_to_export">Permissions must be accepted to export.</string>
+    <string name="samples_loaded">Samples loaded.</string>
 
 </resources>

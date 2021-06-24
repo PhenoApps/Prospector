@@ -35,6 +35,7 @@ import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
+import java.util.*
 
 /**
  * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
@@ -114,7 +115,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                         frame.raw_data.joinToString(" ") { value -> value.toString() },
                         frame.lightSource.toInt())
                 )
-
             }
         }
     }
@@ -137,9 +137,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 val dialogInterface = dialog.show()
 
-                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner, {
+                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner) {
 
-                    it?.let {  frames ->
+                    it?.let { frames ->
 
                         launch {
 
@@ -149,7 +149,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         }
                     }
-                })
+                }
 
             } else {
 
@@ -269,6 +269,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             deleteScans(mExpId, mSampleName)
 
+                            resetGraph()
                         }
                     }
                 }
@@ -315,9 +316,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 when (ui.tabLayout.selectedTabPosition) {
 
-                    0 -> scans.filter { it.lightSource == 0 }
+                    0 -> scans.filter { it.lightSource == 1 } //bulb
 
-                    else -> scans.filter { it.lightSource == 1 }
+                    else -> scans.filter { it.lightSource == 0 } //led
 
                 }.forEach { scan ->
 
@@ -330,7 +331,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                                 val convert = PreferenceManager.getDefaultSharedPreferences(context)
                                         .getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
-                                val wavelengths = if (convert) data.toWaveArray(scan.deviceType) else data.toPixelArray()
+                                //trim actual values based on specs
+                                val wavelengths = (if (convert) data.toWaveArray(scan.deviceType).filter {
+
+                                    it.x <= when(scan.deviceType) {
+
+                                        DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
+
+                                        else -> LinkSquareRange.max
+                                    }
+
+                                } else data.toPixelArray()).movingAverageSmooth()
 
                                 setViewportGrid(ui.graphView, convert)
 
@@ -415,20 +426,28 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startObservers() {
 
-        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
+        val check = object : TimerTask() {
 
-            connected?.let { status ->
+            override fun run() {
 
-                with(mBinding?.titleToolbar) {
+                activity?.runOnUiThread {
 
-                    this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
+                    with(mBinding?.titleToolbar) {
+
+                        this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
                             else R.drawable.ic_clear_black_18dp)
 
+                    }
                 }
-
             }
-        })
+        }
+
+        Timer().cancel()
+
+        Timer().purge()
+
+        Timer().scheduleAtFixedRate(check, 0, 1500)
 
         //updates recycler view with available scans
         sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->
@@ -440,13 +459,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     with (ui.recyclerView.adapter as ScansAdapter) {
 
                         submitList(when (ui.tabLayout.selectedTabPosition) {
-                            0 -> data.filter { it.lightSource == 0 }
-                            else -> data.filter { it.lightSource == 1 }
+                            0 -> data.filter { it.lightSource == 1 } //bulb first
+                            else -> data.filter { it.lightSource == 0 } //led second
                         })
 
                     }
 
                     ui.executePendingBindings()
+
+                    resetGraph()
 
                 }
             } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)

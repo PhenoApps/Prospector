@@ -106,27 +106,6 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
         emit("DONE")
     }
 
-    fun isConnectedLive() = liveData(sDeviceScope.coroutineContext, 5000) {
-
-        var status = false
-
-        while(true) {
-
-            val nextStatus = sDevice?.IsConnected() ?: false
-
-            if (status != nextStatus) {
-
-                status = nextStatus
-
-                emit(status)
-
-                delay(2000)
-
-            }
-        }
-    }
-
-
 //    fun connection(context: Context) = liveData(sDeviceScope.coroutineContext, 500L) {
 //
 //        val connecting = -1

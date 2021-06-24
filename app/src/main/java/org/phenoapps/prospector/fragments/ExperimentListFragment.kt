@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +27,7 @@ import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
+import java.util.*
 
 /**
  * The main data fragment that displays the top-level experiment hierarchy.
@@ -56,37 +56,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mBinding: FragmentExperimentListBinding? = null
 
-    /**
-     * All permissions are checked here, if one is not accepted the app finishes.
-     * Also here is where the instructions page is loaded (if on cold load)
-     */
-    private val checkPermissions by lazy {
-
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
-
-            //ensure all permissions are granted
-            if (!granted.values.all { it }) {
-                activity?.let {
-                    it.setResult(android.app.Activity.RESULT_CANCELED)
-                    it.finish()
-                }
-            } else {
-
-                //check cold load
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-                if (prefs.getBoolean("FIRST_LOAD", true)) {
-
-                    prefs.edit().putBoolean("FIRST_LOAD", false).apply()
-
-                    //navigate to instructions page
-                    findNavController().navigate(ExperimentListFragmentDirections
-                            .actionToConnectInstructions())
-                }
-            }
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -105,27 +74,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             updateUi()
 
-            checkPermissions.launch(arrayOf(android.Manifest.permission.CAMERA,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
-
         }
-
-        //use the activity view model to access the current connection status
-        sDeviceViewModel.isConnectedLive().observe(viewLifecycleOwner, { connected ->
-
-            connected?.let { status ->
-
-                with(mBinding?.experimentToolbar) {
-
-                    this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (status) R.drawable.ic_bluetooth_connected_black_18dp
-                                else R.drawable.ic_clear_black_18dp)
-
-                }
-
-            }
-        })
 
         return mBinding?.root
     }
@@ -215,6 +164,35 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                     ?.submitList(it)
 
+            mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
         })
+
+
+        //use the activity view model to access the current connection status
+        val check = object : TimerTask() {
+
+            override fun run() {
+
+                activity?.runOnUiThread {
+
+                    with(mBinding?.experimentToolbar) {
+
+                        this?.menu?.findItem(R.id.action_connection)
+                            ?.setIcon(
+                                if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
+                                else R.drawable.ic_clear_black_18dp
+                            )
+
+                    }
+                }
+            }
+        }
+
+        Timer().cancel()
+
+        Timer().purge()
+
+        Timer().scheduleAtFixedRate(check, 0, 1500)
+
     }
 }

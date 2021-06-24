@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "694219135598",
+    "firebase_url": "https://prospector-152d1.firebaseio.com",
+    "project_id": "prospector-152d1",
+    "storage_bucket": "prospector-152d1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:694219135598:android:24dfad3f9a06a09627a47f",
+        "android_client_info": {
+          "package_name": "org.phenoapps.prospector"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "694219135598-cfgu6j9mod78hlt8pp1p4kt3t8f6jvg4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTiJwSIZ-eqFpw-u6Qio5ddqR9NNQdG3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "694219135598-cfgu6j9mod78hlt8pp1p4kt3t8f6jvg4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

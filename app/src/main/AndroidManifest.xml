@@ -27,6 +27,11 @@
             </intent-filter>
         </activity>
 
+        <!-- app intro activity -->
+        <activity android:name=".activities.IntroActivity"
+            android:label="My Custom AppIntro"
+            android:theme="@style/AppIntroTheme"/>
+
         <provider
             android:authorities="${applicationId}.fileprovider"
             android:name="androidx.core.content.FileProvider"
