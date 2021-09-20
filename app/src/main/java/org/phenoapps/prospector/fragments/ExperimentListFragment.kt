@@ -162,7 +162,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
         sViewModel.experimentCounts.observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
-                    ?.submitList(it)
+                    ?.submitList(it.sortedBy { it.date })
 
             mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
         })
