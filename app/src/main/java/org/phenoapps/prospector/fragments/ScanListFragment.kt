@@ -6,6 +6,7 @@ import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import OPERATOR
 import android.os.Bundle
+import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +36,7 @@ import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
+import java.lang.IllegalStateException
 import java.util.*
 
 /**
@@ -52,6 +54,8 @@ import java.util.*
 @WithFragmentBindings
 @AndroidEntryPoint
 class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
+
+    private val TAG = this.tag ?: "ScanListFragment"
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
@@ -457,7 +461,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     with(mBinding?.titleToolbar) {
 
                         this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) {
+                                attachDeviceButtonPressListener()
+                                R.drawable.ic_vector_link
+                            }
                             else R.drawable.ic_vector_difference_ab)
 
                     }
@@ -500,27 +507,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
         })
 
-
-        /**
-         * LinkSquare API live data listener that responds to on-device button clicks.
-         */
-        sDeviceViewModel.setEventListener {
-
-            requireActivity().runOnUiThread {
-
-                if (sDeviceViewModel.isConnected()) {
-
-                    sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
-
-                        callScanDialog(connectedDeviceInfo)
-
-                    }
-
-                }
-
-            }
-
-        }.observe(viewLifecycleOwner, {})
+        attachDeviceButtonPressListener()
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
@@ -534,6 +521,37 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                 }
             }
         })
+    }
+
+    /**
+     * LinkSquare API live data listener that responds to on-device button clicks.
+     */
+    private fun attachDeviceButtonPressListener() {
+
+        try {
+
+            sDeviceViewModel.setEventListener {
+
+                requireActivity().runOnUiThread {
+
+                    if (sDeviceViewModel.isConnected()) {
+
+                        sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                            callScanDialog(connectedDeviceInfo)
+
+                        }
+
+                    }
+
+                }
+
+            }.observe(viewLifecycleOwner, {})
+
+        } catch (e: IllegalStateException) {
+
+            Log.d(TAG, "Failed to connect LS")
+        }
     }
 
     private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {

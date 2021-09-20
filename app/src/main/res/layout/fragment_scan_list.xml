@@ -33,7 +33,7 @@
             android:id="@+id/titleToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:menu="@menu/menu_experiment_list"
+            app:menu="@menu/menu_experiment_scan_list"
             app:layout_constraintVertical_bias="0"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/scanToolbar"
