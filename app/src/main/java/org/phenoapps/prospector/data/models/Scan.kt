@@ -26,7 +26,7 @@ data class Scan(
         var name: String,
 
         @ColumnInfo(name = "date")
-        var date: String = DateUtil().getScanTime(),
+        var date: String = DateUtil().getTime(),
 
         @ColumnInfo(name = "deviceType")
         var deviceType: String = DEVICE_TYPE_NIR,

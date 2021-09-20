@@ -199,7 +199,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                                 example?.let { it ->
 
                                     //make dates on exports unique
-                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getScanTime()}.csv"
+                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getTime()}.csv"
 
                                     mExportables = exportables
 
