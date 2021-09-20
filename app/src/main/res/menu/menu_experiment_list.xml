@@ -8,7 +8,7 @@
         android:title="@string/menu_experiment_list_sort_title"/>
     <item
         android:id="@+id/action_connection"
-        android:icon="@drawable/ic_clear_black_18dp"
+        android:icon="@drawable/ic_vector_difference_ab"
         app:showAsAction="ifRoom"
         android:title="@string/device_connected"/>
 </menu>
