@@ -40,17 +40,22 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:listitem="@layout/list_item_experiment" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <ImageButton
             android:id="@+id/addExperimentButton"
             android:layout_margin="16dp"
-            android:onClick="@{onClick}"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:backgroundTint="@color/colorAccent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_new_scan"
+            android:onClick="@{onClick}"
+            android:cropToPadding="false"
+            android:elevation="5dp"
+            android:scaleType="fitCenter"
+            app:tint="#ffffff"
+            android:background="@drawable/capture_button_background"
+            android:src="@drawable/ic_add_black_24dp"
             android:contentDescription="@string/frag_exp_list_fab_cont_descp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

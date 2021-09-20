@@ -19,7 +19,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:keepScreenOn="true">
 
         <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
             android:id="@+id/samplesToolbar"
@@ -45,15 +46,19 @@
             app:layout_constraintTop_toBottomOf="@id/samplesToolbar"
             tools:listitem="@layout/list_item_sample" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <ImageButton
             android:id="@+id/addSampleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{onClick}"
             android:layout_margin="16dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:backgroundTint="@color/colorAccent"
-            android:text="@string/add_sample"
-            android:src="@drawable/ic_new_scan"
+            android:onClick="@{onClick}"
+            android:cropToPadding="false"
+            android:elevation="5dp"
+            android:scaleType="fitCenter"
+            app:tint="#ffffff"
+            android:background="@drawable/capture_button_background"
+            android:src="@drawable/ic_add_black_24dp"
             android:contentDescription="@string/frag_sample_fab_cont_desc"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
