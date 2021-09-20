@@ -194,7 +194,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
 
                                 //grab the first experiment as an example to find the name and device type for the filename
-                                val example = it.firstOrNull()
+                                val example = exportables.firstOrNull()
 
                                 example?.let { it ->
 
