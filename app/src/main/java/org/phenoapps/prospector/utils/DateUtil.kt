@@ -10,7 +10,7 @@ class DateUtil {
     //used for experiment dates
     fun getTime(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-                "dd-MMM-yyyy"))
+                "yyyy-MM-dd-hh-mm-ss"))
     } else {
         Calendar.getInstance().time.toString()
     }

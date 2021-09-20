@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.fragments
 
+import ALPHA_ASC
 import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
@@ -10,6 +11,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
@@ -226,6 +228,27 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                         }
                     }
                 }
+
+                R.id.action_sample_list_sort -> {
+
+                    mSortState = when (mSortState) {
+                        ALPHA_ASC -> ALPHA_DESC
+                        ALPHA_DESC -> DATE_ASC
+                        DATE_ASC -> DATE_DESC
+                        else -> ALPHA_ASC
+                    }
+
+                    Toast.makeText(context,
+                        when (mSortState) {
+                            ALPHA_ASC -> getString(R.string.sort_alpha_ascending)
+                            ALPHA_DESC -> getString(R.string.sort_alpha_descending)
+                            DATE_ASC -> getString(R.string.sort_date_ascending)
+                            else -> getString(R.string.sort_date_descending)
+                        }, Toast.LENGTH_SHORT
+                    ).show()
+
+                    updateUi()
+                }
             }
 
             true
@@ -261,7 +284,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                     if (result) {
 
                         (mBinding?.recyclerView?.adapter as SampleAdapter)
-                                .currentList[viewHolder.adapterPosition].also { s ->
+                                .currentList[viewHolder.absoluteAdapterPosition].also { s ->
 
                             launch {
 
@@ -270,7 +293,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             }
                         }
 
-                    } else mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
+                    } else mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.absoluteAdapterPosition)
                 }
             }
 
@@ -322,33 +345,38 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
             }
         })
 
+        updateUi()
+
+    }
+
+    private fun updateUi() {
         sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
             samples?.let { data ->
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
-                        .submitList(when (mSortState) {
+                    .submitList(when (mSortState) {
 
-                            DATE_DESC -> {
+                        DATE_DESC -> {
 
-                                data.sortedByDescending { it.date }
-                            }
+                            data.sortedByDescending { it.date }
+                        }
 
-                            DATE_ASC -> {
+                        DATE_ASC -> {
 
-                                data.sortedBy { it.date }
-                            }
+                            data.sortedBy { it.date }
+                        }
 
-                            ALPHA_DESC -> {
+                        ALPHA_DESC -> {
 
-                                data.sortedByDescending { it.name }
-                            }
+                            data.sortedByDescending { it.name }
+                        }
 
-                            else -> {
+                        else -> {
 
-                                data.sortedBy { it.name }
-                            }
-                        })
+                            data.sortedBy { it.name }
+                        }
+                    })
 
                 Handler(Looper.getMainLooper()).postDelayed({
 
