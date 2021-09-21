@@ -67,6 +67,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private var mSampleName: String = String()
 
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
+
     //navigate to the instructions page if the device is not connected
     private val sOnClickScan = View.OnClickListener {
 
@@ -173,6 +177,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         mBinding?.let { ui ->
 
+            val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
             //ui.deleteOnClick = sOnClickDelete
 
             ui.scanOnClick = sOnClickScan
@@ -192,6 +198,11 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                 ui.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                     override fun onTabSelected(tab: TabLayout.Tab?) {
 
+                        prefs.edit().putBoolean(mKeyUtil.lastSelectedGraph, when (tab?.position ?: 0) {
+                            0 -> false
+                            else -> true
+                        }).apply()
+
                         resetGraph()
 
                         startObservers()
@@ -203,6 +214,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     override fun onTabReselected(tab: TabLayout.Tab?) {}
 
                 })
+
+                ui.selectTabFromPrefs()
 
                 launch {
 
@@ -220,6 +233,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         setHasOptionsMenu(true)
 
         return mBinding?.root
+    }
+
+    private fun FragmentScanListBinding.selectTabFromPrefs() {
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+
+        tabLayout.getTabAt(if (prefs.getBoolean(mKeyUtil.lastSelectedGraph, false)) { 1 } else 0)
+            ?.select()
+
     }
 
     private fun FragmentScanListBinding.setupToolbar() {
@@ -398,7 +420,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                         if (result) {
 
                             (ui.recyclerView.adapter as ScansAdapter)
-                                    .currentList[viewHolder.adapterPosition].also { scan ->
+                                    .currentList[viewHolder.absoluteAdapterPosition].also { scan ->
 
                                 launch(Dispatchers.IO) {
 
@@ -416,7 +438,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                                 }
                             }
 
-                        } else ui.recyclerView.adapter?.notifyDataSetChanged()
+                        } else ui.recyclerView.adapter?.notifyItemChanged(viewHolder.absoluteAdapterPosition)
                     }
                 }
 
