@@ -27,8 +27,8 @@ buildscript {
     ext.hilt_lifecycle_version = "1.0.0-alpha03"
 
     repositories {
-        jcenter()
         google()
+        mavenCentral()
     }
 
     dependencies {
@@ -45,9 +45,9 @@ buildscript {
 }
 allprojects {
     repositories {
-        jcenter()
         maven { url "https://jitpack.io" }
         google()
+        mavenCentral()
     }
 }
 task clean(type: Delete) {
