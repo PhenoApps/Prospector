@@ -10,15 +10,7 @@ class DateUtil {
     //used for experiment dates
     fun getTime(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-                "dd-MMM-yyyy"))
-    } else {
-        Calendar.getInstance().time.toString()
-    }
-
-    //used for scan time dates
-    fun getScanTime(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-                "dd-MMM-yy hh:mm a"))
+            "yyyy-MM-dd-hh-mm-ss"))
     } else {
         Calendar.getInstance().time.toString()
     }

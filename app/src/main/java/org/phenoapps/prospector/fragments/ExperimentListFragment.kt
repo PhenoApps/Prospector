@@ -1,9 +1,12 @@
 package org.phenoapps.prospector.fragments
 
+import ALPHA_ASC
+import ALPHA_DESC
+import DATE_ASC
+import DATE_DESC
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -23,6 +26,7 @@ import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
+import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
@@ -56,6 +60,8 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mBinding: FragmentExperimentListBinding? = null
 
+    private var mSortState = ALPHA_ASC
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -88,16 +94,43 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
         experimentToolbar.setOnMenuItemClickListener {
 
-            if (sDeviceViewModel.isConnected()) {
+            when (it.itemId) {
 
-                sDeviceViewModel.reset()
+                R.id.action_experiment_list_menu_sort -> {
 
-            } else {
+                    mSortState = when (mSortState) {
+                        ALPHA_ASC -> ALPHA_DESC
+                        ALPHA_DESC -> DATE_ASC
+                        DATE_ASC -> DATE_DESC
+                        else -> ALPHA_ASC
+                    }
 
-                findNavController().navigate(ExperimentListFragmentDirections
-                        .actionToConnectInstructions())
+                    Toast.makeText(context,
+                        when (mSortState) {
+                            ALPHA_ASC -> getString(R.string.sort_alpha_ascending)
+                            ALPHA_DESC -> getString(R.string.sort_alpha_descending)
+                            DATE_ASC -> getString(R.string.sort_date_ascending)
+                            else -> getString(R.string.sort_date_descending)
+                        }, Toast.LENGTH_SHORT
+                    ).show()
 
-                (activity as? MainActivity)?.startDeviceConnection()
+                    updateUi()
+                }
+
+                R.id.action_connection -> {
+
+                    if (sDeviceViewModel.isConnected()) {
+
+                        sDeviceViewModel.reset()
+
+                    } else {
+
+                        findNavController().navigate(ExperimentListFragmentDirections
+                            .actionToConnectInstructions())
+
+                        (activity as? MainActivity)?.startDeviceConnection()
+                    }
+                }
             }
 
             true
@@ -137,7 +170,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     }
 
-                } else  mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.adapterPosition)
+                } else mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.absoluteAdapterPosition)
             }
         }
     }
@@ -162,11 +195,31 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
         sViewModel.experimentCounts.observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
-                    ?.submitList(it)
+                ?.submitList(when (mSortState) {
 
-            mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
+                    DATE_DESC -> {
+
+                        it.sortedByDescending { it.date }
+                    }
+
+                    DATE_ASC -> {
+
+                        it.sortedBy { it.date }
+                    }
+
+                    ALPHA_DESC -> {
+
+                        it.sortedByDescending { it.name }
+                    }
+
+                    else -> {
+
+                        it.sortedBy { it.name }
+                    }
+                })
+
+            mBinding?.recyclerView?.adapter?.notifyItemRangeChanged(0, it.size)
         })
-
 
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
