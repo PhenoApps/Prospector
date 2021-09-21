@@ -155,5 +155,6 @@
     <string name="pref_workflow_audio_title">Audio</string>
     <string name="pref_workflow_audio_summary">When enabled, a chime will play when a barcode is scanned, a device makes a scan or a target scan is met.</string>
     <string name="target_scan_success">Target met for current sample.</string>
+    <string name="frag_sample_search_btn_cont_desc">Search for a barcode sample id.</string>
 
 </resources>

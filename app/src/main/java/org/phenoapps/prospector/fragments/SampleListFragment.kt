@@ -173,13 +173,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             when(item.itemId) {
 
-                R.id.menu_search_sample -> {
-
-                    findNavController().navigate(SampleListFragmentDirections
-                            .actionToBarcodeSearch(mExpId))
-
-                }
-
                 R.id.menu_export -> {
                     /**
                      * Uses activity results contracts to create a document and call the export function
@@ -260,6 +253,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
         onClick = sOnNewClickListener
 
+        fragSampleListSearchBtn.setOnClickListener {
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeSearch(mExpId))
+        }
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
