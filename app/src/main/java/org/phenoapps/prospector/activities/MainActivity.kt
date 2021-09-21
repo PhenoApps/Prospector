@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         mSnackbar.push(
                             SnackbarQueue
                                 .SnackJob(
-                                    mBinding.root,
+                                    mBinding.actMainCoordinatorLayout,
                                     if (mConnected) getString(R.string.connected)
                                     else getString(R.string.disconnect)
                                 )
