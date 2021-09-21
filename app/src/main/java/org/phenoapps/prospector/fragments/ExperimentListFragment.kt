@@ -232,8 +232,8 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                         this?.menu?.findItem(R.id.action_connection)
                             ?.setIcon(
-                                if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
-                                else R.drawable.ic_clear_black_18dp
+                                if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                                else R.drawable.ic_vector_difference_ab
                             )
 
                     }
