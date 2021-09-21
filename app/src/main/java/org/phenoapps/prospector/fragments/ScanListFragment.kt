@@ -98,37 +98,34 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         }
     }
 
-    private fun insertScan(name: String, frames: List<LSFrame>) {
+    private suspend fun insertScan(name: String, frames: List<LSFrame>) {
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        launch {
+        frames.forEach { frame ->
 
-            frames.forEach { frame ->
+            val sid = sViewModel.insertScanAsync(Scan(mExpId, name).apply {
 
-                val sid = sViewModel.insertScanAsync(Scan(mExpId, name).apply {
+                val linkSquareApiDeviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
 
-                    val linkSquareApiDeviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
+                deviceId = linkSquareApiDeviceId
 
-                    deviceId = linkSquareApiDeviceId
+                this.deviceType = if (linkSquareApiDeviceId.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
 
-                    this.deviceType = if (linkSquareApiDeviceId.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
+                this.alias = prefs.getString(DEVICE_ALIAS, "")
 
-                    this.alias = prefs.getString(DEVICE_ALIAS, "")
+                this.lightSource = frame.lightSource.toInt()
 
-                    this.lightSource = frame.lightSource.toInt()
+                this.operator = prefs.getString(OPERATOR, "") ?: ""
 
-                    this.operator = prefs.getString(OPERATOR, "") ?: ""
+            }).await()
 
-                }).await()
-
-                sViewModel.insertFrame(sid, SpectralFrame(
-                        sid,
-                        frame.frameNo,
-                        frame.raw_data.joinToString(" ") { value -> value.toString() },
-                        frame.lightSource.toInt())
-                )
-            }
+            sViewModel.insertFrame(sid, SpectralFrame(
+                    sid,
+                    frame.frameNo,
+                    frame.raw_data.joinToString(" ") { value -> value.toString() },
+                    frame.lightSource.toInt())
+            )
         }
     }
 
@@ -154,7 +151,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     it?.let { frames ->
 
-                        launch {
+                        launch(Dispatchers.IO) {
 
                             insertScan(mSampleName, frames)
 
@@ -267,6 +264,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             mSampleName = arguments?.getString("sample", String()) ?: String()
 
+            val startScan = arguments?.getBoolean("startScan", false) ?: false
+
             ui.setupToolbar()
 
             if (mExpId != -1L && mSampleName.isNotBlank()) {
@@ -296,17 +295,26 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 ui.selectTabFromPrefs()
 
-                launch {
-
-                    loadGraph()
-
-                }
+                loadGraph()
 
                 setupRecyclerView()
 
                 startObservers()
 
-            } else findNavController().popBackStack()
+            } else {
+
+                findNavController().popBackStack()
+
+            }
+
+            if (startScan && sDeviceViewModel.isConnected()) {
+
+                sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                    callScanDialog(connectedDeviceInfo)
+
+                }
+            }
         }
 
         setHasOptionsMenu(true)
@@ -401,6 +409,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         renderGraph(mSelectedScanId)
 
+        mBinding?.graphView?.visibility = View.VISIBLE
+
     }
 
     /**
@@ -466,7 +476,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
 
-        launch {
+        launch(Dispatchers.IO) {
 
             val sid = sViewModel.insertScanAsync(scan).await()
 
@@ -609,7 +619,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             sDeviceViewModel.setEventListener {
 
-                requireActivity().runOnUiThread {
+                activity?.runOnUiThread {
 
                     if (sDeviceViewModel.isConnected()) {
 

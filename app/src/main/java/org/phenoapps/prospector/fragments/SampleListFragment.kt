@@ -18,6 +18,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -38,6 +39,12 @@ import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.utils.*
 import java.util.*
+import android.animation.Animator
+
+import android.animation.AnimatorListenerAdapter
+import android.view.animation.Animation
+import androidx.room.Index
+
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -257,6 +264,62 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
             findNavController().navigate(SampleListFragmentDirections
                 .actionToBarcodeSearch(mExpId))
         }
+
+        fragSampleListAddSampleByBarcodeBtn.setOnClickListener {
+
+            setFragmentResultListener("BarcodeResult") { _, bundle ->
+
+                val code = bundle.getString("barcode_result", "") ?: ""
+
+                launch {
+
+                    sViewModel.insertSampleAsync(Sample(mExpId, code)).await()
+
+                }
+
+                updateUi()
+            }
+
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeScan())
+        }
+
+        //on long press display the barcode scan option of creating a new sample
+        addSampleButton.setOnLongClickListener {
+
+            if (fragSampleListAddSampleByBarcodeBtn.visibility == View.GONE) {
+
+                fragSampleListAddSampleByBarcodeBtn.fadeIn()
+
+                Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                    fragSampleListAddSampleByBarcodeBtn.fadeOut()
+                }, 5000L)
+            }
+
+            true
+        }
+    }
+
+    private fun View.fadeIn() {
+        animate()
+            .withStartAction {
+                visibility = View.VISIBLE
+            }
+            .alpha(1.0f)
+            .setDuration(500)
+            .setListener(null)
+    }
+
+    private fun View.fadeOut() {
+        animate()
+            .alpha(.0f)
+            .setDuration(500)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    visibility = View.GONE
+                }
+            })
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
@@ -347,33 +410,45 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    private val dummyRow = SampleScanCount(-1, "", "", "", -1)
+    data class IndexedSampleScanCount(
+        val index: Int,
+        val eid: Long,
+        val name: String,
+        val date: String,
+        val note: String,
+        val count: Int
+    )
+    private val dummyRow = IndexedSampleScanCount(-1, -1, "", "", "", -1)
     private fun updateUi() {
         sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
             samples?.let { data ->
+
+                val indexedData = data.mapIndexed { index, data ->
+                    IndexedSampleScanCount(index, data.eid, data.name, data.date, data.note, data.count)
+                }
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
                     .submitList(when (mSortState) {
 
                         DATE_DESC -> {
 
-                            data.sortedByDescending { it.date }
+                            indexedData.sortedByDescending { it.date }
                         }
 
                         DATE_ASC -> {
 
-                            data.sortedBy { it.date }
+                            indexedData.sortedBy { it.date }
                         }
 
                         ALPHA_DESC -> {
 
-                            data.sortedByDescending { it.name }
+                            indexedData.sortedByDescending { it.name }
                         }
 
                         else -> {
 
-                            data.sortedBy { it.name }
+                            indexedData.sortedBy { it.name }
                         }
                     } + listOf(dummyRow))
 

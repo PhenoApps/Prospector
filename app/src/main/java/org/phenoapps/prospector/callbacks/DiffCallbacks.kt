@@ -4,6 +4,7 @@ import androidx.recyclerview.widget.DiffUtil
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.models.Scan
+import org.phenoapps.prospector.fragments.SampleListFragment
 
 /**
  * DiffCallbacks are used in each adapter implementation.
@@ -25,13 +26,13 @@ class DiffCallbacks {
             }
         }
 
-        class SampleScanCountDiffCallback : DiffUtil.ItemCallback<SampleScanCount>() {
+        class SampleScanCountDiffCallback : DiffUtil.ItemCallback<SampleListFragment.IndexedSampleScanCount>() {
 
-            override fun areItemsTheSame(oldItem: SampleScanCount, newItem: SampleScanCount): Boolean {
-                return oldItem.name == newItem.name
+            override fun areItemsTheSame(oldItem: SampleListFragment.IndexedSampleScanCount, newItem: SampleListFragment.IndexedSampleScanCount): Boolean {
+                return oldItem.index == newItem.index
             }
 
-            override fun areContentsTheSame(oldItem: SampleScanCount, newItem: SampleScanCount): Boolean {
+            override fun areContentsTheSame(oldItem: SampleListFragment.IndexedSampleScanCount, newItem: SampleListFragment.IndexedSampleScanCount): Boolean {
                 return oldItem.name == newItem.name
             }
         }
