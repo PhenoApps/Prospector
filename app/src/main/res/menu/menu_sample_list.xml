@@ -9,12 +9,6 @@
         android:title="@string/menu_sample_list_sort_title"
         tools:ignore="AlwaysShowAction" />
     <item
-        android:id="@+id/menu_search_sample"
-        android:icon="@drawable/ic_tb_white_search"
-        app:showAsAction="always"
-        android:title="@string/search_for_sample"
-        tools:ignore="AlwaysShowAction" />
-    <item
         android:id="@+id/menu_export"
         android:icon="@drawable/ic_export_scans"
         app:showAsAction="always"

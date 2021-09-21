@@ -34,7 +34,7 @@
         <action
             android:id="@+id/action_to_scan_list"
             app:destination="@id/scan_list_fragment"
-            app:popUpTo="@id/scan_list_fragment">
+            app:popUpTo="@id/sample_list_fragment">
         </action>
 
     </fragment>
