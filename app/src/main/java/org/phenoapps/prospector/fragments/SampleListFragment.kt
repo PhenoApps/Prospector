@@ -18,6 +18,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -38,6 +39,11 @@ import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.utils.*
 import java.util.*
+import android.animation.Animator
+
+import android.animation.AnimatorListenerAdapter
+import android.view.animation.Animation
+
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -257,6 +263,62 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
             findNavController().navigate(SampleListFragmentDirections
                 .actionToBarcodeSearch(mExpId))
         }
+
+        fragSampleListAddSampleByBarcodeBtn.setOnClickListener {
+
+            setFragmentResultListener("BarcodeResult") { _, bundle ->
+
+                val code = bundle.getString("barcode_result", "") ?: ""
+
+                launch {
+
+                    sViewModel.insertSampleAsync(Sample(mExpId, code)).await()
+
+                }
+
+                updateUi()
+            }
+
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeScan())
+        }
+
+        //on long press display the barcode scan option of creating a new sample
+        addSampleButton.setOnLongClickListener {
+
+            if (fragSampleListAddSampleByBarcodeBtn.visibility == View.GONE) {
+
+                fragSampleListAddSampleByBarcodeBtn.fadeIn()
+
+                Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                    fragSampleListAddSampleByBarcodeBtn.fadeOut()
+                }, 5000L)
+            }
+
+            true
+        }
+    }
+
+    private fun View.fadeIn() {
+        animate()
+            .withStartAction {
+                visibility = View.VISIBLE
+            }
+            .alpha(1.0f)
+            .setDuration(500)
+            .setListener(null)
+    }
+
+    private fun View.fadeOut() {
+        animate()
+            .alpha(.0f)
+            .setDuration(500)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    visibility = View.GONE
+                }
+            })
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
