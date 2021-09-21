@@ -43,6 +43,7 @@ import android.animation.Animator
 
 import android.animation.AnimatorListenerAdapter
 import android.view.animation.Animation
+import androidx.room.Index
 
 
 /**
@@ -409,33 +410,45 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    private val dummyRow = SampleScanCount(-1, "", "", "", -1)
+    data class IndexedSampleScanCount(
+        val index: Int,
+        val eid: Long,
+        val name: String,
+        val date: String,
+        val note: String,
+        val count: Int
+    )
+    private val dummyRow = IndexedSampleScanCount(-1, -1, "", "", "", -1)
     private fun updateUi() {
         sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
             samples?.let { data ->
+
+                val indexedData = data.mapIndexed { index, data ->
+                    IndexedSampleScanCount(index, data.eid, data.name, data.date, data.note, data.count)
+                }
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
                     .submitList(when (mSortState) {
 
                         DATE_DESC -> {
 
-                            data.sortedByDescending { it.date }
+                            indexedData.sortedByDescending { it.date }
                         }
 
                         DATE_ASC -> {
 
-                            data.sortedBy { it.date }
+                            indexedData.sortedBy { it.date }
                         }
 
                         ALPHA_DESC -> {
 
-                            data.sortedByDescending { it.name }
+                            indexedData.sortedByDescending { it.name }
                         }
 
                         else -> {
 
-                            data.sortedBy { it.name }
+                            indexedData.sortedBy { it.name }
                         }
                     } + listOf(dummyRow))
 
