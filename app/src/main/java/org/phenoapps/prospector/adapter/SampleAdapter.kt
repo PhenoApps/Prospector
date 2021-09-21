@@ -50,13 +50,16 @@ class SampleAdapter(
 
                 clickListener = View.OnClickListener {
 
-                    Navigation.findNavController(binding.root).navigate(
+                    if (sample.count >= 0) Navigation.findNavController(binding.root).navigate(
                             SampleListFragmentDirections.actionToScanList(sample.eid, sample.name))
 
                 }
 
-                this.scanCount = context.resources
-                        .getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
+                this.scanCount = if (sample.count >= 0)
+                    context.resources.getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
+                else ""
+
+                if (sample.count < 0) binding.listItemSampleContainer.visibility = View.INVISIBLE
 
                 this.sample = sample
 

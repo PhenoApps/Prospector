@@ -173,10 +173,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
                 }
-
             }
         })
-
     }
 
     /**
