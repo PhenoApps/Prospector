@@ -50,7 +50,7 @@ class SampleAdapter(
 
             with(binding) {
 
-                position = sample.index
+                position = sample.index + 1
 
                 clickListener = View.OnClickListener {
 
