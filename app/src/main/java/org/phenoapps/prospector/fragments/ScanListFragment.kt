@@ -591,7 +591,12 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     resetGraph()
 
                 }
-            } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
+            } else {
+
+                mBinding?.scanCount = "0"
+                mBinding?.executePendingBindings()
+                (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
+            }
         })
 
         attachDeviceButtonPressListener()
