@@ -13,9 +13,11 @@ import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.databinding.ListItemSampleBinding
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
+import org.phenoapps.prospector.interfaces.SampleListClickListener
 
 class SampleAdapter(
-        private val context: Context
+        private val context: Context,
+        private val listener: SampleListClickListener
 ) : ListAdapter<SampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,6 +36,11 @@ class SampleAdapter(
             with(holder) {
 
                 itemView.tag = sample.name
+
+                itemView.setOnLongClickListener {
+                    listener.onListItemLongClicked(sample)
+                    true
+                }
 
                 bind(sample, position)
             }

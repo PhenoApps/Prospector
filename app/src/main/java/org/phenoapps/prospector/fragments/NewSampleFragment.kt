@@ -37,6 +37,14 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sViewModel: SampleViewModel by viewModels()
 
+    private val argUpdateName by lazy {
+        arguments?.getString("name")
+    }
+
+    private val argUpdateNote by lazy {
+        arguments?.getString("note")
+    }
+
     private val sOnBarcodeScanClick = View.OnClickListener {
 
         setFragmentResultListener("BarcodeResult") { _, bundle ->
@@ -82,9 +90,18 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_new_sample, null, true)
 
-        mBinding?.let { _ ->
+        mBinding?.let { it ->
 
             setupButtons()
+
+            //possible arguments sent if the sample is being edited
+            argUpdateName?.let { oldName ->
+                it.sampleNameEditText.setText(oldName)
+            }
+
+            argUpdateNote?.let { oldNote ->
+                it.sampleNoteEditText.setText(oldNote)
+            }
 
         }
 
@@ -113,24 +130,34 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
             val name = sampleNameEditText.text.toString()
             val notes = sampleNoteEditText.text.toString()
 
-            val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
+            if (argUpdateName != null) { //this is an update call
 
-            launch {
+                launch(Dispatchers.IO) {
 
-                sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
+                    sViewModel.update(mExpId, argUpdateName ?: name, name, notes)
 
-            }
+                }
 
-            activity?.runOnUiThread {
+            } else {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
+                val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
 
-                clearUi()
+                launch {
 
-                findNavController().popBackStack()
+                    sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
+
+                }
+
+                activity?.runOnUiThread {
+
+                    mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
+
+                    clearUi()
+
+                    findNavController().popBackStack()
+                }
             }
         }
-
     }
 
     //checks if sample name is not empty
@@ -148,7 +175,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
             if (name.isNotBlank()) {
 
                 //if not sample exists with that name, insert it
-                if (sViewModel.getSamples(mExpId).find { it.name == name } == null) {
+                if (sViewModel.getSamples(mExpId).find { it.name == name } == null || argUpdateName == name) {
 
                     insertSampleAndUpdate()
 

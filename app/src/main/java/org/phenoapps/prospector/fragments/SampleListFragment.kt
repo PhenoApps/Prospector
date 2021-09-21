@@ -32,9 +32,11 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
+import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
 import java.util.*
 
@@ -47,7 +49,8 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
+class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
+    SampleListClickListener {
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
@@ -261,11 +264,17 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+    override fun onListItemLongClicked(sample: SampleScanCount) {
+
+        findNavController().navigate(SampleListFragmentDirections
+            .actionToNewSample(sample.eid, sample.name, sample.note))
+    }
+
     private fun FragmentSampleListBinding.setupRecyclerView() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        recyclerView.adapter = SampleAdapter(requireContext())
+        recyclerView.adapter = SampleAdapter(requireContext(), this@SampleListFragment)
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
