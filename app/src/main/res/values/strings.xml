@@ -148,5 +148,12 @@
     <string name="sort_date_ascending">Date Ascending</string>
     <string name="sort_date_descending">Date Descending</string>
     <string name="menu_sample_list_sort_title">Sort</string>
+    <string name="pref_cat_workflow_title">Workflow</string>
+    <string name="pref_workflow_target_title">Target Scans</string>
+    <string name="pref_workflow_target_summary">Setting a scan target will play a notification when a sample reaches the targeted number of scans.</string>
+    <string name="pref_workflow_target_scan_set_summary">The current target scan is set to %d</string>
+    <string name="pref_workflow_audio_title">Audio</string>
+    <string name="pref_workflow_audio_summary">When enabled, a chime will play when a barcode is scanned, a device makes a scan or a target scan is met.</string>
+    <string name="target_scan_success">Target met for current sample.</string>
 
 </resources>

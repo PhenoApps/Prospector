@@ -5,5 +5,7 @@
 <resources>
 
     <string name="key_pref_last_graph_selected">&package;LAST_SELECTED_GRAPH</string>
+    <string name="key_pref_target_scan">&package;TARGET_SCANS</string>
+    <string name="key_pref_audio_enabled">&package;AUDIO_ENABLED</string>
 
 </resources>

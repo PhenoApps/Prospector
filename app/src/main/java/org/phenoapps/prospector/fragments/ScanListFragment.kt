@@ -5,6 +5,7 @@ import DEVICE_ALIAS
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import OPERATOR
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.ContextThemeWrapper
@@ -73,6 +74,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
+    }
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     //navigate to the instructions page if the device is not connected
@@ -155,6 +160,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             dialogInterface.dismiss()
 
+                            activity?.runOnUiThread {
+                                checkAudioTriggers()
+                            }
                         }
                     }
                 }
@@ -169,6 +177,75 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             }
         })
 
+    }
+
+    /**
+     * Checks the preferences for audio enabled settings.
+     * If the setting is enabled, run a chime because a scan was made.
+     * Also check if the number of scans matches the target scan if so play a chime and finish the fragment.
+     */
+    private fun checkAudioTriggers() {
+
+        //check if audio enabled
+        if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
+
+            val scanAudio = MediaPlayer.create(context, R.raw.hero_simple_celebration)
+            val targetMetAudio = MediaPlayer.create(context, R.raw.hero_decorative_celebration)
+
+            //check if target scan is set and met
+            val target = mPrefs.getString(mKeyUtil.targetScans, "") ?: ""
+
+            //if no target is set, play the scan audio
+            if (target.isBlank()) {
+
+                scanAudio.start()
+
+            } else { //check if target is met, otherwise play the scan audio
+
+                sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner) {
+
+                    target.toIntOrNull()?.let { targetInt ->
+
+                        if (it.size >= targetInt) {
+
+                            targetMetAudio.start()
+
+                            (activity as? MainActivity)?.notifyTargetSuccess()
+
+                            findNavController().popBackStack()
+
+                        } else {
+
+                            scanAudio.start()
+                        }
+                    }
+                }
+            }
+        } else checkTarget() //still want to check target and pop backstack if it is met
+    }
+
+    private fun checkTarget() {
+
+        //check if target scan is set and met
+        val target = mPrefs.getString(mKeyUtil.targetScans, "") ?: ""
+
+        //if no target is set, play the scan audio
+        if (target.isNotBlank()) {
+
+            sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner) {
+
+                target.toIntOrNull()?.let { targetInt ->
+
+                    if (it.size >= targetInt) {
+
+                        (activity as? MainActivity)?.notifyTargetSuccess()
+
+                        findNavController().popBackStack()
+
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
