@@ -497,7 +497,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     val total = this.resources.getQuantityString(
                         R.plurals.numberOfScans, data.size, data.size)
 
-                    ui.sampleName = "$mSampleName $total"
+                    ui.scanCount = total
+
+                    ui.sampleName = "$mSampleName"
 
                     ui.executePendingBindings()
 
