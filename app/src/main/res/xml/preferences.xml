@@ -22,6 +22,23 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_cat_workflow_title"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference android:defaultValue=""
+            android:key="@string/key_pref_target_scan"
+            android:icon="@drawable/ic_bullseye_arrow"
+            android:title="@string/pref_workflow_target_title"
+            android:summary="@string/pref_workflow_target_summary"/>
+
+        <CheckBoxPreference android:defaultValue="true"
+            android:key="@string/key_pref_audio_enabled"
+            android:icon="@drawable/ic_bell"
+            android:title="@string/pref_workflow_audio_title"
+            android:summary="@string/pref_workflow_audio_summary"/>
+
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:key="org.phenoapps.prospector.DEVICE_INFO"
         android:title="@string/pref_scanning_title"

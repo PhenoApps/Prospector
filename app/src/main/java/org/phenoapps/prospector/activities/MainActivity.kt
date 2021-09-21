@@ -142,6 +142,21 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Timer().scheduleAtFixedRate(check, 0, 1500)
     }
 
+    /**
+     * Displays a snack bar message saying the target # of scans has been met (set in preferences)
+     * Called in scan list fragment
+     */
+    fun notifyTargetSuccess() {
+
+        mSnackbar.push(
+            SnackbarQueue
+                .SnackJob(
+                    mBinding.actMainCoordinatorLayout,
+                    getString(R.string.target_scan_success)
+                )
+        )
+    }
+
     private fun startLoadSampleData() {
 
         lifecycleScope.launch {

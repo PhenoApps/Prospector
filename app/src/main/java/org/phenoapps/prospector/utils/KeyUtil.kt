@@ -14,4 +14,8 @@ class KeyUtil(private val ctx: Context?) {
         ReadOnlyProperty { _, _ -> ctx?.getString(id)!! }
 
     val lastSelectedGraph by key(R.string.key_pref_last_graph_selected)
+
+    val targetScans by key(R.string.key_pref_target_scan)
+
+    val audioEnabled by key(R.string.key_pref_audio_enabled)
 }

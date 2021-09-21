@@ -32,6 +32,7 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
@@ -349,6 +350,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+    private val dummyRow = SampleScanCount(-1, "", "", "", -1)
     private fun updateUi() {
         sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
@@ -376,7 +378,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                             data.sortedBy { it.name }
                         }
-                    })
+                    } + listOf(dummyRow))
 
                 Handler(Looper.getMainLooper()).postDelayed({
 

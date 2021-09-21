@@ -5,7 +5,9 @@ import DEVICE_ALIAS
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import OPERATOR
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +37,7 @@ import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
+import java.lang.IllegalStateException
 import java.util.*
 
 /**
@@ -53,6 +56,8 @@ import java.util.*
 @AndroidEntryPoint
 class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemClickListener {
 
+    private val TAG = this.tag ?: "ScanListFragment"
+
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     private var mSelectedScanId: Long = -1
@@ -69,6 +74,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
+    }
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     //navigate to the instructions page if the device is not connected
@@ -151,6 +160,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             dialogInterface.dismiss()
 
+                            activity?.runOnUiThread {
+                                checkAudioTriggers()
+                            }
                         }
                     }
                 }
@@ -161,10 +173,77 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
                 }
-
             }
         })
+    }
 
+    /**
+     * Checks the preferences for audio enabled settings.
+     * If the setting is enabled, run a chime because a scan was made.
+     * Also check if the number of scans matches the target scan if so play a chime and finish the fragment.
+     */
+    private fun checkAudioTriggers() {
+
+        //check if audio enabled
+        if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
+
+            val scanAudio = MediaPlayer.create(context, R.raw.hero_simple_celebration)
+            val targetMetAudio = MediaPlayer.create(context, R.raw.hero_decorative_celebration)
+
+            //check if target scan is set and met
+            val target = mPrefs.getString(mKeyUtil.targetScans, "") ?: ""
+
+            //if no target is set, play the scan audio
+            if (target.isBlank()) {
+
+                scanAudio.start()
+
+            } else { //check if target is met, otherwise play the scan audio
+
+                sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner) {
+
+                    target.toIntOrNull()?.let { targetInt ->
+
+                        if (it.size >= targetInt) {
+
+                            targetMetAudio.start()
+
+                            (activity as? MainActivity)?.notifyTargetSuccess()
+
+                            findNavController().popBackStack()
+
+                        } else {
+
+                            scanAudio.start()
+                        }
+                    }
+                }
+            }
+        } else checkTarget() //still want to check target and pop backstack if it is met
+    }
+
+    private fun checkTarget() {
+
+        //check if target scan is set and met
+        val target = mPrefs.getString(mKeyUtil.targetScans, "") ?: ""
+
+        //if no target is set, play the scan audio
+        if (target.isNotBlank()) {
+
+            sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner) {
+
+                target.toIntOrNull()?.let { targetInt ->
+
+                    if (it.size >= targetInt) {
+
+                        (activity as? MainActivity)?.notifyTargetSuccess()
+
+                        findNavController().popBackStack()
+
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -457,7 +536,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     with(mBinding?.titleToolbar) {
 
                         this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) {
+                                attachDeviceButtonPressListener()
+                                R.drawable.ic_vector_link
+                            }
                             else R.drawable.ic_vector_difference_ab)
 
                     }
@@ -502,27 +584,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             } else (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
         })
 
-
-        /**
-         * LinkSquare API live data listener that responds to on-device button clicks.
-         */
-        sDeviceViewModel.setEventListener {
-
-            requireActivity().runOnUiThread {
-
-                if (sDeviceViewModel.isConnected()) {
-
-                    sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
-
-                        callScanDialog(connectedDeviceInfo)
-
-                    }
-
-                }
-
-            }
-
-        }.observe(viewLifecycleOwner, {})
+        attachDeviceButtonPressListener()
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
@@ -536,6 +598,37 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                 }
             }
         })
+    }
+
+    /**
+     * LinkSquare API live data listener that responds to on-device button clicks.
+     */
+    private fun attachDeviceButtonPressListener() {
+
+        try {
+
+            sDeviceViewModel.setEventListener {
+
+                requireActivity().runOnUiThread {
+
+                    if (sDeviceViewModel.isConnected()) {
+
+                        sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                            callScanDialog(connectedDeviceInfo)
+
+                        }
+
+                    }
+
+                }
+
+            }.observe(viewLifecycleOwner, {})
+
+        } catch (e: IllegalStateException) {
+
+            Log.d(TAG, "Failed to connect LS")
+        }
     }
 
     private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {
