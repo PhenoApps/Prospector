@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         //make sample experiment
         val eid = sViewModel.insertExperimentAsync(
-                Experiment("Samples", DEVICE_TYPE_NIR, "Example data loaded on first install.")).await()
+                Experiment("Sample Experiment", DEVICE_TYPE_NIR, "Example data loaded on first install.")).await()
 
         val samples = listOf("Light Red Kidney Beans",
                 "Navy Beans",
