@@ -11,6 +11,10 @@
             type="String" />
 
         <variable
+            name="scanCount"
+            type="String" />
+
+        <variable
             name="sampleName"
             type="String" />
 
@@ -36,7 +40,6 @@
             app:menu="@menu/menu_experiment_list"
             app:layout_constraintVertical_bias="0"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/scanToolbar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -54,11 +57,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <TextView
+            android:id="@+id/frag_scan_list_count_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            tools:text="42 Scans Total"
+            android:text="@{scanCount}"
+            android:textAppearance="?android:textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scanToolbar"/>
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/scanToolbar"
+            app:layout_constraintTop_toBottomOf="@id/frag_scan_list_count_tv"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/graphView"
@@ -107,14 +122,13 @@
             android:layout_margin="16dp"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:backgroundTint="@color/colorAccent"
             android:onClick="@{scanOnClick}"
             android:text="@string/add_sample"
             android:cropToPadding="false"
             android:elevation="5dp"
             android:scaleType="fitCenter"
             app:tint="#ffffff"
-            android:background="@drawable/capture_button_background"
+            android:background="@drawable/capture_button_background_blue"
             android:src="@drawable/ic_add_black_24dp"
             android:contentDescription="@string/frag_scan_fab_cont_desc"
             app:layout_constraintEnd_toEndOf="parent"
