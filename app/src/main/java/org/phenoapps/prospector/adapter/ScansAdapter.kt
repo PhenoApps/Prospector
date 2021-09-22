@@ -86,7 +86,7 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
 
                     this.scan = scan
 //
-                    this.date = DateUtil().displayTime(scan.date)
+                    this.date = DateUtil().displayScanTime(scan.date)
 //                    this.deviceType = when(scan.deviceType) {
 //                        "0" -> "LinkSquare 1"
 //                        else -> "Unknown"
