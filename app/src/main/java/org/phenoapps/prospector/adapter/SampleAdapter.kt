@@ -14,9 +14,11 @@ import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.databinding.ListItemSampleBinding
 import org.phenoapps.prospector.fragments.SampleListFragment
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
+import org.phenoapps.prospector.interfaces.SampleListClickListener
 
 class SampleAdapter(
-        private val context: Context
+        private val context: Context,
+        private val listener: SampleListClickListener
 ) : ListAdapter<SampleListFragment.IndexedSampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -38,6 +40,11 @@ class SampleAdapter(
 
                 if (sample.count == -1) itemView.visibility = View.INVISIBLE
                 else itemView.visibility = View.VISIBLE
+
+                itemView.setOnLongClickListener {
+                    listener.onListItemLongClicked(sample)
+                    true
+                }
 
                 bind(sample, position)
             }

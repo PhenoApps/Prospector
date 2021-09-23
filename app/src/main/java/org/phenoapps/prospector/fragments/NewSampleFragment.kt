@@ -41,6 +41,14 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val sViewModel: SampleViewModel by viewModels()
 
+    private val argUpdateName by lazy {
+        arguments?.getString("name")
+    }
+
+    private val argUpdateNote by lazy {
+        arguments?.getString("note")
+    }
+
     private val sOnBarcodeScanClick = View.OnClickListener {
 
         setFragmentResultListener("BarcodeResult") { _, bundle ->
@@ -92,7 +100,15 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
             binding.setupToolbar()
 
-            startObservers()
+            //possible arguments sent if the sample is being edited
+            argUpdateName?.let { oldName ->
+                binding.sampleNameEditText.setText(oldName)
+            }
+
+            argUpdateNote?.let { oldNote ->
+                binding.sampleNoteEditText.setText(oldNote)
+            }
+
         }
 
         setHasOptionsMenu(true)
@@ -222,24 +238,35 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
             val name = sampleNameEditText.text.toString()
             val notes = sampleNoteEditText.text.toString()
 
-            val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
-
             if (name.isNotBlank()) {
 
-                launch {
+                if (argUpdateName != null) { //this is an update call
 
-                    sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
+                    launch(Dispatchers.IO) {
 
-                    act.runOnUiThread {
+                        sViewModel.update(mExpId, argUpdateName ?: name, name, notes)
 
-                        mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
+                    }
 
-                        if (startScan) {
+                } else {
 
-                            findNavController().navigate(NewSampleFragmentDirections
-                                .actionToScanList(mExpId, name, startScan))
+                    val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
 
-                        } else findNavController().popBackStack()
+                    launch {
+
+                        sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
+
+                        act.runOnUiThread {
+
+                            mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
+
+                            if (startScan) {
+
+                                findNavController().navigate(NewSampleFragmentDirections
+                                    .actionToScanList(mExpId, name, startScan))
+
+                            } else findNavController().popBackStack()
+                        }
                     }
                 }
             }
@@ -261,7 +288,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
             if (name.isNotBlank()) {
 
                 //if not sample exists with that name, insert it
-                if (sViewModel.getSamples(mExpId).find { it.name == name } == null) {
+                if (sViewModel.getSamples(mExpId).find { it.name == name } == null || argUpdateName == name) {
 
                     insertSampleAndUpdate()
 
