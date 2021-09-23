@@ -16,6 +16,10 @@
         <variable
             name="deviceType"
             type="String" />
+
+        <variable
+            name="date"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +33,7 @@
             style="@style/Text.ObservationUnit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{scan.date}"
+            android:text="@{date}"
             android:onClick="@{onClick}"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

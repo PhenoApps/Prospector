@@ -16,6 +16,9 @@
         <variable
             name="scanCount"
             type="String"/>
+        <variable
+            name="date"
+            type="String"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -55,7 +58,7 @@
             android:id="@+id/sampleDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{sample.date}"
+            android:text="@{date}"
             tools:text="01-08-1992"
             app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintBottom_toBottomOf="parent"

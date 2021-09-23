@@ -12,6 +12,9 @@
         <variable
             name="sampleCount"
             type="String"/>
+        <variable
+            name="date"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -35,7 +38,7 @@
             android:id="@+id/expDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{experiment.date}"
+            android:text="@{date}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/expSamplesCountTextView"
             app:layout_constraintStart_toStartOf="parent"

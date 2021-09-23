@@ -14,6 +14,7 @@ import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.databinding.ListItemSampleBinding
 import org.phenoapps.prospector.fragments.SampleListFragment
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
+import org.phenoapps.prospector.utils.DateUtil
 
 class SampleAdapter(
         private val context: Context
@@ -62,6 +63,8 @@ class SampleAdapter(
                 this.scanCount = if (sample.count >= 0)
                     context.resources.getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
                 else ""
+
+                this.date = DateUtil().displayTime(sample.date)
 
                 this.sample = sample
 
