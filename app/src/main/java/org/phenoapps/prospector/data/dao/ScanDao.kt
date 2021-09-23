@@ -18,6 +18,9 @@ interface ScanDao {
     @Query("SELECT sf.* FROM spectral_frames as sf, experiments as e, scans as s WHERE e.eid = :eid and s.eid = :eid and s.sid = :sid and sf.sid = :sid")
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame>
 
+    @Query("SELECT sf.* FROM spectral_frames as sf, experiments as e, scans as s, samples as sam WHERE e.eid = :eid and s.name = :sample and s.eid = :eid and sam.name = :sample and sf.sid = s.sid")
+    fun getSpectralValues(eid: Long, sample: String): LiveData<List<SpectralFrame>>
+
     @Query("SELECT sf.* FROM spectral_frames as sf, experiments as e, scans as s WHERE e.eid = :eid and s.eid = :eid and s.sid = :sid and sf.sid = :sid")
     fun getSpectralValuesLive(eid: Long, sid: Long): LiveData<List<SpectralFrame>>
 
@@ -34,7 +37,7 @@ interface ScanDao {
     suspend fun insertScan(eid: Long, name: String, date: String, deviceId: String, operator: String, deviceType: String, lightSource: Int): Long
 
     @Query("UPDATE scans SET color = :color WHERE eid = :eid AND sid = :scanId")
-    suspend fun updateScanColor(eid: Long, scanId: Long, color: String)
+    fun updateScanColor(eid: Long, scanId: Long, color: String)
 
     /**
      * Deletes

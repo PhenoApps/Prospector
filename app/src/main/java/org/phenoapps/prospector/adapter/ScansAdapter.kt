@@ -2,7 +2,6 @@ package org.phenoapps.prospector.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
@@ -39,16 +38,32 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
 
             with(holder) {
 
-                itemView.tag = scan.sid
+                val id = (scan.sid ?: -1L).toString()
 
-                bind(scan) {
+                itemView.tag = id
 
-                    scan.sid?.let { id ->
+                itemView.setOnLongClickListener {
 
-                        listener.onItemClicked(id, scan.color)
+                    val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
+
+                    adapter.addAll("red", "blue", "green")
+                    Dialogs.showColorChooserDialog(adapter, AlertDialog.Builder(context),
+                        context.getString(R.string.frag_scan_list_dialog_choose_color_title)) {
+
+                        listener.onItemLongClicked(id.toLong(), it)
 
                     }
+                    true
+
                 }
+
+                itemView.setOnClickListener {
+
+                    listener.onItemClicked(id.toLong(), scan.color)
+
+                }
+
+                bind(id, scan.date)
             }
         }
     }
@@ -56,39 +71,14 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
     inner class ScanGraphViewHolder(
             private val binding: ListItemScanBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(scan: Scan, onClick: View.OnClickListener) {
+        fun bind(tag: String, date: String) {
 
             with(binding) {
 
-                if (itemView.tag == scan.sid) {
+                if (itemView.tag == tag) {
 
-                    nameView.setOnLongClickListener {
+                    this.date = date
 
-                        val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
-
-                        adapter.addAll("red", "blue", "green")
-                        Dialogs.showColorChooserDialog(adapter, AlertDialog.Builder(context),
-                                context.getString(R.string.frag_scan_list_dialog_choose_color_title)) {
-
-                            scan.sid?.let { id ->
-
-                                listener.onItemLongClicked(id, it)
-
-                            }
-                        }
-
-                        true
-                    }
-//                    this.nameView.text = scan.date
-
-                    this.onClick = onClick
-
-                    this.scan = scan
-//
-//                    this.deviceType = when(scan.deviceType) {
-//                        "0" -> "LinkSquare 1"
-//                        else -> "Unknown"
-//                    }
                 }
             }
         }

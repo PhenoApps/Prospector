@@ -128,46 +128,6 @@ fun List<SpectralFrame>.toPixelArray(): List<DataPoint> {
 }
 
 /**
- * Centers the graph viewport whenever new data is loaded.
- * Fits the bounds of the viewport to the min/max values of the data.
- *
- * Defaults to a range between [440, 1040]
- */
-fun centerViewport(graph: GraphView, data: List<DataPoint>, converted: Boolean, deviceType: String) = with(graph) {
-
-    val minX = data.minByOrNull { it.x }?.x ?: 440.0
-
-    val maxX = data.maxByOrNull { it.x }?.x ?: minX+600.0
-
-    val maxY = data.map { it.y }.maxOrNull() ?: 400.0
-
-    val minY = data.map { it.y }.minOrNull() ?: 0.0
-
-    viewport.isXAxisBoundsManual = true
-    viewport.setMinX(minX)
-
-    if (converted) {
-        //cull the graph based on the device specifications
-        viewport.setMaxX(when(deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
-            else -> LinkSquareRange.max
-        })
-        viewport.setMinX(when(deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIRRange.min
-            else -> LinkSquareRange.min
-        })
-    } else { //otherwise use all the pixel data
-        viewport.setMaxX(maxX)
-        viewport.setMinX(minX)
-    }
-
-    viewport.isYAxisBoundsManual = true
-    viewport.setMinY(minY)
-    viewport.setMaxY(maxY)
-
-}
-
-/**
  * Sets the grid parameters and labels for the graph.
  */
 fun setViewportGrid(graph: GraphView, convert: Boolean) = with(graph){

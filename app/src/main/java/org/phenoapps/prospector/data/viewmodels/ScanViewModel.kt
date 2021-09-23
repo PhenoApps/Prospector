@@ -24,13 +24,14 @@ class ScanViewModel @Inject constructor(
 
     //live data
     fun getScans(eid: Long, sample: String) = repo.getScans(eid, sample)
+    fun getSpectralValues(eid: Long, sample: String) = repo.getSpectralValues(eid, sample)
     fun getSpectralValuesLive(eid: Long, sid: Long) = repo.getSpectralValuesLive(eid, sid)
 
     suspend fun deleteScan(scan: Scan) = scan.sid?.let { id -> repo.deleteScan(id) }
 
     suspend fun deleteScans(eid: Long, name: String) = repo.deleteScans(eid, name)
 
-    suspend fun updateScanColor(eid: Long, scanId: Long, color: String) = viewModelScope.launch { repo.updateScanColor(eid, scanId, color) }
+    fun updateScanColor(eid: Long, scanId: Long, color: String) = repo.updateScanColor(eid, scanId, color)
 
     fun insertScanAsync(scan: Scan): Deferred<Long> = viewModelScope.async { return@async repo.insertScan(scan) }
 
