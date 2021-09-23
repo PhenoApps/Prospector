@@ -324,7 +324,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             })
     }
 
-    override fun onListItemLongClicked(sample: SampleScanCount) {
+    override fun onListItemLongClicked(sample: IndexedSampleScanCount) {
 
         findNavController().navigate(SampleListFragmentDirections
             .actionToNewSample(sample.eid, sample.name, sample.note))
@@ -432,8 +432,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
             samples?.let { data ->
 
-                val indexedData = data.mapIndexed { index, data ->
-                    IndexedSampleScanCount(index, data.eid, data.name, data.date, data.note, data.count)
+                val indexedData = data.mapIndexed { index, s ->
+                    IndexedSampleScanCount(index, s.eid, s.name, s.date, s.note, s.count)
                 }
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
