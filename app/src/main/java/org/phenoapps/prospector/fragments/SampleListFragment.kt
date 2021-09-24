@@ -85,6 +85,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
     private lateinit var requestExportLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionsLauncher: ActivityResultLauncher<Array<String>>
 
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
     private fun resetPermissionLauncher() {
         //check permissions before trying to export the file
         requestPermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
@@ -105,6 +109,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mSortState = mPrefs.getInt("last_samples_sort_state", DATE_DESC)
 
         mSnackbar = SnackbarQueue()
 
@@ -238,6 +244,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                         DATE_ASC -> DATE_DESC
                         else -> ALPHA_ASC
                     }
+
+                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
 
                     Toast.makeText(context,
                         when (mSortState) {
