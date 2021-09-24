@@ -19,4 +19,5 @@ class SampleRepository @Inject constructor(
 
     suspend fun insertSample(sample: Sample) = dao.insertSample(sample.eid, sample.name, sample.date, sample.note)
 
+    suspend fun update(eid: Long, oldName: String, name: String, note: String) = dao.update(eid, oldName, name, note)
 }

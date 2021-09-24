@@ -138,6 +138,14 @@
             android:defaultValue="-1L"
             app:argType="long"/>
 
+        <argument android:name="name"
+            android:defaultValue=""
+            app:argType="string"/>
+
+        <argument android:name="note"
+            android:defaultValue=""
+            app:argType="string"/>
+
         <action
             android:id="@+id/action_to_samples"
             app:destination="@id/sample_list_fragment"
