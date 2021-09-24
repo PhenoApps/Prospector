@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                             )
                         ).await()
 
-                        sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, 0))
+                        sViewModel.insertFrame(sid, SpectralFrame(sid, 0, waveRange, lightSource.toInt()))
 
                     } catch (e: Exception) {
 
