@@ -85,8 +85,14 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             launch {
 
-                sViewModel.insertSampleAsync(Sample(mExpId, code)).await()
+                val sample = Sample(mExpId, code)
 
+                sViewModel.insertSampleAsync(sample).await()
+
+                activity?.runOnUiThread {
+                    findNavController().navigate(SampleListFragmentDirections
+                        .actionToScanList(mExpId, sample.name))
+                }
             }
 
             updateUi()
