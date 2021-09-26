@@ -139,6 +139,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        mSortState = mPrefs.getInt("last_samples_sort_state", DATE_DESC)
+
         mSnackbar = SnackbarQueue()
 
         resetPermissionLauncher()
@@ -269,6 +271,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                         DATE_ASC -> DATE_DESC
                         else -> ALPHA_ASC
                     }
+
+                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
 
                     Toast.makeText(context,
                         when (mSortState) {
