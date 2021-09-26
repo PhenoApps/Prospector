@@ -30,6 +30,10 @@ class SampleViewModel @Inject constructor(
 
     suspend fun deleteSample(eid: Long, name: String) = repo.deleteSample(eid, name)
 
+    suspend fun update(eid: Long, oldName: String, name: String, note: String) = viewModelScope.launch {
+        repo.update(eid, oldName, name, note)
+    }
+
     fun insertSampleAsync(sample: Sample) = viewModelScope.async { return@async repo.insertSample(sample) }
 
 

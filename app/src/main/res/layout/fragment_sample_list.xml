@@ -63,24 +63,6 @@
             app:layout_constraintBottom_toBottomOf="parent" />
 
         <ImageButton
-            android:id="@+id/frag_sample_list_add_sample_by_barcode_btn"
-            android:visibility="gone"
-            android:layout_margin="16dp"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:backgroundTint="@color/colorAccent"
-            android:cropToPadding="false"
-            android:elevation="5dp"
-            android:scaleType="fitCenter"
-            app:tint="#ffffff"
-            android:alpha="0"
-            android:background="@drawable/capture_button_background"
-            android:src="@drawable/ic_barcode_scan"
-            android:contentDescription="@string/frag_sample_fab_cont_desc"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/addSampleButton" />
-
-        <ImageButton
             android:id="@+id/addSampleButton"
             android:layout_margin="16dp"
             android:layout_width="64dp"

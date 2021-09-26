@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="android.view.View"/>
+
+        <import type="android.view.View" />
 
         <variable
             name="title"
@@ -32,51 +33,55 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
-            android:background="@color/colorPrimary"
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/titleToolbar"
+            style="@style/Text.Header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:menu="@menu/menu_experiment_scan_list"
-            app:layout_constraintVertical_bias="0"
+            android:background="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintVertical_bias="0"
+            app:menu="@menu/menu_experiment_scan_list" />
 
-        <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
-            android:background="@color/colorPrimaryDark"
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/scanToolbar"
+            style="@style/Text.Header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:navigationIcon="@drawable/ic_subdirectory_arrow_right"
-            app:menu="@menu/menu_scan_list"
-            app:title="@{sampleName}"
-            app:layout_constraintVertical_bias="0"
-            app:layout_constraintTop_toBottomOf="@id/titleToolbar"
+            android:background="@color/colorPrimaryDark"
             app:layout_constraintBottom_toTopOf="@id/tabLayout"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/titleToolbar"
+            app:layout_constraintVertical_bias="0"
+            app:menu="@menu/menu_scan_list"
+            app:navigationIcon="@drawable/ic_subdirectory_arrow_right"
+            app:title="@{sampleName}" />
 
         <TextView
             android:id="@+id/frag_scan_list_count_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:background="#dedede"
             android:gravity="center"
-            tools:text="42 Scans Total"
             android:text="@{scanCount}"
             android:textAppearance="?android:textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="parent"
+            android:textColor="#000000"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/scanToolbar"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scanToolbar"
+            tools:text="42 Scan" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/frag_scan_list_count_tv"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/graphView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_scan_list_count_tv"
             app:layout_constraintVertical_weight="1">
 
             <com.google.android.material.tabs.TabItem
@@ -97,18 +102,18 @@
             android:layout_height="0dp"
             android:layout_margin="8dp"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/tabLayout"
             app:layout_constraintBottom_toTopOf="@id/recyclerView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintVertical_weight="3"/>
+            app:layout_constraintTop_toBottomOf="@id/tabLayout"
+            app:layout_constraintVertical_weight="3" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:scrollbars="vertical"
             android:layout_margin="8dp"
+            android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -119,20 +124,20 @@
 
         <ImageButton
             android:id="@+id/addSampleButton"
-            android:layout_margin="16dp"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:onClick="@{scanOnClick}"
-            android:text="@string/add_sample"
+            android:layout_margin="16dp"
+            android:background="@drawable/capture_button_background_blue"
+            android:contentDescription="@string/frag_scan_fab_cont_desc"
             android:cropToPadding="false"
             android:elevation="5dp"
+            android:onClick="@{scanOnClick}"
             android:scaleType="fitCenter"
-            app:tint="#ffffff"
-            android:background="@drawable/capture_button_background_blue"
             android:src="@drawable/ic_add_black_24dp"
-            android:contentDescription="@string/frag_scan_fab_cont_desc"
+            android:text="@string/add_sample"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:tint="#ffffff" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

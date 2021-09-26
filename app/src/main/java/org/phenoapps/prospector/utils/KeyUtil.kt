@@ -18,4 +18,7 @@ class KeyUtil(private val ctx: Context?) {
     val targetScans by key(R.string.key_pref_target_scan)
 
     val audioEnabled by key(R.string.key_pref_audio_enabled)
+
+    val sampleScanEnabled by key(R.string.key_pref_workflow_new_sample_by_scan)
+
 }

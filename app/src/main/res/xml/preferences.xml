@@ -25,6 +25,12 @@
     <PreferenceCategory android:title="@string/pref_cat_workflow_title"
         app:iconSpaceReserved="false">
 
+        <CheckBoxPreference android:defaultValue="false"
+            android:key="@string/key_pref_workflow_new_sample_by_scan"
+            android:icon="@drawable/ic_barcode_scan"
+            android:title="@string/pref_workflow_new_sample_by_scan_title"
+            android:summary="@string/pref_workflow_new_sample_by_scan_summary"/>
+
         <EditTextPreference android:defaultValue=""
             android:key="@string/key_pref_target_scan"
             android:icon="@drawable/ic_bullseye_arrow"

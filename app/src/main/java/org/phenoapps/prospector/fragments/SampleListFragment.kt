@@ -33,18 +33,12 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
+import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
 import java.util.*
-import android.animation.Animator
-
-import android.animation.AnimatorListenerAdapter
-import android.view.animation.Animation
-import androidx.room.Index
-
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -55,7 +49,8 @@ import androidx.room.Index
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
+class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
+    SampleListClickListener {
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
@@ -80,6 +75,36 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+    /**
+     * Click listener that is used for the new scan button
+     * when the sample scanner preference is enabled.
+     */
+    private val sOnNewClickSampleScannerListener = View.OnClickListener {
+
+        setFragmentResultListener("BarcodeResult") { _, bundle ->
+
+            val code = bundle.getString("barcode_result", "") ?: ""
+
+            launch {
+
+                val sample = Sample(mExpId, code)
+
+                sViewModel.insertSampleAsync(sample).await()
+
+                activity?.runOnUiThread {
+                    findNavController().navigate(SampleListFragmentDirections
+                        .actionToScanList(mExpId, sample.name))
+                }
+            }
+
+            updateUi()
+        }
+
+        findNavController().navigate(SampleListFragmentDirections
+            .actionToBarcodeScan())
+
+    }
+
     private lateinit var mSnackbar: SnackbarQueue
 
     private lateinit var requestExportLauncher: ActivityResultLauncher<String>
@@ -87,6 +112,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
     }
 
     private fun resetPermissionLauncher() {
@@ -123,9 +152,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 context?.let {
 
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(it)
-
-                    val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                    val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
 
                     nullUri?.let { uri ->
 
@@ -266,75 +293,27 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun FragmentSampleListBinding.setupButtons() {
 
-        onClick = sOnNewClickListener
+        onClick = if (mPrefs.getBoolean(mKeyUtil.sampleScanEnabled, false)) {
+            sOnNewClickSampleScannerListener
+        } else sOnNewClickListener
 
         fragSampleListSearchBtn.setOnClickListener {
             findNavController().navigate(SampleListFragmentDirections
                 .actionToBarcodeSearch(mExpId))
         }
-
-        fragSampleListAddSampleByBarcodeBtn.setOnClickListener {
-
-            setFragmentResultListener("BarcodeResult") { _, bundle ->
-
-                val code = bundle.getString("barcode_result", "") ?: ""
-
-                launch {
-
-                    sViewModel.insertSampleAsync(Sample(mExpId, code)).await()
-
-                }
-
-                updateUi()
-            }
-
-            findNavController().navigate(SampleListFragmentDirections
-                .actionToBarcodeScan())
-        }
-
-        //on long press display the barcode scan option of creating a new sample
-        addSampleButton.setOnLongClickListener {
-
-            if (fragSampleListAddSampleByBarcodeBtn.visibility == View.GONE) {
-
-                fragSampleListAddSampleByBarcodeBtn.fadeIn()
-
-                Handler(Looper.getMainLooper()).postDelayed(Runnable {
-                    fragSampleListAddSampleByBarcodeBtn.fadeOut()
-                }, 5000L)
-            }
-
-            true
-        }
     }
 
-    private fun View.fadeIn() {
-        animate()
-            .withStartAction {
-                visibility = View.VISIBLE
-            }
-            .alpha(1.0f)
-            .setDuration(500)
-            .setListener(null)
-    }
+    override fun onListItemLongClicked(sample: IndexedSampleScanCount) {
 
-    private fun View.fadeOut() {
-        animate()
-            .alpha(.0f)
-            .setDuration(500)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    super.onAnimationEnd(animation)
-                    visibility = View.GONE
-                }
-            })
+        findNavController().navigate(SampleListFragmentDirections
+            .actionToNewSample(sample.eid, sample.name, sample.note))
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        recyclerView.adapter = SampleAdapter(requireContext())
+        recyclerView.adapter = SampleAdapter(requireContext(), this@SampleListFragment)
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -432,8 +411,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             samples?.let { data ->
 
-                val indexedData = data.mapIndexed { index, data ->
-                    IndexedSampleScanCount(index, data.eid, data.name, data.date, data.note, data.count)
+                val indexedData = data.mapIndexed { index, s ->
+                    IndexedSampleScanCount(index, s.eid, s.name, s.date, s.note, s.count)
                 }
 
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
