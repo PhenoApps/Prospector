@@ -106,9 +106,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     }
 
     private lateinit var mSnackbar: SnackbarQueue
-
     private lateinit var requestExportLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionsLauncher: ActivityResultLauncher<Array<String>>
+
+    private var mIsExporting = false
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -131,8 +132,16 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                             .SnackJob(view, getString(R.string.must_accept_permissions_to_export)))
                 }
 
-            } else requestExportLauncher.launch(mFileName)
+            } else {
 
+                if (!mIsExporting) {
+
+                    mIsExporting = true
+
+                    requestExportLauncher.launch(mFileName)
+
+                }
+            }
         }
     }
 
@@ -158,11 +167,37 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                         launch(Dispatchers.IO) {
 
-                            FileUtil(it).exportCsv(uri, exportables, convert)
+                            withContext(Dispatchers.Default) {
 
+                                mBinding?.toggleProgressBar()
+
+                                FileUtil(it).exportCsv(uri, exportables, convert)
+
+                                mBinding?.toggleProgressBar()
+
+                                mIsExporting = false
+                            }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun FragmentSampleListBinding.toggleProgressBar() {
+
+        activity?.runOnUiThread {
+
+            //make other elements the current vis of the progress bar
+            val elementsVis = this.fragSampleListProgressBar.visibility
+
+            arrayOf(this.samplesToolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
+                it.visibility = elementsVis
+            }
+
+            this.fragSampleListProgressBar.visibility = when (elementsVis) {
+                View.VISIBLE -> View.GONE
+                else -> View.VISIBLE
             }
         }
     }
@@ -229,6 +264,12 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                                 //grab the first experiment as an example to find the name and device type for the filename
                                 val example = exportables.firstOrNull()
+
+                                if (example == null) {
+
+                                    (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
+
+                                }
 
                                 example?.let { it ->
 

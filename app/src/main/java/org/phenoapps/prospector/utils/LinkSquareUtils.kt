@@ -32,6 +32,20 @@ class LinkSquareNIRRange {
     }
 }
 
+class LinkSquareExportRange {
+    companion object {
+        const val min: Double = 399.0
+        const val max: Double = 1001.0
+    }
+}
+
+class LinkSquareNIRExportRange {
+    companion object {
+        const val min: Double = 699.0
+        const val max: Double = 1051.0
+    }
+}
+
 /**
  * Public helper functions for LinkSquare related processing.
  *

@@ -143,16 +143,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     /**
-     * Displays a snack bar message saying the target # of scans has been met (set in preferences)
-     * Called in scan list fragment
+     * Displays a snack bar message.
      */
-    fun notifyTargetSuccess() {
+    fun notify(message: String) {
 
         mSnackbar.push(
             SnackbarQueue
                 .SnackJob(
                     mBinding.actMainCoordinatorLayout,
-                    getString(R.string.target_scan_success)
+                    message
                 )
         )
     }

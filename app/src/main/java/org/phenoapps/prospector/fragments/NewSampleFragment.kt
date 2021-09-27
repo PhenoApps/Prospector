@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +25,7 @@ import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentNewSampleBinding
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.utils.observeOnce
 import java.lang.IllegalStateException
 import java.util.*
 
@@ -64,13 +64,13 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
+
+    /**
+     * When the save button is clicked check if we are updating an old sample or inserting a new one.
+     */
     private val sOnSaveClick = View.OnClickListener {
 
-        launch {
-
-            mBinding?.insertSample()
-
-        }
+        mBinding?.checkInsert()
 
     }
 
@@ -81,8 +81,6 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private var mBinding: FragmentNewSampleBinding? = null
-
-    private val mSnackbar = SnackbarQueue()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -109,6 +107,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
                 binding.sampleNoteEditText.setText(oldNote)
             }
 
+            startObservers()
         }
 
         setHasOptionsMenu(true)
@@ -142,7 +141,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                         if (sDeviceViewModel.isConnected()) {
 
-                            mBinding?.insertSampleAndUpdate(true)
+                            mBinding?.checkInsert(true)
 
                         }
                     }
@@ -153,6 +152,87 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         } catch (e: IllegalStateException) {
 
             Log.d(tag, "Failed to connect LS")
+        }
+    }
+
+    /**
+     * Uses the ui to check if the insert is valid and not a duplicate
+     * Used when a device button is pressed or the UI submit button is pressed.
+     * Start scan will naviate to the scan list when the sample is inserted.
+     */
+    private fun FragmentNewSampleBinding.checkInsert(startScan: Boolean = false) {
+
+        activity?.let { act ->
+
+            val name = sampleNameEditText.text.toString()
+            val notes = sampleNoteEditText.text.toString()
+
+            //updated and new names should never be blank
+            if (name.isNotBlank()) {
+
+                //this is an argument passed to the fragment if it is null then we aren't updating
+                val oldName = argUpdateName ?: ""
+
+                //next check if the name would be a duplicate if created
+                //don't allow updating to a duplicated name
+                //if this happens then a dialog is run which will ask to reset the ui or
+                // go to the scan list for the duplicated sample name
+                sViewModel.getSamplesLive(mExpId).observeOnce(viewLifecycleOwner) { data ->
+
+                    val sample = data.find { it.name == name }
+
+                    //insert the sample if we can't find a duplicate and we aren't updating
+                    if (sample == null && oldName.isBlank()) {
+
+                        insertSample(name, notes, startScan)
+
+                    } else { //otherwise check for update and ask the user about duplicate
+
+                        if (oldName.isNotBlank()) {
+
+                            //check that the new name doesn't match any other sample names
+                            //if the sample exists with the same name this is a note update
+                            if (sample == null || sample.name == oldName) {
+
+                                updateSample(name, notes)
+
+                            } else {
+
+                                (act as MainActivity).notify(getString(R.string.dialog_new_sample_error))
+                            }
+
+                        } else { //found duplicate on insert
+
+                            act.runOnUiThread {
+
+                                Dialogs.booleanOption(AlertDialog.Builder(act),
+                                    act.getString(R.string.frag_new_sample_dialog_duplicate_title),
+                                    act.getString(R.string.frag_new_sample_dialog_duplicate_message),
+                                    act.getString(R.string.frag_new_sample_dialog_add_to_sample),
+                                    act.getString(R.string.frag_new_sample_dialog_new_sample)) {
+
+                                    if (it) {
+
+                                        findNavController()
+                                            .navigate(NewSampleFragmentDirections
+                                                .actionToScanList(mExpId, name))
+
+                                    } else {
+
+                                        clearUi()
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            } else {
+
+                (act as MainActivity).notify(getString(R.string.dialog_new_sample_error))
+
+            }
         }
     }
 
@@ -231,109 +311,52 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun FragmentNewSampleBinding.insertSampleAndUpdate(startScan: Boolean = false) {
+    /**
+     * Function that inserts a new sample into the database.
+     * If the start scan parameter is true then automatically navigate to the scan list and
+     * use extras to indicate we are starting a scan.
+     */
+    private fun insertSample(name: String, notes: String, startScan: Boolean) {
 
         activity?.let { act ->
 
-            val name = sampleNameEditText.text.toString()
-            val notes = sampleNoteEditText.text.toString()
+            mBinding?.let { ui ->
 
-            if (name.isNotBlank()) {
+                val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
 
-                if (argUpdateName != null) { //this is an update call
+                launch (Dispatchers.IO) {
 
-                    launch(Dispatchers.IO) {
+                    sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
 
-                        sViewModel.update(mExpId, argUpdateName ?: name, name, notes)
+                    act.runOnUiThread {
 
-                    }
+                        (act as MainActivity).notify("$newSampleString $name")
 
-                } else {
+                        if (startScan) {
 
-                    val newSampleString: String = act.getString(R.string.dialog_new_samples_prefix)
+                            findNavController().navigate(NewSampleFragmentDirections
+                                .actionToScanList(mExpId, name, startScan))
 
-                    launch {
-
-                        sViewModel.insertSampleAsync(Sample(mExpId, name, note = notes)).await()
-
-                        act.runOnUiThread {
-
-                            mSnackbar.push(SnackbarQueue.SnackJob(root, "$newSampleString $name."))
-
-                            if (startScan) {
-
-                                findNavController().navigate(NewSampleFragmentDirections
-                                    .actionToScanList(mExpId, name, startScan))
-
-                            } else findNavController().popBackStack()
-                        }
+                        } else findNavController().navigate(NewSampleFragmentDirections
+                            .actionToScanList(mExpId, name))
                     }
                 }
             }
         }
     }
 
-    //checks if sample name is not empty
-    //also checks if the name already exists and prompts the user to navigate to that sample
-    private suspend fun FragmentNewSampleBinding.insertSample() {
+    /**
+     * Update the sample in the database and return to the previous fragment.
+     */
+    private fun updateSample(name: String, notes: String) {
 
-        val name = sampleNameEditText.text.toString()
+        launch(Dispatchers.IO) {
 
-        val newSampleError: String = getString(R.string.dialog_new_sample_error)
+            sViewModel.update(mExpId, argUpdateName ?: name, name, notes)
 
-        //ensure we have a context
-        activity?.let { act ->
+            activity?.runOnUiThread {
 
-            //ensure the name is given
-            if (name.isNotBlank()) {
-
-                //if not sample exists with that name, insert it
-                if (sViewModel.getSamples(mExpId).find { it.name == name } == null || argUpdateName == name) {
-
-                    insertSampleAndUpdate()
-
-                    act.runOnUiThread {
-
-                        findNavController()
-                                .navigate(NewSampleFragmentDirections
-                                        .actionToScanList(mExpId, name))
-                    }
-
-                } else { //otherwise ask the user before inserting a duplicate
-
-                    act.runOnUiThread {
-
-                        Dialogs.booleanOption(AlertDialog.Builder(act),
-                                act.getString(R.string.frag_new_sample_dialog_duplicate_title),
-                                act.getString(R.string.frag_new_sample_dialog_duplicate_message),
-                                act.getString(R.string.frag_new_sample_dialog_add_to_sample),
-                                act.getString(R.string.frag_new_sample_dialog_new_sample)) {
-
-                            if (it) {
-
-                                findNavController()
-                                        .navigate(NewSampleFragmentDirections
-                                                .actionToScanList(mExpId, name))
-
-                            } else {
-
-                                clearUi()
-
-                            }
-                        }
-                    }
-                }
-
-            } else {
-
-                act.runOnUiThread {
-
-                    mBinding?.let { ui ->
-
-                        Snackbar.make(ui.root,
-                                newSampleError, Snackbar.LENGTH_LONG).show()
-                    }
-                }
+                findNavController().popBackStack()
             }
         }
     }

@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.utils
 
+import DEVICE_TYPE_NIR
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +76,27 @@ open class FileUtil(private val ctx: Context) {
             if (convert) {
 
                 val firstExport = exports.firstOrNull() //used to print header wavelength range, which is dependent on the device
-                firstExport?.spectralData?.toWaveArray(firstExport.deviceType)?.let { firstWave ->
+                val first = firstExport?.spectralData?.toWaveArray(firstExport.deviceType)?.filter {
+
+                    val deviceTypeMax = when(firstExport.deviceType) {
+
+                        DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
+
+                        else -> LinkSquareExportRange.max
+                    }
+
+                    val deviceTypeMin = when(firstExport.deviceType) {
+
+                        DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
+
+                        else -> LinkSquareExportRange.min
+                    }
+
+                    it.first in deviceTypeMin..deviceTypeMax
+
+                }
+
+                first?.let { firstWave ->
 
                     val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",")
 
@@ -96,7 +117,24 @@ open class FileUtil(private val ctx: Context) {
                                 export.note
                         )
 
-                        val wave = export.spectralData.toWaveArray(firstExport.deviceType)
+                        val wave = export.spectralData.toWaveArray(firstExport.deviceType).filter {
+
+                            val deviceTypeMax = when(firstExport.deviceType) {
+
+                                DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
+
+                                else -> LinkSquareExportRange.max
+                            }
+
+                            val deviceTypeMin = when(firstExport.deviceType) {
+
+                                DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
+
+                                else -> LinkSquareExportRange.min
+                            }
+
+                            it.first in deviceTypeMin..deviceTypeMax
+                        }
 
                         writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")}")
 

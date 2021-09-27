@@ -22,6 +22,16 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
+        <ProgressBar
+            android:id="@+id/frag_sample_list_progress_bar"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
         <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
             android:id="@+id/samplesToolbar"
             android:layout_width="match_parent"

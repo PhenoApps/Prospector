@@ -38,8 +38,6 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext appContext: Context): ProspectorDatabase {
-        return Room.databaseBuilder(appContext, ProspectorDatabase::class.java, "PROSPECTOR")
-            .build()
-
+        return ProspectorDatabase.getInstance(appContext)
     }
 }
