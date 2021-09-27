@@ -15,7 +15,9 @@ import org.phenoapps.prospector.utils.DateUtil
             ForeignKey(
                 entity = Sample::class,
                 parentColumns = ["eid", "name"],
-                childColumns = ["eid", "name"], onDelete = ForeignKey.CASCADE)
+                childColumns = ["eid", "name"],
+                onUpdate = ForeignKey.CASCADE,
+                onDelete = ForeignKey.CASCADE)
         ])
 data class Scan(
 

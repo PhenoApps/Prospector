@@ -159,6 +159,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             activity?.runOnUiThread {
                                 checkAudioTriggers()
+                                loadGraph()
                             }
                         }
                     }
