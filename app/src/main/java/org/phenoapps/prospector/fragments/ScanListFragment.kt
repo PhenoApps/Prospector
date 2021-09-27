@@ -206,7 +206,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             targetMetAudio.start()
 
-                            (activity as? MainActivity)?.notifyTargetSuccess()
+                            (activity as? MainActivity)?.notify(getString(R.string.target_scan_success))
 
                             findNavController().popBackStack()
 
@@ -234,7 +234,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     if (it.size >= targetInt) {
 
-                        (activity as? MainActivity)?.notifyTargetSuccess()
+                        (activity as? MainActivity)?.notify(getString(R.string.target_scan_success))
 
                         findNavController().popBackStack()
 

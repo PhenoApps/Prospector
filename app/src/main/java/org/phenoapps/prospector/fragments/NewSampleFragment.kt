@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
@@ -82,8 +81,6 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private var mBinding: FragmentNewSampleBinding? = null
-
-    private val mSnackbar = SnackbarQueue()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -201,8 +198,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                             } else {
 
-                                mSnackbar.push(SnackbarQueue.SnackJob(root,
-                                    act.getString(R.string.dialog_new_sample_error)))
+                                (act as MainActivity).notify(getString(R.string.dialog_new_sample_error))
                             }
 
                         } else { //found duplicate on insert
@@ -234,8 +230,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
             } else {
 
-                mSnackbar.push(SnackbarQueue.SnackJob(root,
-                    act.getString(R.string.dialog_new_sample_error)))
+                (act as MainActivity).notify(getString(R.string.dialog_new_sample_error))
 
             }
         }
@@ -335,7 +330,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                     act.runOnUiThread {
 
-                        mSnackbar.push(SnackbarQueue.SnackJob(ui.root, "$newSampleString $name."))
+                        (act as MainActivity).notify("$newSampleString $name")
 
                         if (startScan) {
 
