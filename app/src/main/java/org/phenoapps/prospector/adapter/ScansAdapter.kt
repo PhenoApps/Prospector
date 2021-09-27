@@ -14,6 +14,7 @@ import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.databinding.ListItemScanBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
+import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
 
 class ScansAdapter(val context: Context, private val listener: GraphItemClickListener) : ListAdapter<Scan,
@@ -85,6 +86,7 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
 
                     this.scan = scan
 //
+                    this.date = DateUtil().displayScanTime(scan.date)
 //                    this.deviceType = when(scan.deviceType) {
 //                        "0" -> "LinkSquare 1"
 //                        else -> "Unknown"

@@ -34,7 +34,7 @@
         <action
             android:id="@+id/action_to_scan_list"
             app:destination="@id/scan_list_fragment"
-            app:popUpTo="@id/scan_list_fragment">
+            app:popUpTo="@id/sample_list_fragment">
         </action>
 
     </fragment>
@@ -69,6 +69,10 @@
 
         <argument android:name="sample"
             app:argType="string"/>
+
+        <argument android:name="startScan"
+            app:argType="boolean"
+            android:defaultValue="false"/>
 
 <!--        <action-->
 <!--            android:id="@+id/action_to_scan_detail"-->
@@ -133,6 +137,14 @@
         <argument android:name="experiment"
             android:defaultValue="-1L"
             app:argType="long"/>
+
+        <argument android:name="name"
+            android:defaultValue=""
+            app:argType="string"/>
+
+        <argument android:name="note"
+            android:defaultValue=""
+            app:argType="string"/>
 
         <action
             android:id="@+id/action_to_samples"

@@ -12,13 +12,17 @@
             type="int"/>
         <variable
             name="sample"
-            type="org.phenoapps.prospector.data.models.SampleScanCount"/>
+            type="org.phenoapps.prospector.fragments.SampleListFragment.IndexedSampleScanCount"/>
         <variable
             name="scanCount"
+            type="String"/>
+        <variable
+            name="date"
             type="String"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/list_item_sample_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{clickListener}"
@@ -36,7 +40,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toStartOf="@id/sampleName"
-            app:layout_constraintBottom_toTopOf="@id/sampleDate"/>
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/sampleName"
@@ -54,7 +58,7 @@
             android:id="@+id/sampleDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{sample.date}"
+            android:text="@{date}"
             tools:text="01-08-1992"
             app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintBottom_toBottomOf="parent"

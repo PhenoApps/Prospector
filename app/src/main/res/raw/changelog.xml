@@ -1,4 +1,13 @@
 <changelog>
+    <release versionCode="5" versionName="v1.1.0" date="2021-09-27">
+        <new>Updated experiment and sample sort options</new>
+        <new>Updated UI and optimized graphing</new>
+        <new>Added notification sounds</new>
+        <new>New option to set target number of scans</new>
+        <new>New option to create sample directly from barcode</new>
+        <bugfix>Minor bug fixes</bugfix>
+    </release>
+
     <release versionCode="4" versionName="v1.0.1" date="2021-06-24">
         <new>App intro added</new>
         <bugfix>Minor bug fixes</bugfix>

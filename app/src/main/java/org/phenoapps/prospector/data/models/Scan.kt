@@ -15,7 +15,9 @@ import org.phenoapps.prospector.utils.DateUtil
             ForeignKey(
                 entity = Sample::class,
                 parentColumns = ["eid", "name"],
-                childColumns = ["eid", "name"], onDelete = ForeignKey.CASCADE)
+                childColumns = ["eid", "name"],
+                onUpdate = ForeignKey.CASCADE,
+                onDelete = ForeignKey.CASCADE)
         ])
 data class Scan(
 
@@ -26,7 +28,7 @@ data class Scan(
         var name: String,
 
         @ColumnInfo(name = "date")
-        var date: String = DateUtil().getScanTime(),
+        var date: String = DateUtil().getTime(),
 
         @ColumnInfo(name = "deviceType")
         var deviceType: String = DEVICE_TYPE_NIR,

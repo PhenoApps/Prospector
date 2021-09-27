@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.utils
 
+import DEVICE_TYPE_NIR
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
@@ -68,14 +69,36 @@ open class FileUtil(private val ctx: Context) {
 
             val writer = stream.buffered().writer()
 
-            val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader,$deviceTypeHeader,$scanDeviceIdHeader,$operatorHeader,$specLightSourceHeader,"
+            val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader," +
+                    "$deviceTypeHeader,$scanDeviceIdHeader,$operatorHeader," +
+                    "$specLightSourceHeader,$scanNoteHeader,"
 
             if (convert) {
 
                 val firstExport = exports.firstOrNull() //used to print header wavelength range, which is dependent on the device
-                firstExport?.spectralData?.toWaveArray(firstExport.deviceType)?.let { firstWave ->
+                val first = firstExport?.spectralData?.toWaveArray(firstExport.deviceType)?.filter {
 
-                    val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",") + ",$scanNoteHeader"
+                    val deviceTypeMax = when(firstExport.deviceType) {
+
+                        DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
+
+                        else -> LinkSquareExportRange.max
+                    }
+
+                    val deviceTypeMin = when(firstExport.deviceType) {
+
+                        DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
+
+                        else -> LinkSquareExportRange.min
+                    }
+
+                    it.first in deviceTypeMin..deviceTypeMax
+
+                }
+
+                first?.let { firstWave ->
+
+                    val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",")
 
                     writer.write(headers)
 
@@ -90,12 +113,30 @@ open class FileUtil(private val ctx: Context) {
                                 export.deviceType,
                                 export.deviceId,
                                 export.operator,
-                                export.lightSource
+                                export.lightSource,
+                                export.note
                         )
 
-                        val wave = export.spectralData.toWaveArray(firstExport.deviceType)
+                        val wave = export.spectralData.toWaveArray(firstExport.deviceType).filter {
 
-                        writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")},${export.note}")
+                            val deviceTypeMax = when(firstExport.deviceType) {
+
+                                DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
+
+                                else -> LinkSquareExportRange.max
+                            }
+
+                            val deviceTypeMin = when(firstExport.deviceType) {
+
+                                DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
+
+                                else -> LinkSquareExportRange.min
+                            }
+
+                            it.first in deviceTypeMin..deviceTypeMax
+                        }
+
+                        writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")}")
 
                         writer.write(newline)
 
@@ -106,7 +147,7 @@ open class FileUtil(private val ctx: Context) {
 
                 exports.firstOrNull()?.spectralData?.split(" ")?.size?.let { size ->
 
-                    val headers = prefixHeaders + (1..size).joinToString(",") + ",$scanNoteHeader"
+                    val headers = prefixHeaders + (1..size).joinToString(",")
 
                     writer.write(headers)
 
@@ -121,12 +162,13 @@ open class FileUtil(private val ctx: Context) {
                                 e.deviceType,
                                 e.deviceId,
                                 e.operator,
-                                e.lightSource
+                                e.lightSource,
+                                e.note
                         )
 
                         val frameData = e.spectralData.replace(" ", ",")
 
-                        writer.write("${data.joinToString(",")},$frameData,${e.note}")
+                        writer.write("${data.joinToString(",")},$frameData")
 
                         writer.write(newline)
                     }

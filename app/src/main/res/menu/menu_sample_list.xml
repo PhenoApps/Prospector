@@ -3,10 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_search_sample"
-        android:icon="@drawable/ic_tb_white_search"
+        android:id="@+id/action_sample_list_sort"
+        android:icon="@drawable/ic_sort_black_24dp"
         app:showAsAction="always"
-        android:title="@string/search_for_sample"
+        android:title="@string/menu_sample_list_sort_title"
         tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/menu_export"
@@ -15,7 +15,7 @@
         android:title="@string/menu_bot_nav_export_title"/>
     <item
         android:id="@+id/action_connection"
-        android:icon="@drawable/ic_clear_black_18dp"
+        android:icon="@drawable/ic_vector_difference_ab"
         app:showAsAction="always"
         android:title="@string/device_connected"/>
 </menu>

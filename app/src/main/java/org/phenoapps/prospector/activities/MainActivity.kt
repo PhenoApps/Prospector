@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         mSnackbar.push(
                             SnackbarQueue
                                 .SnackJob(
-                                    mBinding.root,
+                                    mBinding.actMainCoordinatorLayout,
                                     if (mConnected) getString(R.string.connected)
                                     else getString(R.string.disconnect)
                                 )
@@ -140,6 +140,20 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Timer().purge()
 
         Timer().scheduleAtFixedRate(check, 0, 1500)
+    }
+
+    /**
+     * Displays a snack bar message.
+     */
+    fun notify(message: String) {
+
+        mSnackbar.push(
+            SnackbarQueue
+                .SnackJob(
+                    mBinding.actMainCoordinatorLayout,
+                    message
+                )
+        )
     }
 
     private fun startLoadSampleData() {

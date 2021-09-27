@@ -10,12 +10,13 @@ android {
     signingConfigs {
         playStoreConfig {
             Properties keystoreProps = new Properties()
-            keystoreProps.load(new FileInputStream(file('keystore.config')))
-
-            keyAlias keystoreProps['keyAlias']
-            keyPassword keystoreProps['keyPassword']
-            storePassword keystoreProps['storePassword']
-            storeFile file('prospector.keystore.jks')
+            if (file('keystore.config').exists()) {
+                keystoreProps.load(new FileInputStream(file('keystore.config')))
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+                storePassword keystoreProps['storePassword']
+                storeFile file('prospector.keystore.jks')
+            }
         }
     }
 
@@ -27,8 +28,8 @@ android {
         //link square api has minimum requirement of 21
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 4
-        versionName "1.0.1"
+        versionCode 5
+        versionName "1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 

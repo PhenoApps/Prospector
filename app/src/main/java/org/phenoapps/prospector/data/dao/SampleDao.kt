@@ -2,7 +2,9 @@ package org.phenoapps.prospector.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.models.SampleScanCount
@@ -38,5 +40,8 @@ interface SampleDao {
      */
     @Query("DELETE FROM samples WHERE eid = :eid and name = :name")
     suspend fun deleteSample(eid: Long, name: String)
+
+    @Query("UPDATE samples SET name = :name, note = :note WHERE eid = :eid AND name = :oldName")
+    suspend fun update(eid: Long, oldName: String, name: String, note: String)
 
 }

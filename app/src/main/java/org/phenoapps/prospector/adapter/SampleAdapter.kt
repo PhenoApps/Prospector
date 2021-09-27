@@ -12,11 +12,15 @@ import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.databinding.ListItemSampleBinding
+import org.phenoapps.prospector.fragments.SampleListFragment
 import org.phenoapps.prospector.fragments.SampleListFragmentDirections
+import org.phenoapps.prospector.interfaces.SampleListClickListener
+import org.phenoapps.prospector.utils.DateUtil
 
 class SampleAdapter(
-        private val context: Context
-) : ListAdapter<SampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
+        private val context: Context,
+        private val listener: SampleListClickListener
+) : ListAdapter<SampleListFragment.IndexedSampleScanCount, SampleAdapter.ViewHolder>(DiffCallbacks.Companion.SampleScanCountDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -35,6 +39,14 @@ class SampleAdapter(
 
                 itemView.tag = sample.name
 
+                if (sample.count == -1) itemView.visibility = View.INVISIBLE
+                else itemView.visibility = View.VISIBLE
+
+                itemView.setOnLongClickListener {
+                    listener.onListItemLongClicked(sample)
+                    true
+                }
+
                 bind(sample, position)
             }
         }
@@ -42,21 +54,24 @@ class SampleAdapter(
 
     inner class ViewHolder(private val binding: ListItemSampleBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(sample: SampleScanCount, listPosition: Int) {
+        fun bind(sample: SampleListFragment.IndexedSampleScanCount, listPosition: Int) {
 
             with(binding) {
 
-                position = listPosition + 1
+                position = sample.index + 1
 
                 clickListener = View.OnClickListener {
 
-                    Navigation.findNavController(binding.root).navigate(
+                    if (sample.count >= 0) Navigation.findNavController(binding.root).navigate(
                             SampleListFragmentDirections.actionToScanList(sample.eid, sample.name))
 
                 }
 
-                this.scanCount = context.resources
-                        .getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
+                this.scanCount = if (sample.count >= 0)
+                    context.resources.getQuantityString(R.plurals.numberOfScans, sample.count, sample.count)
+                else ""
+
+                this.date = DateUtil().displayTime(sample.date)
 
                 this.sample = sample
 

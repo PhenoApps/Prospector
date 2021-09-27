@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.fragments
 
+import ALPHA_ASC
 import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
@@ -10,12 +11,14 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -33,6 +36,7 @@ import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
+import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
 import java.util.*
 
@@ -45,7 +49,8 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
+class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
+    SampleListClickListener {
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
@@ -70,10 +75,49 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     }
 
-    private lateinit var mSnackbar: SnackbarQueue
+    /**
+     * Click listener that is used for the new scan button
+     * when the sample scanner preference is enabled.
+     */
+    private val sOnNewClickSampleScannerListener = View.OnClickListener {
 
+        setFragmentResultListener("BarcodeResult") { _, bundle ->
+
+            val code = bundle.getString("barcode_result", "") ?: ""
+
+            launch {
+
+                val sample = Sample(mExpId, code)
+
+                sViewModel.insertSampleAsync(sample).await()
+
+                activity?.runOnUiThread {
+                    findNavController().navigate(SampleListFragmentDirections
+                        .actionToScanList(mExpId, sample.name))
+                }
+            }
+
+            updateUi()
+        }
+
+        findNavController().navigate(SampleListFragmentDirections
+            .actionToBarcodeScan())
+
+    }
+
+    private lateinit var mSnackbar: SnackbarQueue
     private lateinit var requestExportLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionsLauncher: ActivityResultLauncher<Array<String>>
+
+    private var mIsExporting = false
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(context)
+    }
 
     private fun resetPermissionLauncher() {
         //check permissions before trying to export the file
@@ -88,13 +132,23 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             .SnackJob(view, getString(R.string.must_accept_permissions_to_export)))
                 }
 
-            } else requestExportLauncher.launch(mFileName)
+            } else {
 
+                if (!mIsExporting) {
+
+                    mIsExporting = true
+
+                    requestExportLauncher.launch(mFileName)
+
+                }
+            }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mSortState = mPrefs.getInt("last_samples_sort_state", DATE_DESC)
 
         mSnackbar = SnackbarQueue()
 
@@ -107,19 +161,43 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 context?.let {
 
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(it)
-
-                    val convert = prefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                    val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
 
                     nullUri?.let { uri ->
 
                         launch(Dispatchers.IO) {
 
-                            FileUtil(it).exportCsv(uri, exportables, convert)
+                            withContext(Dispatchers.Default) {
 
+                                mBinding?.toggleProgressBar()
+
+                                FileUtil(it).exportCsv(uri, exportables, convert)
+
+                                mBinding?.toggleProgressBar()
+
+                                mIsExporting = false
+                            }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun FragmentSampleListBinding.toggleProgressBar() {
+
+        activity?.runOnUiThread {
+
+            //make other elements the current vis of the progress bar
+            val elementsVis = this.fragSampleListProgressBar.visibility
+
+            arrayOf(this.samplesToolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
+                it.visibility = elementsVis
+            }
+
+            this.fragSampleListProgressBar.visibility = when (elementsVis) {
+                View.VISIBLE -> View.GONE
+                else -> View.VISIBLE
             }
         }
     }
@@ -170,13 +248,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
             when(item.itemId) {
 
-                R.id.menu_search_sample -> {
-
-                    findNavController().navigate(SampleListFragmentDirections
-                            .actionToBarcodeSearch(mExpId))
-
-                }
-
                 R.id.menu_export -> {
                     /**
                      * Uses activity results contracts to create a document and call the export function
@@ -192,12 +263,18 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
 
                                 //grab the first experiment as an example to find the name and device type for the filename
-                                val example = it.firstOrNull()
+                                val example = exportables.firstOrNull()
+
+                                if (example == null) {
+
+                                    (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
+
+                                }
 
                                 example?.let { it ->
 
                                     //make dates on exports unique
-                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getScanTime()}.csv"
+                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getTime()}.csv"
 
                                     mExportables = exportables
 
@@ -226,6 +303,29 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                         }
                     }
                 }
+
+                R.id.action_sample_list_sort -> {
+
+                    mSortState = when (mSortState) {
+                        ALPHA_ASC -> ALPHA_DESC
+                        ALPHA_DESC -> DATE_ASC
+                        DATE_ASC -> DATE_DESC
+                        else -> ALPHA_ASC
+                    }
+
+                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
+
+                    Toast.makeText(context,
+                        when (mSortState) {
+                            ALPHA_ASC -> getString(R.string.sort_alpha_ascending)
+                            ALPHA_DESC -> getString(R.string.sort_alpha_descending)
+                            DATE_ASC -> getString(R.string.sort_date_ascending)
+                            else -> getString(R.string.sort_date_descending)
+                        }, Toast.LENGTH_SHORT
+                    ).show()
+
+                    updateUi()
+                }
             }
 
             true
@@ -234,15 +334,27 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun FragmentSampleListBinding.setupButtons() {
 
-        onClick = sOnNewClickListener
+        onClick = if (mPrefs.getBoolean(mKeyUtil.sampleScanEnabled, false)) {
+            sOnNewClickSampleScannerListener
+        } else sOnNewClickListener
 
+        fragSampleListSearchBtn.setOnClickListener {
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeSearch(mExpId))
+        }
+    }
+
+    override fun onListItemLongClicked(sample: IndexedSampleScanCount) {
+
+        findNavController().navigate(SampleListFragmentDirections
+            .actionToNewSample(sample.eid, sample.name, sample.note))
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        recyclerView.adapter = SampleAdapter(requireContext())
+        recyclerView.adapter = SampleAdapter(requireContext(), this@SampleListFragment)
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
@@ -261,7 +373,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                     if (result) {
 
                         (mBinding?.recyclerView?.adapter as SampleAdapter)
-                                .currentList[viewHolder.adapterPosition].also { s ->
+                                .currentList[viewHolder.absoluteAdapterPosition].also { s ->
 
                             launch {
 
@@ -270,7 +382,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                             }
                         }
 
-                    } else mBinding?.recyclerView?.adapter?.notifyDataSetChanged()
+                    } else mBinding?.recyclerView?.adapter?.notifyItemChanged(viewHolder.absoluteAdapterPosition)
                 }
             }
 
@@ -295,8 +407,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
                     with(mBinding?.samplesToolbar) {
 
                         this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_bluetooth_connected_black_18dp
-                            else R.drawable.ic_clear_black_18dp)
+                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                            else R.drawable.ic_vector_difference_ab)
 
                     }
                 }
@@ -322,33 +434,51 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope() {
             }
         })
 
+        updateUi()
+
+    }
+
+    data class IndexedSampleScanCount(
+        val index: Int,
+        val eid: Long,
+        val name: String,
+        val date: String,
+        val note: String,
+        val count: Int
+    )
+    private val dummyRow = IndexedSampleScanCount(-1, -1, "", "", "", -1)
+    private fun updateUi() {
         sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
 
             samples?.let { data ->
 
+                val indexedData = data.mapIndexed { index, s ->
+                    IndexedSampleScanCount(index, s.eid, s.name, s.date, s.note, s.count)
+                }
+
                 (mBinding?.recyclerView?.adapter as SampleAdapter)
-                        .submitList(when (mSortState) {
+                    .submitList(when (mSortState) {
 
-                            DATE_DESC -> {
+                        DATE_DESC -> {
 
-                                data.sortedByDescending { it.date }
-                            }
+                            indexedData.sortedByDescending { it.date }
+                        }
 
-                            DATE_ASC -> {
+                        DATE_ASC -> {
 
-                                data.sortedBy { it.date }
-                            }
+                            indexedData.sortedBy { it.date }
+                        }
 
-                            ALPHA_DESC -> {
+                        ALPHA_DESC -> {
 
-                                data.sortedByDescending { it.name }
-                            }
+                            indexedData.sortedByDescending { it.name }
+                        }
 
-                            else -> {
+                        else -> {
 
-                                data.sortedBy { it.name }
-                            }
-                        })
+                            indexedData.sortedBy { it.name }
+                        }
+                    } + listOf(dummyRow))
 
                 Handler(Looper.getMainLooper()).postDelayed({
 

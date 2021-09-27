@@ -12,6 +12,7 @@ import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
 import org.phenoapps.prospector.databinding.ListItemExperimentBinding
 import org.phenoapps.prospector.fragments.ExperimentListFragmentDirections
+import org.phenoapps.prospector.utils.DateUtil
 
 /**
  * The adapter class used in the experiment list fragment recycler view.
@@ -63,6 +64,8 @@ class ExperimentAdapter(
                 }
 
                 this.experiment = experiment
+
+                this.date = DateUtil().displayTime(experiment.date)
 
                 //count query uses a left join, so a single sample is still counted even if no samples exist for that experiment.
                 this.sampleCount = if (experiment.count == 1 && experiment.sampleName?.isBlank() != false) {

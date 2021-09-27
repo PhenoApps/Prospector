@@ -142,5 +142,22 @@
     <string name="frag_instructions_step_zero">Prospector requires camera permissions for scanning barcodes, and external storage permissions for saving files.</string>
     <string name="must_accept_permissions_to_export">Permissions must be accepted to export.</string>
     <string name="samples_loaded">Samples loaded.</string>
+    <string name="menu_experiment_list_sort_title">Sort</string>
+    <string name="sort_alpha_ascending">Alphanumeric Ascending</string>
+    <string name="sort_alpha_descending">Alphanumeric Descending</string>
+    <string name="sort_date_ascending">Date Ascending</string>
+    <string name="sort_date_descending">Date Descending</string>
+    <string name="menu_sample_list_sort_title">Sort</string>
+    <string name="pref_cat_workflow_title">Workflow</string>
+    <string name="pref_workflow_target_title">Target Scans</string>
+    <string name="pref_workflow_target_summary">Setting a scan target will play a notification when a sample reaches the targeted number of scans.</string>
+    <string name="pref_workflow_target_scan_set_summary">The current target scan is set to %d</string>
+    <string name="pref_workflow_audio_title">Audio</string>
+    <string name="pref_workflow_audio_summary">When enabled, a chime will play when a barcode is scanned, a device makes a scan or a target scan is met.</string>
+    <string name="target_scan_success">Target met for current sample.</string>
+    <string name="frag_sample_search_btn_cont_desc">Search for a barcode sample id.</string>
+    <string name="pref_workflow_new_sample_by_scan_title">Sample Scan</string>
+    <string name="pref_workflow_new_sample_by_scan_summary">Pressing the plus button in the samples list will automatically open the camera to create a new sample with a scanned barcode.</string>
+    <string name="frag_sample_list_non_to_export">No scans are present.</string>
 
 </resources>
