@@ -40,7 +40,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toStartOf="@id/sampleName"
-            app:layout_constraintBottom_toTopOf="@id/sampleDate"/>
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView style="@style/Text.ExperimentTitle"
             android:id="@+id/sampleName"
