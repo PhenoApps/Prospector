@@ -2,18 +2,16 @@ package org.phenoapps.prospector.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Database
-import androidx.room.DatabaseConfiguration
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.*
 import org.phenoapps.prospector.data.dao.ExperimentDao
 import org.phenoapps.prospector.data.dao.SampleDao
 import org.phenoapps.prospector.data.dao.ScanDao
+import org.phenoapps.prospector.data.migrations.MigrationV2
 import org.phenoapps.prospector.data.models.*
 import java.io.File
 
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
-        views = [SampleScanCount::class, DeviceTypeExport::class], version = 1, exportSchema = false)
+        views = [SampleScanCount::class, DeviceTypeExport::class], version = 2, exportSchema = true)
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -86,7 +84,8 @@ abstract class ProspectorDatabase : RoomDatabase() {
         private fun buildDatabase(ctx: Context): ProspectorDatabase {
 
             return Room.databaseBuilder(ctx, ProspectorDatabase::class.java, "PROSPECTOR")
-                    .build()
+                .addMigrations(MigrationV2())
+                .build()
 
         }
     }

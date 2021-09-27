@@ -26,6 +26,7 @@ import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentNewSampleBinding
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.SnackbarQueue
+import org.phenoapps.prospector.utils.observeOnce
 import java.lang.IllegalStateException
 import java.util.*
 
@@ -179,7 +180,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
                 //don't allow updating to a duplicated name
                 //if this happens then a dialog is run which will ask to reset the ui or
                 // go to the scan list for the duplicated sample name
-                sViewModel.getSamplesLive(mExpId).observe(viewLifecycleOwner) { data ->
+                sViewModel.getSamplesLive(mExpId).observeOnce(viewLifecycleOwner) { data ->
 
                     val sample = data.find { it.name == name }
 
@@ -341,7 +342,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
                             findNavController().navigate(NewSampleFragmentDirections
                                 .actionToScanList(mExpId, name, startScan))
 
-                        } else findNavController().popBackStack()
+                        } else findNavController().navigate(NewSampleFragmentDirections
+                            .actionToScanList(mExpId, name))
                     }
                 }
             }
