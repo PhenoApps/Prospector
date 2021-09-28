@@ -245,13 +245,15 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                 activity?.runOnUiThread {
 
-                    with (activity as? MainActivity) {
-                        mBinding?.fragNewSampleToolbar?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (this?.sDeviceViewModel?.isConnected() == true){
-                                attachDeviceButtonPressListener()
-                                R.drawable.ic_vector_link
-                            }
-                            else R.drawable.ic_vector_difference_ab)
+                    if (isAdded) {
+                        with (activity as? MainActivity) {
+                            mBinding?.fragNewSampleToolbar?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(if (this?.sDeviceViewModel?.isConnected() == true){
+                                    attachDeviceButtonPressListener()
+                                    R.drawable.ic_vector_link
+                                }
+                                else R.drawable.ic_vector_difference_ab)
+                        }
                     }
                 }
             }

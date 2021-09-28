@@ -544,15 +544,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 activity?.runOnUiThread {
 
-                    with(mBinding?.titleToolbar) {
+                    if (isAdded) {
+                        with(mBinding?.titleToolbar) {
 
-                        this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) {
-                                attachDeviceButtonPressListener()
-                                R.drawable.ic_vector_link
-                            }
-                            else R.drawable.ic_vector_difference_ab)
+                            this?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(if (sDeviceViewModel.isConnected()) {
+                                    attachDeviceButtonPressListener()
+                                    R.drawable.ic_vector_link
+                                }
+                                else R.drawable.ic_vector_difference_ab)
 
+                        }
                     }
                 }
             }

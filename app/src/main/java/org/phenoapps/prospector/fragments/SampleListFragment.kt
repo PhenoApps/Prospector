@@ -5,6 +5,7 @@ import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -404,12 +405,14 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 activity?.runOnUiThread {
 
-                    with(mBinding?.samplesToolbar) {
+                    if (isAdded) {
+                        with(mBinding?.samplesToolbar) {
 
-                        this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
-                            else R.drawable.ic_vector_difference_ab)
+                            this?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                                else R.drawable.ic_vector_difference_ab)
 
+                        }
                     }
                 }
             }
