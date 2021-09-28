@@ -5,7 +5,6 @@ import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -69,11 +68,14 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     private var mBinding: FragmentSampleListBinding? = null
 
+    private var mTimer: Timer? = null
+
     private val sOnNewClickListener = View.OnClickListener {
 
-        findNavController().navigate(SampleListFragmentDirections
+        if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+            findNavController().navigate(SampleListFragmentDirections
                 .actionToNewSample(mExpId))
-
+        }
     }
 
     /**
@@ -93,17 +95,20 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                 sViewModel.insertSampleAsync(sample).await()
 
                 activity?.runOnUiThread {
-                    findNavController().navigate(SampleListFragmentDirections
-                        .actionToScanList(mExpId, sample.name))
+                    if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+                        findNavController().navigate(SampleListFragmentDirections
+                            .actionToScanList(mExpId, sample.name))
+                    }
                 }
             }
 
             updateUi()
         }
 
-        findNavController().navigate(SampleListFragmentDirections
-            .actionToBarcodeScan())
-
+        if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToBarcodeScan())
+        }
     }
 
     private lateinit var mSnackbar: SnackbarQueue
@@ -227,6 +232,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 ui.setupToolbar()
 
+                startTimer()
+
                 startObservers()
 
                 return ui.root
@@ -297,8 +304,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                             sDeviceViewModel.reset()
                         } else {
 
-                            findNavController().navigate(ExperimentListFragmentDirections
+                            if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+                                findNavController().navigate(SampleListFragmentDirections
                                     .actionToConnectInstructions())
+                            }
 
                             this?.startDeviceConnection()
                         }
@@ -340,15 +349,19 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
         } else sOnNewClickListener
 
         fragSampleListSearchBtn.setOnClickListener {
-            findNavController().navigate(SampleListFragmentDirections
-                .actionToBarcodeSearch(mExpId))
+            if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+                findNavController().navigate(SampleListFragmentDirections
+                    .actionToBarcodeSearch(mExpId))
+            }
         }
     }
 
     override fun onListItemLongClicked(sample: IndexedSampleScanCount) {
 
-        findNavController().navigate(SampleListFragmentDirections
-            .actionToNewSample(sample.eid, sample.name, sample.note))
+        if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
+            findNavController().navigate(SampleListFragmentDirections
+                .actionToNewSample(sample.eid, sample.name, sample.note))
+        }
     }
 
     private fun FragmentSampleListBinding.setupRecyclerView() {
@@ -396,7 +409,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     }
 
-    private fun startObservers() {
+    private fun startTimer() {
 
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
@@ -418,11 +431,12 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             }
         }
 
-        Timer().cancel()
+        mTimer = Timer()
 
-        Timer().purge()
+        mTimer?.scheduleAtFixedRate(check, 0, 1500)
+    }
 
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+    private fun startObservers() {
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
@@ -490,6 +504,16 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                 }, 250)
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mTimer?.cancel()
+
+        mTimer?.purge()
+
+        mTimer = null
     }
 }
 
