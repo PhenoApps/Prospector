@@ -11,7 +11,7 @@
             android:icon="@drawable/ic_setting_person"
             android:key="org.phenoapps.prospector.OPERATOR"
             android:title="@string/pref_operator_title"
-            app:useSimpleSummaryProvider="true" />
+            android:summary="@string/pref_operator_not_set_summary" />
 
         <!--        <ListPreference-->
         <!--            android:icon="@drawable/ic_nv_export"-->

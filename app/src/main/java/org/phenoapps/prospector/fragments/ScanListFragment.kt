@@ -5,6 +5,7 @@ import DEVICE_ALIAS
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import OPERATOR
+import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +22,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.github.mikephil.charting.data.Entry
 import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
@@ -126,11 +128,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             this.operator = operator
         }
 
+        val sid = sViewModel.insertScanAsync(scan).await()
+
         frames.forEach { frame ->
-
-            scan.lightSource = frame.lightSource.toInt()
-
-            val sid = sViewModel.insertScanAsync(scan).await()
 
             sViewModel.insertFrame(sid, SpectralFrame(
                     sid,
@@ -274,6 +274,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
+            ui.fragScanListLineChart.legend.isEnabled = false
+
             ui.scanOnClick = sOnClickScan
 
             //check if experiment id is included in the arguments.
@@ -416,7 +418,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         mSelectedScanId = -1
 
-        mBinding?.graphView?.removeAllSeries()
+        //mBinding?.graphView?.removeAllSeries()
 
         renderGraph(mSelectedScanId)
     }
@@ -426,13 +428,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun loadGraph() {
 
-        mBinding?.graphView?.removeAllSeries()
+        //mBinding?.graphView?.removeAllSeries()
 
         renderGraph(mSelectedScanId)
 
-        mBinding?.graphView?.visibility = View.VISIBLE
+        //mBinding?.graphView?.visibility = View.VISIBLE
 
     }
+
+    data class ScanFrames(val sid: Long, val fid: Int, val spectralValues: String,
+                          val lightSource: Int, val eid: Long, val name: String,
+                          val color: String?, val date: String, val deviceType: String)
 
     /**
      * Listens for the database spectral values and graphs them.
@@ -442,52 +448,48 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun renderGraph(selectedScanId: Long) {
 
+        val convert = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(CONVERT_TO_WAVELENGTHS, true)
+
         mBinding?.let { ui ->
 
-            sViewModel.getScans(mExpId, mSampleName).observeOnce(viewLifecycleOwner, { scans ->
+            sViewModel.getSpectralValues(mExpId, mSampleName, when (ui.tabLayout.selectedTabPosition) {
 
-                when (ui.tabLayout.selectedTabPosition) {
+                0 -> 1 //bulb
 
-                    0 -> scans.filter { it.lightSource == 1 } //bulb
+                else -> 0 //led
 
-                    else -> scans.filter { it.lightSource == 0 } //led
+            }).observeOnce(viewLifecycleOwner, { frames ->
 
-                }.forEach { scan ->
+                val lines = ArrayList<FrameEntry>()
 
-                    sViewModel.getSpectralValuesLive(mExpId, scan.sid ?: -1).observeOnce(viewLifecycleOwner, { frames ->
+                frames.forEach { f ->
 
-                        frames?.let { data ->
+                    val frameList = listOf(f)
 
-                            if (data.isNotEmpty()) {
+                    //trim actual values based on specs
+                    val waves = FrameEntry((if (convert) frameList.toWaveArray(f.deviceType).filter {
 
-                                val convert = PreferenceManager.getDefaultSharedPreferences(context)
-                                        .getBoolean(CONVERT_TO_WAVELENGTHS, true)
+                        it.x <= when(f.deviceType) {
 
-                                //trim actual values based on specs
-                                val wavelengths = (if (convert) data.toWaveArray(scan.deviceType).filter {
+                            DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
 
-                                    it.x <= when(scan.deviceType) {
-
-                                        DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
-
-                                        else -> LinkSquareRange.max
-                                    }
-
-                                } else data.toPixelArray()).movingAverageSmooth()
-
-                                setViewportGrid(ui.graphView, convert)
-
-                                centerViewport(ui.graphView, wavelengths, convert, scan.deviceType)
-
-                                setViewportScalable(ui.graphView)
-
-                                renderNormal(ui.graphView, wavelengths,
-                                        if ((scan.sid ?: -1) == selectedScanId) scan.color ?: "red" else "black")
-
-                            }
+                            else -> LinkSquareRange.max
                         }
-                    })
+
+                    } else frameList.toPixelArray()).movingAverageSmooth(),
+                        //set color if selected
+                        if (f.sid == selectedScanId && f.color != null)
+                            Color.parseColor(f.color)
+                        else if (f.sid == selectedScanId) Color.RED
+                        else Color.BLACK)
+
+                    lines.add(waves)
+
                 }
+
+                renderNormal(ui.fragScanListLineChart, lines)
+
             })
         }
     }
@@ -587,18 +589,20 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startObservers() {
 
-        //updates recycler view with available scans
-        sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->
+        mBinding?.let { ui ->
 
-            if (data.isNotEmpty()) {
+            //updates recycler view with available scans
+            sViewModel.getSpectralValues(mExpId, mSampleName, when (ui.tabLayout.selectedTabPosition) {
+                0 -> 1 //bulb first
+                else -> 0 //led second
+            }).observe(viewLifecycleOwner, { data ->
 
-                mBinding?.let { ui ->
+                if (data.isNotEmpty()) {
 
                     with (ui.recyclerView.adapter as ScansAdapter) {
 
-                        submitList(when (ui.tabLayout.selectedTabPosition) {
-                            0 -> data.filter { it.lightSource == 1 } //bulb first
-                            else -> data.filter { it.lightSource == 0 } //led second
+                        submitList(data.map {
+                            Scan(sid = it.sid, date = it.date, name = it.name, eid = it.eid)
                         })
 
                     }
@@ -614,14 +618,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     resetGraph()
 
-                }
-            } else {
 
-                mBinding?.scanCount = "0"
-                mBinding?.executePendingBindings()
-                (mBinding?.recyclerView?.adapter as? ScansAdapter)?.submitList(data)
-            }
-        })
+                } else {
+
+                    ui.scanCount = "0"
+                    ui.executePendingBindings()
+                    (ui.recyclerView.adapter as? ScansAdapter)?.submitList(data.map {
+                        Scan(sid = it.sid, date = it.date, name = it.name, eid = it.eid)
+                    })
+                }
+            })
+        }
 
         attachDeviceButtonPressListener()
 

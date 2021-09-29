@@ -10,6 +10,8 @@ class ScanRepository @Inject constructor(
 
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = dao.getSpectralValues(eid, sid)
 
+    fun getSpectralValues(eid: Long, sample: String, lightSource: Int) = dao.getSpectralValues(eid, sample, lightSource)
+
     fun getSpectralValuesLive(eid: Long, sid: Long)= dao.getSpectralValuesLive(eid, sid)
 
     fun getScans(eid: Long, sid: String) = dao.getScans(eid, sid)

@@ -159,7 +159,9 @@ dependencies {
 
     //other
     implementation "com.journeyapps:zxing-android-embedded:$journeyapps_version"
-    implementation "com.jjoe64:graphview:$graphview_version"
+//    implementation "com.jjoe64:graphview:$graphview_version"
+    implementation "com.github.PhilJay:MPAndroidChart:v3.1.0"
+
     //app intro github AndroidX Capable version
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 

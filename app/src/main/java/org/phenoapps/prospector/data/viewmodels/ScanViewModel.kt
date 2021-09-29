@@ -21,6 +21,7 @@ class ScanViewModel @Inject constructor(
 
     //non-live
     fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = repo.getSpectralValues(eid, sid)
+    fun getSpectralValues(eid: Long, sample: String, lightSource: Int) = repo.getSpectralValues(eid, sample, lightSource)
 
     //live data
     fun getScans(eid: Long, sample: String) = repo.getScans(eid, sample)

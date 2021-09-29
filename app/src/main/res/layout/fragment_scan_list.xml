@@ -78,10 +78,10 @@
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/graphView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/frag_scan_list_count_tv"
+            app:layout_constraintBottom_toTopOf="@id/frag_scan_list_line_chart"
             app:layout_constraintVertical_weight="1">
 
             <com.google.android.material.tabs.TabItem
@@ -96,17 +96,15 @@
 
         </com.google.android.material.tabs.TabLayout>
 
-        <com.jjoe64.graphview.GraphView
-            android:id="@+id/graphView"
+        <com.github.mikephil.charting.charts.LineChart
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_margin="8dp"
-            android:visibility="gone"
+            android:id="@+id/frag_scan_list_line_chart"
             app:layout_constraintBottom_toTopOf="@id/recyclerView"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tabLayout"
-            app:layout_constraintVertical_weight="3" />
+            app:layout_constraintVertical_weight="3"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -115,10 +113,10 @@
             android:layout_margin="8dp"
             android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@id/frag_scan_list_line_chart"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/graphView"
             app:layout_constraintVertical_weight="2"
             tools:listitem="@layout/list_item_scan" />
 

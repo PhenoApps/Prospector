@@ -159,5 +159,6 @@
     <string name="pref_workflow_new_sample_by_scan_title">Sample Scan</string>
     <string name="pref_workflow_new_sample_by_scan_summary">Pressing the plus button in the samples list will automatically open the camera to create a new sample with a scanned barcode.</string>
     <string name="frag_sample_list_non_to_export">No scans are present.</string>
+    <string name="pref_operator_not_set_summary">None</string>
 
 </resources>

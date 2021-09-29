@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.fragments.ScanListFragment
 
 @Dao
 interface ScanDao {
@@ -24,6 +25,8 @@ interface ScanDao {
     @Query("SELECT * FROM scans as s WHERE s.name = :sample and s.eid = :eid  ORDER BY s.date DESC")
     fun getScans(eid: Long, sample: String): LiveData<List<Scan>>
 
+    @Query("SELECT sf.*, s.eid as 'eid', s.name as 'name', s.color as 'color', s.date as 'date', s.deviceType as 'deviceType' FROM spectral_frames as sf, experiments as e, scans as s WHERE e.eid = :eid and s.eid = :eid and s.name = :sample and sf.sid = s.sid and sf.lightSource = :lightSource")
+    fun getSpectralValues(eid: Long, sample: String, lightSource: Int): LiveData<List<ScanListFragment.ScanFrames>>
     /**
      * Inserts
      */
