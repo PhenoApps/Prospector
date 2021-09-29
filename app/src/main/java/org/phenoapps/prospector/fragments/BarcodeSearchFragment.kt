@@ -99,9 +99,10 @@ class BarcodeSearchFragment : Fragment() {
 
                                 mSamples.find { it.name == result.text.toString() }?.name?.let { name ->
 
-                                    findNavController().navigate(BarcodeSearchFragmentDirections
-                                        .actionToScanList(mExpId, name))
-
+                                    if (findNavController().currentDestination?.id == R.id.barcode_search_fragment) {
+                                        findNavController().navigate(BarcodeSearchFragmentDirections
+                                            .actionToScanList(mExpId, name))
+                                    }
                                 }
                             } else {
 
