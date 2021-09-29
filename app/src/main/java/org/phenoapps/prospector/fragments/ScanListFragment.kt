@@ -58,6 +58,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private val TAG = this.tag ?: "ScanListFragment"
 
+    private val sDeviceScope = CoroutineScope(Dispatchers.IO)
+
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     private var mSelectedScanId: Long = -1
@@ -72,6 +74,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private var mSampleName: String = String()
 
+    private var mTimer: Timer? = null
+
+    private var mIsScanning: Boolean = false
+
     private val mKeyUtil by lazy {
         KeyUtil(context)
     }
@@ -85,40 +91,46 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         if (sDeviceViewModel.isConnected()) {
 
-            sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+            if (!mIsScanning) {
 
-                callScanDialog(connectedDeviceInfo)
+                mIsScanning = true
 
+                sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                    callScanDialog(connectedDeviceInfo)
+
+                }
             }
+
 
         } else {
 
-            findNavController().navigate(ScanListFragmentDirections
+            if (findNavController().currentDestination?.id == R.id.scan_list_fragment) {
+                findNavController().navigate(ScanListFragmentDirections
                     .actionToConnectInstructions())
+            }
         }
     }
 
     private suspend fun insertScan(name: String, frames: List<LSFrame>) {
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val alias = mPrefs.getString(DEVICE_ALIAS, "")
+        val operator = mPrefs.getString(OPERATOR, "") ?: ""
+        val device = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
+        val deviceType = if (device.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
+
+        val scan = Scan(mExpId, name).apply {
+            this.deviceId = device
+            this.deviceType = deviceType
+            this.alias = alias
+            this.operator = operator
+        }
 
         frames.forEach { frame ->
 
-            val sid = sViewModel.insertScanAsync(Scan(mExpId, name).apply {
+            scan.lightSource = frame.lightSource.toInt()
 
-                val linkSquareApiDeviceId = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
-
-                deviceId = linkSquareApiDeviceId
-
-                this.deviceType = if (linkSquareApiDeviceId.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
-
-                this.alias = prefs.getString(DEVICE_ALIAS, "")
-
-                this.lightSource = frame.lightSource.toInt()
-
-                this.operator = prefs.getString(OPERATOR, "") ?: ""
-
-            }).await()
+            val sid = sViewModel.insertScanAsync(scan).await()
 
             sViewModel.insertFrame(sid, SpectralFrame(
                     sid,
@@ -135,44 +147,50 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun callScanDialog(device: LinkSquareAPI.LSDeviceInfo) {
 
-        sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
+        activity?.let { act ->
 
-            val exp = experiments?.find { it.eid == mExpId }
+            context?.let { ctx ->
 
-            if (exp?.deviceType == resolveDeviceType(requireContext(), device)) {
+                sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
 
-                val dialog = Dialogs.askForScan(requireActivity(), R.string.scanning, R.string.close)
+                    val exp = experiments?.find { it.eid == mExpId }
 
-                dialog.create()
+                    if (exp?.deviceType == resolveDeviceType(ctx, device)) {
 
-                val dialogInterface = dialog.show()
+                        val dialog = Dialogs.askForScan(act, R.string.scanning, R.string.close)
 
-                sDeviceViewModel.scan(requireContext()).observe(viewLifecycleOwner) {
+                        dialog.create()
 
-                    it?.let { frames ->
+                        val dialogInterface = dialog.show()
 
-                        launch(Dispatchers.IO) {
+                        sDeviceViewModel.scan(ctx).observeOnce(viewLifecycleOwner) {
 
-                            insertScan(mSampleName, frames)
+                            it?.let { frames ->
 
-                            dialogInterface.dismiss()
+                                sDeviceScope.launch {
 
-                            activity?.runOnUiThread {
-                                checkAudioTriggers()
-                                loadGraph()
+                                    insertScan(mSampleName, frames)
+
+                                    activity?.runOnUiThread {
+                                        dialogInterface.dismiss()
+                                        checkAudioTriggers()
+                                        loadGraph()
+                                        mIsScanning = false
+                                    }
+                                }
                             }
                         }
+
+                    } else {
+
+                        mBinding?.let { ui ->
+
+                            mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
+                        }
                     }
-                }
-
-            } else {
-
-                mBinding?.let { ui ->
-
-                    mSnackbar.push(SnackbarQueue.SnackJob(ui.root, getString(R.string.frag_scan_device_type_mismatch)))
-                }
+                })
             }
-        })
+        }
     }
 
     /**
@@ -256,8 +274,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-            //ui.deleteOnClick = sOnClickDelete
-
             ui.scanOnClick = sOnClickScan
 
             //check if experiment id is included in the arguments.
@@ -299,6 +315,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                 loadGraph()
 
                 setupRecyclerView()
+
+                startTimer()
 
                 startObservers()
 
@@ -353,8 +371,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                             sDeviceViewModel.reset()
                         } else {
 
-                            findNavController().navigate(ExperimentListFragmentDirections
+                            if (findNavController().currentDestination?.id == R.id.scan_list_fragment) {
+                                findNavController().navigate(ScanListFragmentDirections
                                     .actionToConnectInstructions())
+                            }
 
                             this?.startDeviceConnection()
                         }
@@ -375,7 +395,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     if (booleanResult) {
 
-                        launch {
+                        sDeviceScope.launch {
 
                             deleteScans(mExpId, mSampleName)
 
@@ -477,7 +497,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun reinsertScan(scan: Scan, frames: List<SpectralFrame>) {
 
-        launch(Dispatchers.IO) {
+        sDeviceScope.launch {
 
             val sid = sViewModel.insertScanAsync(scan).await()
 
@@ -512,7 +532,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                             (ui.recyclerView.adapter as ScansAdapter)
                                     .currentList[viewHolder.absoluteAdapterPosition].also { scan ->
 
-                                launch(Dispatchers.IO) {
+                                sDeviceScope.launch {
 
                                     sViewModel.getSpectralValues(scan.eid, scan.sid
                                             ?: -1L).let { frames ->
@@ -536,7 +556,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         }
     }
 
-    private fun startObservers() {
+    private fun startTimer() {
 
         val check = object : TimerTask() {
 
@@ -544,25 +564,28 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                 activity?.runOnUiThread {
 
-                    with(mBinding?.titleToolbar) {
+                    if (isAdded) {
+                        with(mBinding?.titleToolbar) {
 
-                        this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (sDeviceViewModel.isConnected()) {
-                                attachDeviceButtonPressListener()
-                                R.drawable.ic_vector_link
-                            }
-                            else R.drawable.ic_vector_difference_ab)
+                            this?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(if (sDeviceViewModel.isConnected()) {
+                                    attachDeviceButtonPressListener()
+                                    R.drawable.ic_vector_link
+                                }
+                                else R.drawable.ic_vector_difference_ab)
 
+                        }
                     }
                 }
             }
         }
 
-        Timer().cancel()
+        mTimer = Timer()
 
-        Timer().purge()
+        mTimer?.scheduleAtFixedRate(check, 0, 1500)
+    }
 
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+    private fun startObservers() {
 
         //updates recycler view with available scans
         sViewModel.getScans(mExpId, mSampleName).observe(viewLifecycleOwner, { data ->
@@ -603,7 +626,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         attachDeviceButtonPressListener()
 
         //set the title header
-        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+        sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
 
             experiments.first { it.eid == mExpId }.also {
 
@@ -625,20 +648,22 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             sDeviceViewModel.setEventListener {
 
-                activity?.runOnUiThread {
+                if (!mIsScanning) {
 
-                    if (sDeviceViewModel.isConnected()) {
+                    mIsScanning = true
 
-                        sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+                    activity?.runOnUiThread {
 
-                            callScanDialog(connectedDeviceInfo)
+                        if (sDeviceViewModel.isConnected()) {
 
+                            sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+
+                                callScanDialog(connectedDeviceInfo)
+
+                            }
                         }
-
                     }
-
                 }
-
             }.observe(viewLifecycleOwner, {})
 
         } catch (e: IllegalStateException) {
@@ -668,7 +693,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         color?.let { nonNullColor ->
 
-            launch {
+            sDeviceScope.launch {
 
                 sViewModel.updateScanColor(mExpId, id, nonNullColor)
 
@@ -677,5 +702,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
             loadGraph()
 
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mTimer?.cancel()
+
+        mTimer?.purge()
+
+        mTimer = null
     }
 }

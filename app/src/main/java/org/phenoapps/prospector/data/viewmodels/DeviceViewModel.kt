@@ -141,7 +141,7 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
 //        }
 //    }
 
-    fun scan(context: Context) = liveData<List<LSFrame>> {
+    fun scan(context: Context) = liveData {
 
         with (manager(context)) {
 
@@ -157,13 +157,12 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
 
     }
 
-    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext(sDeviceScope.coroutineContext) {
+    private val mFrames = ArrayList<LSFrame>()
+    private suspend fun scan(ledFrames: Int, bulbFrames: Int) = withContext<List<LSFrame>>(sDeviceScope.coroutineContext) {
 
-        val frames = ArrayList<LSFrame>()
+        sDevice?.Scan(ledFrames, bulbFrames, mFrames)
 
-        sDevice?.Scan(ledFrames, bulbFrames, frames)
-
-        return@withContext frames
+        return@withContext mFrames
 
     }
 

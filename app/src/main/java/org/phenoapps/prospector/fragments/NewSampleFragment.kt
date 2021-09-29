@@ -24,7 +24,6 @@ import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentNewSampleBinding
 import org.phenoapps.prospector.utils.Dialogs
-import org.phenoapps.prospector.utils.SnackbarQueue
 import org.phenoapps.prospector.utils.observeOnce
 import java.lang.IllegalStateException
 import java.util.*
@@ -49,6 +48,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         arguments?.getString("note")
     }
 
+    private var mTimer: Timer? = null
+
     private val sOnBarcodeScanClick = View.OnClickListener {
 
         setFragmentResultListener("BarcodeResult") { _, bundle ->
@@ -59,9 +60,10 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         }
 
-        findNavController().navigate(NewSampleFragmentDirections
+        if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
+            findNavController().navigate(NewSampleFragmentDirections
                 .actionToBarcodeScanner())
-
+        }
     }
 
 
@@ -95,6 +97,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         mBinding?.let { binding ->
 
             setupButtons()
+
+            startTimer()
 
             binding.setupToolbar()
 
@@ -213,9 +217,11 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                                     if (it) {
 
-                                        findNavController()
-                                            .navigate(NewSampleFragmentDirections
-                                                .actionToScanList(mExpId, name))
+                                        if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
+                                            findNavController()
+                                                .navigate(NewSampleFragmentDirections
+                                                    .actionToScanList(mExpId, name))
+                                        }
 
                                     } else {
 
@@ -236,7 +242,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun startObservers() {
+    private fun startTimer() {
 
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
@@ -245,23 +251,26 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                 activity?.runOnUiThread {
 
-                    with (activity as? MainActivity) {
-                        mBinding?.fragNewSampleToolbar?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(if (this?.sDeviceViewModel?.isConnected() == true){
-                                attachDeviceButtonPressListener()
-                                R.drawable.ic_vector_link
-                            }
-                            else R.drawable.ic_vector_difference_ab)
+                    if (isAdded) {
+                        with (activity as? MainActivity) {
+                            mBinding?.fragNewSampleToolbar?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(if (this?.sDeviceViewModel?.isConnected() == true){
+                                    attachDeviceButtonPressListener()
+                                    R.drawable.ic_vector_link
+                                }
+                                else R.drawable.ic_vector_difference_ab)
+                        }
                     }
                 }
             }
         }
 
-        Timer().cancel()
+        mTimer = Timer()
 
-        Timer().purge()
+        mTimer?.scheduleAtFixedRate(check, 0, 1500)
+    }
 
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+    private fun startObservers() {
 
         //set the title header
         sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
@@ -297,9 +306,11 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
                             sDeviceViewModel.reset()
                         } else {
 
-                            findNavController().navigate(
-                                NewSampleFragmentDirections
-                                .actionToConnectInstructions())
+                            if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
+                                findNavController().navigate(
+                                    NewSampleFragmentDirections
+                                        .actionToConnectInstructions())
+                            }
 
                             this?.startDeviceConnection()
                         }
@@ -332,13 +343,15 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                         (act as MainActivity).notify("$newSampleString $name")
 
-                        if (startScan) {
+                        if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
+                            if (startScan) {
 
-                            findNavController().navigate(NewSampleFragmentDirections
-                                .actionToScanList(mExpId, name, startScan))
+                                findNavController().navigate(NewSampleFragmentDirections
+                                    .actionToScanList(mExpId, name, startScan))
 
-                        } else findNavController().navigate(NewSampleFragmentDirections
-                            .actionToScanList(mExpId, name))
+                            } else findNavController().navigate(NewSampleFragmentDirections
+                                .actionToScanList(mExpId, name))
+                        }
                     }
                 }
             }
@@ -368,5 +381,15 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         mBinding?.onCancelClick = sOnCancelClick
 
         mBinding?.onBarcodeScanClick = sOnBarcodeScanClick
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mTimer?.cancel()
+
+        mTimer?.purge()
+
+        mTimer = null
     }
 }

@@ -7,7 +7,6 @@ import DATE_DESC
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
@@ -26,7 +25,6 @@ import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
@@ -54,13 +52,17 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private val sOnNewExpClick = View.OnClickListener {
 
-        findNavController().navigate(ExperimentListFragmentDirections
+        if (findNavController().currentDestination?.id == R.id.experiment_list_fragment) {
+            findNavController().navigate(ExperimentListFragmentDirections
                 .actionToNewExperiment())
+        }
     }
 
     private var mBinding: FragmentExperimentListBinding? = null
 
     private var mSortState = ALPHA_ASC
+
+    private var mTimer: Timer? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -75,6 +77,8 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             ui.setupRecyclerView()
 
             ui.setupToolbar()
+
+            startTimer()
 
             setupButtons()
 
@@ -125,8 +129,10 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     } else {
 
-                        findNavController().navigate(ExperimentListFragmentDirections
-                            .actionToConnectInstructions())
+                        if (findNavController().currentDestination?.id == R.id.experiment_list_fragment) {
+                            findNavController().navigate(ExperimentListFragmentDirections
+                                .actionToConnectInstructions())
+                        }
 
                         (activity as? MainActivity)?.startDeviceConnection()
                     }
@@ -220,6 +226,9 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             mBinding?.recyclerView?.adapter?.notifyItemRangeChanged(0, it.size)
         })
+    }
+
+    private fun startTimer() {
 
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
@@ -228,24 +237,33 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 activity?.runOnUiThread {
 
-                    with(mBinding?.experimentToolbar) {
+                    if (isAdded) {
+                        with(mBinding?.experimentToolbar) {
 
-                        this?.menu?.findItem(R.id.action_connection)
-                            ?.setIcon(
-                                if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
-                                else R.drawable.ic_vector_difference_ab
-                            )
+                            this?.menu?.findItem(R.id.action_connection)
+                                ?.setIcon(
+                                    if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                                    else R.drawable.ic_vector_difference_ab
+                                )
 
+                        }
                     }
                 }
             }
         }
 
-        Timer().cancel()
+        mTimer = Timer()
 
-        Timer().purge()
+        mTimer?.scheduleAtFixedRate(check, 0, 1500)
+    }
 
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+    override fun onDestroy() {
+        super.onDestroy()
 
+        mTimer?.cancel()
+
+        mTimer?.purge()
+
+        mTimer = null
     }
 }
