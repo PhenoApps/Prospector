@@ -60,8 +60,8 @@
     <string name="pref_device_type">Device Information</string>
 
     <!-- LinkSquare light source types -->
-    <string name="led">LED</string>
-    <string name="bulb">Bulb</string>
+    <string name="led">LED (%d)</string>
+    <string name="bulb">Bulb (%d)</string>
     <string name="pref_convert_wavelengths_title">Convert to wavelengths</string>
     <string name="pref_convert_wavelengths_summary">The LinkSquare outputs pixel arrays by default, this setting converts this data to spectral wavelengths.</string>
     <string name="export_experiment_name_header">experiment</string>
@@ -160,5 +160,7 @@
     <string name="pref_workflow_new_sample_by_scan_summary">Pressing the plus button in the samples list will automatically open the camera to create a new sample with a scanned barcode.</string>
     <string name="frag_sample_list_non_to_export">No scans are present.</string>
     <string name="pref_operator_not_set_summary">None</string>
-
+    <string name="frag_scan_list_converted_x_axis">Wavelength (nm)</string>
+    <string name="frag_scan_list_pixel_x_axis">Pixel (px)</string>
+    <string name="frag_scan_list_y_axis">Intensity (a.u)</string>
 </resources>

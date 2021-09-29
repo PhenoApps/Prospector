@@ -13,7 +13,7 @@ import javax.inject.Inject
 class ExperimentViewModel @Inject constructor(
     private val repo: ExperimentRepository): ViewModel() {
 
-    val experimentCounts = repo.getExperimentCounts()
+    fun getExperimentCounts() = repo.getExperimentCounts()
 
     fun insertExperimentAsync(exp: Experiment) = viewModelScope.async {
 

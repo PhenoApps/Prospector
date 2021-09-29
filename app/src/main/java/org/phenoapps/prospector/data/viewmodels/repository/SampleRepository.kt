@@ -13,6 +13,8 @@ class SampleRepository @Inject constructor(
 
     fun getSampleScanCounts(eid: Long) = dao.getSampleScanCounts(eid)
 
+    fun getSampleFramesCount(eid: Long) = dao.getSampleFramesCount(eid)
+
     suspend fun getSamples(eid: Long): List<Sample> = dao.getSamples(eid)
 
     suspend fun deleteSample(eid: Long, name: String) = dao.deleteSample(eid, name)

@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.models.SampleFramesCount
 import org.phenoapps.prospector.data.models.SampleScanCount
 
 @Dao
@@ -18,6 +19,9 @@ interface SampleDao {
 
     @Query("SELECT DISTINCT * FROM SampleScanCount WHERE eid = :eid")
     fun getSampleScanCounts(eid: Long): LiveData<List<SampleScanCount>>
+
+    @Query("SELECT DISTINCT * FROM SampleFramesCount WHERE eid = :eid")
+    fun getSampleFramesCount(eid: Long): LiveData<List<SampleFramesCount>>
 
     @Query("SELECT DISTINCT * FROM samples")
     fun getSamples(): LiveData<List<Sample>>

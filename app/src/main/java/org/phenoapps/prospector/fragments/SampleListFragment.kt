@@ -465,7 +465,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     )
     private val dummyRow = IndexedSampleScanCount(-1, -1, "", "", "", -1)
     private fun updateUi() {
-        sViewModel.getSampleScanCounts(mExpId).observe(viewLifecycleOwner, { samples ->
+        sViewModel.getSampleFramesCount(mExpId).observe(viewLifecycleOwner, { samples ->
 
             samples?.let { data ->
 

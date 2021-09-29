@@ -198,7 +198,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun updateUi() {
 
-        sViewModel.experimentCounts.observe(viewLifecycleOwner, {
+        sViewModel.getExperimentCounts().observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                 ?.submitList(when (mSortState) {

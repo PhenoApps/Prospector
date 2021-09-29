@@ -7,11 +7,13 @@ import org.phenoapps.prospector.data.dao.ExperimentDao
 import org.phenoapps.prospector.data.dao.SampleDao
 import org.phenoapps.prospector.data.dao.ScanDao
 import org.phenoapps.prospector.data.migrations.MigrationV2
+import org.phenoapps.prospector.data.migrations.MigrationV3
 import org.phenoapps.prospector.data.models.*
 import java.io.File
 
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
-        views = [SampleScanCount::class, DeviceTypeExport::class], version = 2, exportSchema = true)
+        views = [SampleScanCount::class, SampleFramesCount::class, DeviceTypeExport::class], version = 4, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 3, to = 4)])
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -85,6 +87,7 @@ abstract class ProspectorDatabase : RoomDatabase() {
 
             return Room.databaseBuilder(ctx, ProspectorDatabase::class.java, "PROSPECTOR")
                 .addMigrations(MigrationV2())
+                .addMigrations(MigrationV3())
                 .build()
 
         }

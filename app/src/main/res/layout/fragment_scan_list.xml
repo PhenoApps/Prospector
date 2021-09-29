@@ -96,9 +96,28 @@
 
         </com.google.android.material.tabs.TabLayout>
 
+        <TextView android:id="@+id/frag_scan_list_y_axis_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Y-Axis"
+            android:rotation="-90"
+            app:layout_constraintStart_toStartOf="@id/frag_scan_list_line_chart"
+            app:layout_constraintTop_toTopOf="@id/tabLayout"
+            app:layout_constraintBottom_toTopOf="@id/recyclerView"/>
+
+        <TextView android:id="@+id/frag_scan_list_x_axis_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="X-Axis"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/frag_scan_list_line_chart"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
         <com.github.mikephil.charting.charts.LineChart
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="2dp"
             android:id="@+id/frag_scan_list_line_chart"
             app:layout_constraintBottom_toTopOf="@id/recyclerView"
             app:layout_constraintStart_toStartOf="parent"

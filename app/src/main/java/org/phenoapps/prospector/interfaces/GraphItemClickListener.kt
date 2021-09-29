@@ -5,7 +5,7 @@ package org.phenoapps.prospector.interfaces
  */
 interface GraphItemClickListener {
 
-    fun onItemClicked(id: Long, color: String?)
+    fun onItemClicked(sid: Long, fid: Int, color: String?)
 
-    fun onItemLongClicked(id: Long, color: String?)
+    fun onItemLongClicked(sid: Long, fid: Int, color: String?)
 }

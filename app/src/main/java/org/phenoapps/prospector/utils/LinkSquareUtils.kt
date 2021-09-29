@@ -17,6 +17,13 @@ import org.phenoapps.prospector.data.dao.ScanDao
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.fragments.ScanListFragment
 
+class LinkSquareLightSources {
+    companion object {
+        const val LED = 0
+        const val BULB = 1
+    }
+}
+
 /**
  * Specified wavelength ranges of the LinkSquare spectrometers
  */

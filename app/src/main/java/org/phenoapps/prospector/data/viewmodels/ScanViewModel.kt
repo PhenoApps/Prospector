@@ -19,19 +19,21 @@ class ScanViewModel @Inject constructor(
 
     val experiments = experimentRepo.getExperiments()
 
-    //non-live
-    fun getSpectralValues(eid: Long, sid: Long): List<SpectralFrame> = repo.getSpectralValues(eid, sid)
+    fun getSpectralValues(eid: Long, sid: Long, fid: Int): List<SpectralFrame> = repo.getSpectralValues(eid, sid, fid)
     fun getSpectralValues(eid: Long, sample: String, lightSource: Int) = repo.getSpectralValues(eid, sample, lightSource)
 
     //live data
-    fun getScans(eid: Long, sample: String) = repo.getScans(eid, sample)
+    fun getFrames(eid: Long, sample: String) = repo.getFrames(eid, sample)
+    fun getSpectralValues(eid: Long, sample: String) = repo.getSpectralValues(eid, sample)
     fun getSpectralValuesLive(eid: Long, sid: Long) = repo.getSpectralValuesLive(eid, sid)
 
     suspend fun deleteScan(scan: Scan) = scan.sid?.let { id -> repo.deleteScan(id) }
 
+    suspend fun deleteFrame(sid: Long, fid: Int) = repo.deleteFrame(sid, fid)
+
     suspend fun deleteScans(eid: Long, name: String) = repo.deleteScans(eid, name)
 
-    suspend fun updateScanColor(eid: Long, scanId: Long, color: String) = viewModelScope.launch { repo.updateScanColor(eid, scanId, color) }
+    suspend fun updateFrameColor(sid: Long, fid: Int, color: String) = viewModelScope.launch { repo.updateFrameColor(sid, fid, color) }
 
     fun insertScanAsync(scan: Scan): Deferred<Long> = viewModelScope.async { return@async repo.insertScan(scan) }
 
