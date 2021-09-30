@@ -6,7 +6,6 @@ import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import OPERATOR
 import android.graphics.Color
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.ContextThemeWrapper
@@ -79,6 +78,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
     private var mTimer: Timer? = null
 
     private var mIsScanning: Boolean = false
+
+    private val mMediaUtil by lazy {
+        MediaUtil(context)
+    }
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -203,16 +206,13 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         //check if audio enabled
         if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
 
-            val scanAudio = MediaPlayer.create(context, R.raw.hero_simple_celebration)
-            val targetMetAudio = MediaPlayer.create(context, R.raw.hero_decorative_celebration)
-
             //check if target scan is set and met
             val target = mPrefs.getString(mKeyUtil.targetScans, "") ?: ""
 
             //if no target is set, play the scan audio
             if (target.isBlank()) {
 
-                scanAudio.start()
+                mMediaUtil.play(MediaUtil.SCAN_SUCCESS)
 
             } else { //check if target is met, otherwise play the scan audio
 
@@ -222,7 +222,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         if (it.size >= targetInt) {
 
-                            targetMetAudio.start()
+                            mMediaUtil.play(MediaUtil.SCAN_TARGET)
 
                             (activity as? MainActivity)?.notify(getString(R.string.target_scan_success))
 
@@ -230,7 +230,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         } else {
 
-                            scanAudio.start()
+                            mMediaUtil.play(MediaUtil.SCAN_SUCCESS)
                         }
                     }
                 }
@@ -722,5 +722,12 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
         mTimer?.purge()
 
         mTimer = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
+
     }
 }
