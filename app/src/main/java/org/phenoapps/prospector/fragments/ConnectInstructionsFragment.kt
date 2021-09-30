@@ -8,6 +8,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.databinding.FragmentConnectInstructionsBinding
 
 /**
@@ -27,6 +28,13 @@ class ConnectInstructionsFragment : Fragment() {
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_connect_instructions, null, false)
 
         return mBinding?.root
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
 
     }
 

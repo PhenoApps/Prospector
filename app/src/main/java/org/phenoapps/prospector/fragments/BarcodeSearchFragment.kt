@@ -1,7 +1,6 @@
 package org.phenoapps.prospector.fragments
 
 import android.Manifest
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,17 +11,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
-import org.phenoapps.prospector.utils.KeyUtil
+import org.phenoapps.prospector.utils.MediaUtil
 
 /**
  * Similar to the barcode scan fragment, this loads all current samples and searches
@@ -53,20 +52,8 @@ class BarcodeSearchFragment : Fragment() {
         }
     }
 
-    private val mPrefs by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-
-    private val mKeyUtil by lazy {
-        KeyUtil(context)
-    }
-
-    private val mAudioError by lazy {
-        MediaPlayer.create(context, R.raw.alert_error)
-    }
-
-    private val mAudioSuccess by lazy {
-        MediaPlayer.create(context, R.raw.notification_simple)
+    private val mMediaUtil by lazy {
+        MediaUtil(context)
     }
 
     private fun setupBarcodeScanner() {
@@ -93,9 +80,7 @@ class BarcodeSearchFragment : Fragment() {
 
                             if (mSamples.any { it.name == result.text.toString() }) {
 
-                                if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
-                                    mAudioSuccess.start()
-                                }
+                                mMediaUtil.play(MediaUtil.BARCODE_SCAN)
 
                                 mSamples.find { it.name == result.text.toString() }?.name?.let { name ->
 
@@ -106,9 +91,8 @@ class BarcodeSearchFragment : Fragment() {
                                 }
                             } else {
 
-                                if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
-                                    mAudioError.start()
-                                }
+                                mMediaUtil.play(MediaUtil.BARCODE_SEARCH_FAIL)
+
                             }
                         }
 
@@ -168,6 +152,9 @@ class BarcodeSearchFragment : Fragment() {
         super.onResume()
 
         mBinding?.barcodeScanner?.resume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
+
     }
 
     override fun onPause() {

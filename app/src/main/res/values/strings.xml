@@ -172,4 +172,5 @@
     <string name="dialog_ask_change_operator_title">Would you like to update the operator name?</string>
     <string name="dialog_dont_ask_again">Don\'t ask again.</string>
     <string name="no">No</string>
+    <string name="media_player_failed">Media player failed.</string>
 </resources>

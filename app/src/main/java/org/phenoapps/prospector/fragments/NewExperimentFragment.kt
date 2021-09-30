@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentNewExperimentBinding
@@ -117,6 +118,13 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
         mBinding?.onSaveClick = sOnNewExpClick
 
         mBinding?.onCancelClick = sOnCancelClick
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
 
     }
 }

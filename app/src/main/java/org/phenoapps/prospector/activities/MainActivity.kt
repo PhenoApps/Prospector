@@ -4,7 +4,6 @@ import BULB_FRAMES
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -228,6 +227,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mAskForOperatorDialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_ask_input_operator_title)
             .setMessage(R.string.dialog_ask_input_operator_message)
+            .setNegativeButton(R.string.no) { dialog, _ ->
+                dialog.dismiss()
+            }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
 
                 dialog.dismiss()
@@ -260,7 +262,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }.create()
     }
 
-    fun showAskOperatorDialog() {
+    private fun showAskOperatorDialog() {
         runOnUiThread {
             if (mAskForOperatorDialog != null && mAskForOperatorDialog?.isShowing != true) {
                 mAskForOperatorDialog?.show()
@@ -268,7 +270,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    fun showAskChangeOperatorDialog() {
+    private fun showAskChangeOperatorDialog() {
         runOnUiThread {
             if (mAskChangeOperatorDialog != null && mAskChangeOperatorDialog?.isShowing != true) {
                 mAskChangeOperatorDialog?.show()
@@ -282,6 +284,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 mCitationDialog?.show()
             }
         }
+    }
+
+    fun setToolbar(id: Int) {
+
+        mBinding.bottomNavView.menu.findItem(id).isEnabled = false
+
+        mBinding.bottomNavView.selectedItemId = id
+
+        mBinding.bottomNavView.menu.findItem(id).isEnabled = true
     }
 
     private suspend fun loadSampleData() {
