@@ -182,6 +182,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                                 mBinding?.toggleProgressBar()
 
                                 mIsExporting = false
+
+                                (activity as? MainActivity)?.showCitationDialog()
                             }
                         }
                     }

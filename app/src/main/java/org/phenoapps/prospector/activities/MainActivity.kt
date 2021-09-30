@@ -4,6 +4,7 @@ import BULB_FRAMES
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -60,6 +62,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private lateinit var mBinding: ActivityMainBinding
 
     private lateinit var mNavController: NavController
+
+    private var mCitationDialog: AlertDialog? = null
+    private var mAskForOperatorDialog: AlertDialog? = null
+    private var mAskChangeOperatorDialog: AlertDialog? = null
+
+    private val mPrefs by lazy {
+        PreferenceManager.getDefaultSharedPreferences(this)
+    }
+
+    private val mKeyUtil by lazy {
+        KeyUtil(this)
+    }
 
     private fun setupDirs() {
 
@@ -202,6 +216,72 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
 
         setupActivity()
+
+        mCitationDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_citation_title)
+            .setMessage(R.string.dialog_citation_message)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        mAskForOperatorDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_ask_input_operator_title)
+            .setMessage(R.string.dialog_ask_input_operator_message)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                dialog.dismiss()
+
+                mNavController.navigate(R.id.action_to_settings,
+                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
+
+            }.create()
+
+        mAskChangeOperatorDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_ask_change_operator_title)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                dialog.dismiss()
+
+                mNavController.navigate(R.id.action_to_settings,
+                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
+            }
+            .setNeutralButton(R.string.dialog_dont_ask_again) { dialog, _ ->
+
+                mPrefs.edit().putBoolean(mKeyUtil.verifyOperator, false).apply()
+
+                dialog.dismiss()
+
+            }
+            .setNegativeButton(R.string.no) { dialog, _ ->
+
+                dialog.dismiss()
+
+            }.create()
+    }
+
+    fun showAskOperatorDialog() {
+        runOnUiThread {
+            if (mAskForOperatorDialog != null && mAskForOperatorDialog?.isShowing != true) {
+                mAskForOperatorDialog?.show()
+            }
+        }
+    }
+
+    fun showAskChangeOperatorDialog() {
+        runOnUiThread {
+            if (mAskChangeOperatorDialog != null && mAskChangeOperatorDialog?.isShowing != true) {
+                mAskChangeOperatorDialog?.show()
+            }
+        }
+    }
+
+    fun showCitationDialog() {
+        runOnUiThread {
+            if (mCitationDialog != null && mCitationDialog?.isShowing != true) {
+                mCitationDialog?.show()
+            }
+        }
     }
 
     private suspend fun loadSampleData() {
@@ -332,6 +412,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         stopDeviceConnection()
 
+        mCitationDialog?.dismiss()
+        mAskChangeOperatorDialog?.dismiss()
+        mAskForOperatorDialog?.dismiss()
+
         super.onDestroy()
 
     }
@@ -346,6 +430,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onResume() {
 
         startDeviceConnection()
+
+        checkLastOpened()
 
         super.onResume()
     }
@@ -402,5 +488,40 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     getString(R.string.settings_error_num_frames_must_exceed_zero)))
 
         } else mNavController.popBackStack()
+    }
+
+    /**
+     * Simple function that checks if the activity was opened >24hrs ago.
+     * If the condition is met, it asks the user to reenter the operator id.
+     */
+    private fun checkLastOpened() {
+
+        if (mPrefs.getBoolean(mKeyUtil.verifyOperator, true)) {
+
+            val lastOpen: Long = mPrefs.getLong(mKeyUtil.lastTimeAppOpened, 0L)
+
+            val systemTime = System.nanoTime()
+
+            val nanosInOneDay = 1e9.toLong() * 3600 * 24
+
+            if (lastOpen == 0L || systemTime - lastOpen > nanosInOneDay) {
+
+                if ((mPrefs.getString(mKeyUtil.operator, "") ?: "").isBlank()) {
+
+                    showAskOperatorDialog()
+
+                } else {
+
+                    showAskChangeOperatorDialog()
+                }
+            }
+
+            updateLastOpenedTime()
+        }
+
+    }
+
+    private fun updateLastOpenedTime() {
+        mPrefs.edit().putLong(mKeyUtil.lastTimeAppOpened, System.nanoTime()).apply()
     }
 }

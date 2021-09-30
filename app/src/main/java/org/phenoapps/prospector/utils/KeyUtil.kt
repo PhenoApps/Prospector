@@ -21,4 +21,10 @@ class KeyUtil(private val ctx: Context?) {
 
     val sampleScanEnabled by key(R.string.key_pref_workflow_new_sample_by_scan)
 
+    //keys for operator update timer
+    val operator by key(R.string.key_operator)
+    val verifyOperator by key(R.string.key_pref_profile_verify_operator)
+    val argOpenOperatorSettings by key(R.string.key_arg_update_person)
+    val firstInstall by key(R.string.key_pref_first_install)
+    val lastTimeAppOpened by key(R.string.key_pref_last_app_open)
 }
