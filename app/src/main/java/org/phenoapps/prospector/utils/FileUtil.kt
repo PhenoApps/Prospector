@@ -5,6 +5,8 @@ import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 
@@ -62,12 +64,8 @@ open class FileUtil(private val ctx: Context) {
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun exportCsv(uri: Uri, exports: List<DeviceTypeExport>, convert: Boolean = false) = withContext(Dispatchers.IO) {
 
-        val newline = System.lineSeparator()
-
         //false warning, this function is run always in Dispatchers.IO
         ctx.contentResolver.openOutputStream(uri)?.let { stream ->
-
-            val writer = stream.buffered().writer()
 
             val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader," +
                     "$deviceTypeHeader,$scanDeviceIdHeader,$operatorHeader," +
@@ -98,11 +96,10 @@ open class FileUtil(private val ctx: Context) {
 
                 first?.let { firstWave ->
 
-                    val headers = prefixHeaders + (firstWave.map { it.first }).joinToString(",")
+                    val headers = (prefixHeaders + (firstWave.map { it.first }).joinToString(","))
+                        .split(",").toTypedArray()
 
-                    writer.write(headers)
-
-                    writer.write(newline)
+                    val csvWriter = CSVPrinter(stream.buffered().writer(), CSVFormat.DEFAULT.withHeader(*headers))
 
                     exports.forEach { export ->
 
@@ -136,22 +133,22 @@ open class FileUtil(private val ctx: Context) {
                             it.first in deviceTypeMin..deviceTypeMax
                         }
 
-                        writer.write("${data.joinToString(",")},${wave.map { it.second }.joinToString(",")}")
-
-                        writer.write(newline)
-
+                        csvWriter.printRecord(*(data + wave.map { it.second.toString() }.toTypedArray()))
                     }
+
+                    csvWriter.flush()
+
+                    csvWriter.close()
                 }
 
             } else {
 
                 exports.firstOrNull()?.spectralData?.split(" ")?.size?.let { size ->
 
-                    val headers = prefixHeaders + (1..size).joinToString(",")
+                    val headers = (prefixHeaders + (1..size).joinToString(","))
+                        .split(",").toTypedArray()
 
-                    writer.write(headers)
-
-                    writer.write(newline)
+                    val csvWriter = CSVPrinter(stream.buffered().writer(), CSVFormat.DEFAULT.withHeader(*headers))
 
                     exports.forEach { e ->
 
@@ -166,16 +163,17 @@ open class FileUtil(private val ctx: Context) {
                                 e.note
                         )
 
-                        val frameData = e.spectralData.replace(" ", ",")
+                        val frameData = e.spectralData.split(" ")
 
-                        writer.write("${data.joinToString(",")},$frameData")
+                        csvWriter.printRecord(*(data + frameData))
 
-                        writer.write(newline)
                     }
+
+                    csvWriter.flush()
+
+                    csvWriter.close()
                 }
             }
-
-            writer.close()
 
             stream.close()
         }
