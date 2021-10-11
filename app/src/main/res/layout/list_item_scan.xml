@@ -8,10 +8,6 @@
         <variable
             name="onClick"
             type="View.OnClickListener"/>
-
-        <variable
-            name="scan"
-            type="org.phenoapps.prospector.data.models.Scan" />
         
         <variable
             name="deviceType"

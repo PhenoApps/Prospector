@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
 
-    ext.kotlin_version = '1.5.10'
+    ext.kotlin_version = '1.5.31'
     ext.lifecycle_version = '2.3.1'
     ext.nav_version = '2.3.5'
     ext.multidex_version = "2.0.1"
@@ -25,6 +25,9 @@ buildscript {
     ext.daniel_version="2.4.2"
     ext.hilt_version = '2.34-beta'
     ext.hilt_lifecycle_version = "1.0.0-alpha03"
+    ext.gradle_version = '7.0.2'
+    ext.google_services_version = "4.3.10"
+    ext.crashlytics_version = "2.7.1"
 
     repositories {
         google()
@@ -32,12 +35,12 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath "com.android.tools.build:gradle:$gradle_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:2.28-alpha"
-        classpath 'com.google.gms:google-services:4.3.8'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.0'
+        classpath "com.google.gms:google-services:$google_services_version"
+        classpath "com.google.firebase:firebase-crashlytics-gradle:$crashlytics_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

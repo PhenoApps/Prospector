@@ -9,10 +9,9 @@ import DEVICE_TYPE
 import OPERATOR
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import androidx.fragment.app.activityViewModels
-import androidx.preference.EditTextPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +19,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
+import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel_Factory
 import org.phenoapps.prospector.utils.KeyUtil
 import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
@@ -39,6 +40,8 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
     private val mKeyUtil by lazy {
         KeyUtil(context)
     }
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
@@ -88,12 +91,42 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
             pref.summary = getString(R.string.pref_device_iot_searching)
 
-            sDeviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner, {
+            sDeviceViewModel.scanArp().observeOnce(viewLifecycleOwner, {
 
-                pref.summary = it
+                if (it == "fail") { //back down to the brute force network search
 
-                findPreference<EditTextPreference>(DEVICE_IP)?.text = it
+                    Log.d("LSSearch", "Starting brute force search.")
 
+                    sDeviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner, {
+
+                        pref.summary = it
+
+                        findPreference<EditTextPreference>(DEVICE_IP)?.text = it
+
+                        scope.launch {
+
+                            sDeviceViewModel.connect(requireContext())
+
+                            buildDeviceSummary()
+
+                        }
+
+                    })
+
+                } else { //use arp to find TI devices and connect if found
+
+                    pref.summary = it
+
+                    findPreference<EditTextPreference>(DEVICE_IP)?.text = it
+
+                    scope.launch {
+
+                        sDeviceViewModel.connect(requireContext())
+
+                        buildDeviceSummary()
+
+                    }
+                }
             })
 
             true
@@ -102,25 +135,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
         //this is less of a device type and more of a device info placeholder
         findPreference<Preference>(DEVICE_TYPE)?.let { etPref ->
 
-            launch(Dispatchers.IO) {
-
-                val summary = when (sDeviceViewModel.isConnected()) {
-
-                    true -> buildLinkSquareDeviceInfo(requireContext(),
-                        sDeviceViewModel.getDeviceInfo())
-
-                    else -> sDeviceViewModel.getDeviceError()
-
-                }
-
-                if (isAdded) {
-
-                    activity?.runOnUiThread {
-
-                        etPref.summary = summary
-                    }
-                }
-            }
+            buildDeviceSummary()
         }
 
 //        //sets device alias
@@ -174,10 +189,11 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         findPreference<EditTextPreference>(DEVICE_IP)?.setOnPreferenceChangeListener { _, _ ->
 
-            launch {
+            scope.launch {
 
                 sDeviceViewModel.connect(requireContext())
 
+                buildDeviceSummary()
             }
 
             true
@@ -186,7 +202,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         findPreference<EditTextPreference>(DEVICE_PORT)?.setOnPreferenceChangeListener { _, _ ->
 
-            launch {
+            scope.launch {
 
                 sDeviceViewModel.connect(requireContext())
 
@@ -197,22 +213,47 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
         }
     }
 
+    private fun buildDeviceSummary() {
+
+        scope.launch {
+
+            val summary = when (sDeviceViewModel.isConnected()) {
+
+                true -> buildLinkSquareDeviceInfo(requireContext(),
+                    sDeviceViewModel.getDeviceInfo())
+
+                else -> sDeviceViewModel.getDeviceError()
+
+            }
+
+            if (isAdded) {
+
+                activity?.runOnUiThread {
+
+                    findPreference<Preference>(DEVICE_TYPE)?.summary = summary
+                }
+            }
+        }
+    }
+
     private fun setWLanInfo() {
 
         val ssid = findPreference<EditTextPreference>(DEVICE_SSID)
         val password = findPreference<EditTextPreference>(DEVICE_PASSWORD)
 
-        launch {
+        scope.launch {
 
             sDeviceViewModel.setWLanInfoAsync(
                 ssid?.text ?: "",
                 password?.text ?: "",
                 DeviceViewModel.WPA).await()
 
-//            activity?.runOnUiThread {
-//
-//                Toast.makeText(context, "Password ${if (result) "saved" else "failed"}", Toast.LENGTH_SHORT).show()
-//            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_settings)
     }
 }

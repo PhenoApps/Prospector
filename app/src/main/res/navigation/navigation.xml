@@ -175,6 +175,12 @@
             android:defaultValue="-1L"
             app:argType="long"/>
 
+        <argument android:name="name"
+            app:argType="string"/>
+
+        <argument android:name="deviceType"
+            app:argType="string"/>
+
         <action
             android:id="@+id/action_to_scan_list"
             app:destination="@id/scan_list_fragment"/>

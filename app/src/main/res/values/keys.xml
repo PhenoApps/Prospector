@@ -8,5 +8,9 @@
     <string name="key_pref_target_scan">&package;TARGET_SCANS</string>
     <string name="key_pref_audio_enabled">&package;AUDIO_ENABLED</string>
     <string name="key_pref_workflow_new_sample_by_scan">&package;SAMPLE_SCAN</string>
-
+    <string name="key_pref_last_app_open">&package;LAST_OPEN</string>
+    <string name="key_pref_first_install">&package;FIRST_INSTALL</string>
+    <string name="key_arg_update_person">&package;UPDATE_PERSON</string>
+    <string name="key_operator">&package;OPERATOR</string>
+    <string name="key_pref_profile_verify_operator">&package;VERIFY_OPERATOR</string>
 </resources>

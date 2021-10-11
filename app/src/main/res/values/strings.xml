@@ -60,8 +60,8 @@
     <string name="pref_device_type">Device Information</string>
 
     <!-- LinkSquare light source types -->
-    <string name="led">LED</string>
-    <string name="bulb">Bulb</string>
+    <string name="led">LED (%d)</string>
+    <string name="bulb">Bulb (%d)</string>
     <string name="pref_convert_wavelengths_title">Convert to wavelengths</string>
     <string name="pref_convert_wavelengths_summary">The LinkSquare outputs pixel arrays by default, this setting converts this data to spectral wavelengths.</string>
     <string name="export_experiment_name_header">experiment</string>
@@ -159,5 +159,21 @@
     <string name="pref_workflow_new_sample_by_scan_title">Sample Scan</string>
     <string name="pref_workflow_new_sample_by_scan_summary">Pressing the plus button in the samples list will automatically open the camera to create a new sample with a scanned barcode.</string>
     <string name="frag_sample_list_non_to_export">No scans are present.</string>
+    <string name="pref_operator_not_set_summary">None</string>
+    <string name="frag_scan_list_converted_x_axis">Wavelength (nm)</string>
+    <string name="frag_scan_list_pixel_x_axis">Pixel (px)</string>
+    <string name="frag_scan_list_y_axis">Intensity (a.u)</string>
 
+    <string name="dialog_citation_title">Citation</string>
+    <string name="dialog_citation_string">If you utilize  for research, please cite the following journal article:</string>
+    <string name="dialog_citation_message" translatable="false">Rife, T.W., C. Courtney, J. Hershberger, M.A. Gore, M. Neilsen, J.A. Poland. Prospector: A mobile application for portable, high-throughput near-infrared spectroscopy phenotyping. \n<i>Plant Phenome J.</i> 2021; 4:e20024.</string>
+
+    <string name="pref_profile_verify_operator_title">Verify Operator</string>
+    <string name="pref_profile_verify_operator_summary">Shows a dialog every 24 hours to verify the current operator is set and has not changed.</string>
+    <string name="dialog_ask_input_operator_title">Please set an operator name.</string>
+    <string name="dialog_ask_input_operator_message">The operator name is used in export files. You can disable this message in the settings.</string>
+    <string name="dialog_ask_change_operator_title">Would you like to update the operator name?</string>
+    <string name="dialog_dont_ask_again">Don\'t ask again.</string>
+    <string name="no">No</string>
+    <string name="media_player_failed">Media player failed.</string>
 </resources>

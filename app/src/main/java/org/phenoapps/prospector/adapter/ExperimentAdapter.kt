@@ -23,6 +23,7 @@ class ExperimentAdapter(
 ) : ListAdapter<ExperimentAdapter.ExperimentListItem, ExperimentAdapter.ViewHolder>(DiffCallbacks.Companion.ExperimentDiffCallback()) {
 
     data class ExperimentListItem(val id: Long,
+                                  val deviceType: String,
                                   val date: String,
                                   val name: String,
                                   val sampleName: String? = String(),
@@ -59,7 +60,8 @@ class ExperimentAdapter(
                 clickListener = View.OnClickListener {
 
                     Navigation.findNavController(binding.root).navigate(
-                            ExperimentListFragmentDirections.actionToSamples(experiment.id))
+                            ExperimentListFragmentDirections
+                                .actionToSamples(experiment.id, experiment.name, experiment.deviceType))
 
                 }
 

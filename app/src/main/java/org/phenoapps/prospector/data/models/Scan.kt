@@ -2,15 +2,13 @@ package org.phenoapps.prospector.data.models
 
 import DEVICE_TYPE_NIR
 import androidx.annotation.Keep
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import org.phenoapps.prospector.utils.DateUtil
 
 @Keep
 
 @Entity(tableName = "scans",
+        indices = [Index(value = ["eid", "name"], unique = false)],
         foreignKeys = [
             ForeignKey(
                 entity = Sample::class,
