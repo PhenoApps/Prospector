@@ -18,10 +18,9 @@ class SampleViewModel @Inject constructor(
 
     //live data
     fun getSamplesLive(eid: Long) = repo.getSamplesLive(eid)
-    fun getSampleScanCounts(eid: Long) = repo.getSampleScanCounts(eid)
     fun getSampleFramesCount(eid: Long) = repo.getSampleFramesCount(eid)
     val experiments = experimentRepo.getExperiments()
-    val deviceTypeExports = repo.getDeviceTypeExports()
+    fun deviceTypeExports(eid: Long) = repo.getDeviceTypeExports(eid)
 
     suspend fun deleteSample(eid: Long, name: String) = repo.deleteSample(eid, name)
 

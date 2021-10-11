@@ -19,15 +19,11 @@ class ScanViewModel @Inject constructor(
 
     val experiments = experimentRepo.getExperiments()
 
-    fun getSpectralValues(eid: Long, sid: Long, fid: Int): List<SpectralFrame> = repo.getSpectralValues(eid, sid, fid)
     fun getSpectralValues(eid: Long, sample: String, lightSource: Int) = repo.getSpectralValues(eid, sample, lightSource)
 
     //live data
     fun getFrames(eid: Long, sample: String) = repo.getFrames(eid, sample)
     fun getSpectralValues(eid: Long, sample: String) = repo.getSpectralValues(eid, sample)
-    fun getSpectralValuesLive(eid: Long, sid: Long) = repo.getSpectralValuesLive(eid, sid)
-
-    suspend fun deleteScan(scan: Scan) = scan.sid?.let { id -> repo.deleteScan(id) }
 
     suspend fun deleteFrame(sid: Long, fid: Int) = repo.deleteFrame(sid, fid)
 

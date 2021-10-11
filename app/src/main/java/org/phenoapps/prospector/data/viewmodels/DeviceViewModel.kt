@@ -167,7 +167,7 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
 
     }
 
-    suspend fun connect(ip: String, port: Int) = withContext(sDeviceConnectScope.coroutineContext) {
+    private suspend fun connect(ip: String, port: Int) = withContext(sDeviceConnectScope.coroutineContext) {
 
         sDevice?.Connect(ip, port)
 

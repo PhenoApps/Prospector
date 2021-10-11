@@ -205,22 +205,22 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                     DATE_DESC -> {
 
-                        it.sortedByDescending { it.date }
+                        it.sortedByDescending { x -> x.date }
                     }
 
                     DATE_ASC -> {
 
-                        it.sortedBy { it.date }
+                        it.sortedBy { x -> x.date }
                     }
 
                     ALPHA_DESC -> {
 
-                        it.sortedByDescending { it.name }
+                        it.sortedByDescending { x -> x.name }
                     }
 
                     else -> {
 
-                        it.sortedBy { it.name }
+                        it.sortedBy { x -> x.name }
                     }
                 })
 

@@ -46,14 +46,6 @@ class BarcodeScanFragment : Fragment() {
         }
     }
 
-    private val mPrefs by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-
-    private val mKeyUtil by lazy {
-        KeyUtil(context)
-    }
-
     private val mMediaUtil by lazy {
         MediaUtil(context)
     }

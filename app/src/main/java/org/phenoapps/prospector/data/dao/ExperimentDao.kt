@@ -14,7 +14,7 @@ interface ExperimentDao {
     fun getExperiments(): LiveData<List<Experiment>>
 
     @Query("""
-            SELECT E.eid AS id, E.date AS date, E.name AS name, S.name AS sampleName, COUNT(*) AS count 
+            SELECT E.eid AS id, E.deviceType AS deviceType, E.date AS date, E.name AS name, S.name AS sampleName, COUNT(*) AS count 
             FROM experiments AS E LEFT JOIN samples AS S ON S.eid = E.eid 
             GROUP BY E.eid""")
     fun getExperimentCounts(): LiveData<List<ExperimentAdapter.ExperimentListItem>>

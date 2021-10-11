@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "cafd75c790059d733334fcdab349708d",
+    "identityHash": "943980c83e357b52149c2ac685422cbe",
     "entities": [
       {
         "tableName": "experiments",
@@ -129,6 +129,15 @@
           "autoGenerate": true
         },
         "indices": [
+          {
+            "name": "index_scans_eid_name",
+            "unique": false,
+            "columnNames": [
+              "eid",
+              "name"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scans_eid_name` ON `${TABLE_NAME}` (`eid`, `name`)"
+          },
           {
             "name": "index_scans_eid",
             "unique": false,
@@ -321,7 +330,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cafd75c790059d733334fcdab349708d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '943980c83e357b52149c2ac685422cbe')"
     ]
   }
 }

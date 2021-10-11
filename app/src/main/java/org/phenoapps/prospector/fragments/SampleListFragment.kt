@@ -59,10 +59,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     //fragment argument
     private var mExpId: Long = -1L
-
-    private var mFileName: String = ""
-
-    private var mExportables: List<DeviceTypeExport>? = null
+    private var mDeviceType: String = String()
+    private var mName: String = String()
 
     private val sViewModel: SampleViewModel by viewModels()
 
@@ -78,6 +76,10 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
         }
     }
 
+    private val mScope by lazy {
+        CoroutineScope(Dispatchers.IO)
+    }
+
     /**
      * Click listener that is used for the new scan button
      * when the sample scanner preference is enabled.
@@ -88,7 +90,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
             val code = bundle.getString("barcode_result", "") ?: ""
 
-            launch {
+            mScope.launch {
 
                 val sample = Sample(mExpId, code)
 
@@ -144,7 +146,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                     mIsExporting = true
 
-                    requestExportLauncher.launch(mFileName)
+                    requestExportLauncher.launch("${mName}_${mDeviceType}_${DateUtil().getTime()}.csv")
 
                 }
             }
@@ -163,32 +165,47 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
         requestExportLauncher = registerForActivityResult(
             ActivityResultContracts.CreateDocument()) { nullUri ->
 
-            mExportables?.let { exportables ->
+            mIsExporting = false
 
-                context?.let {
+            //start observing for exportable experiments using the defined view
+            sViewModel.deviceTypeExports(mExpId).observeOnce(viewLifecycleOwner, {
 
-                    val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                //only export if the view has rows, and only export the current selected experiment
+                it?.let { exports ->
 
-                    nullUri?.let { uri ->
+                    //grab the first experiment as an example to find the name and device type for the filename
+                    val example = exports.firstOrNull()
 
-                        launch(Dispatchers.IO) {
+                    if (example == null) {
 
-                            withContext(Dispatchers.Default) {
+                        (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
 
-                                mBinding?.toggleProgressBar()
+                    }
 
-                                FileUtil(it).exportCsv(uri, exportables, convert)
+                    example?.let { it ->
 
-                                mBinding?.toggleProgressBar()
+                        context?.let { ctx ->
 
-                                mIsExporting = false
+                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
 
-                                (activity as? MainActivity)?.showCitationDialog()
+                            nullUri?.let { uri ->
+
+                                mScope.launch {
+
+                                    mBinding?.toggleProgressBar()
+
+                                    FileUtil(ctx).exportCsv(uri, exports, convert)
+
+                                    mBinding?.toggleProgressBar()
+
+                                    (activity as? MainActivity)?.showCitationDialog()
+
+                                }
                             }
                         }
                     }
                 }
-            }
+            })
         }
     }
 
@@ -213,12 +230,16 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val eid = arguments?.getLong("experiment", -1L) ?: -1L
+        val deviceType = arguments?.getString("deviceType", "") ?: ""
+        val name = arguments?.getString("name", "") ?: ""
 
         if (eid != -1L) { //finish fragment if an invalid eid is given
 
             setHasOptionsMenu(true)
 
             mExpId = eid
+            mDeviceType = deviceType
+            mName = name
 
             val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
@@ -264,36 +285,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                      * This method must queries for the device type export view and matches the exports with the
                      * current experiment id.
                      */
-                    //start observing for exportable experiments using the defined view
-                    sViewModel.deviceTypeExports.observeOnce(viewLifecycleOwner, {
-
-                        //only export if the view has rows, and only export the current selected experiment
-                        it?.let { exports ->
-
-                            exports.filter { row -> row.experimentId == mExpId }.also { exportables ->
-
-                                //grab the first experiment as an example to find the name and device type for the filename
-                                val example = exportables.firstOrNull()
-
-                                if (example == null) {
-
-                                    (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
-
-                                }
-
-                                example?.let { it ->
-
-                                    //make dates on exports unique
-                                    mFileName = "${it.experiment}_${it.deviceType}_${DateUtil().getTime()}.csv"
-
-                                    mExportables = exportables
-
-                                    requestPermissionsLauncher.launch(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
-                                }
-                            }
-                        }
-                    })
+                    requestPermissionsLauncher.launch(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
 
                 }
 
@@ -391,7 +384,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                         (mBinding?.recyclerView?.adapter as SampleAdapter)
                                 .currentList[viewHolder.absoluteAdapterPosition].also { s ->
 
-                            launch {
+                            mScope.launch {
 
                                 deleteSample(Sample(s.eid, s.name))
 

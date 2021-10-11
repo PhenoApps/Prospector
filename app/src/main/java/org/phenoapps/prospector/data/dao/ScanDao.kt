@@ -3,6 +3,7 @@ package org.phenoapps.prospector.data.dao
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
 import org.phenoapps.prospector.fragments.ScanListFragment
@@ -22,7 +23,7 @@ interface ScanDao {
     @Query("SELECT sf.* FROM spectral_frames as sf, experiments as e, scans as s WHERE e.eid = :eid and s.eid = :eid and s.sid = :sid and sf.sid = :sid")
     fun getSpectralValuesLive(eid: Long, sid: Long): LiveData<List<SpectralFrame>>
 
-    @Query("SELECT * FROM spectral_frames as frames, scans as s WHERE s.name = :sample and s.eid = :eid and s.sid = frames.sid ORDER BY s.date DESC")
+    @Query("SELECT frames.* FROM spectral_frames as frames, scans as s WHERE s.name = :sample and s.eid = :eid and s.sid = frames.sid ORDER BY s.date DESC")
     fun getFrames(eid: Long, sample: String): LiveData<List<SpectralFrame>>
 
     @Query("SELECT sf.*, s.eid as 'eid', s.name as 'name', s.date as 'date', s.deviceType as 'deviceType', s.deviceId as 'deviceId', s.alias as 'alias', s.operator as 'operator' FROM spectral_frames as sf, experiments as e, scans as s WHERE e.eid = :eid and s.eid = :eid and s.name = :sample and sf.sid = s.sid and sf.lightSource = :lightSource")

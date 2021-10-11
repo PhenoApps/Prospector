@@ -37,10 +37,6 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
     private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
-    private val argForceOperator by lazy {
-        arguments?.getBoolean(mKeyUtil.argOpenOperatorSettings) ?: false
-    }
-
     private val mKeyUtil by lazy {
         KeyUtil(context)
     }
