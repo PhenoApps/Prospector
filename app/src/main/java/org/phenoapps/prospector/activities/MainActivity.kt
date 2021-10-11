@@ -218,7 +218,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         mCitationDialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_citation_title)
-            .setMessage(R.string.dialog_citation_message)
+            .setMessage(getString(R.string.dialog_citation_string) + "\n\n" + getString(R.string.dialog_citation_message))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 dialog.dismiss()
             }

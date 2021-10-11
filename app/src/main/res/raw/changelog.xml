@@ -1,4 +1,11 @@
 <changelog>
+    <release versionCode="8" versionName="v1.2.0" date="2021-10-11">
+        <new>Upgraded graphing code</new>
+        <new>Added person dialog reminder and setting</new>
+        <new>Citation dialog when exporting data</new>
+        <bugfix>Bug fixes</bugfix>
+    </release>
+
     <release versionCode="6" versionName="v1.1.1" date="2021-09-29">
         <bugfix>Minor bug fixes</bugfix>
     </release>

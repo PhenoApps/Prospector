@@ -28,8 +28,8 @@ android {
         //link square api has minimum requirement of 21
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 6
-        versionName "1.1.1"
+        versionCode 8
+        versionName "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 

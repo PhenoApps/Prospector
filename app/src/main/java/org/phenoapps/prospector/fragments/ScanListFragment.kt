@@ -39,6 +39,10 @@ import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.*
 import java.lang.IllegalStateException
 import java.util.*
+import com.github.mikephil.charting.components.XAxis
+
+
+
 
 /**
  * Fragment for visualizing and managing spectrometer scans. Contains a graph view for displaying results,
@@ -274,6 +278,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             ui.fragScanListLineChart.legend.isEnabled = false
             ui.fragScanListLineChart.description.text = ""
+            ui.fragScanListLineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
 
             ui.scanOnClick = sOnClickScan
 

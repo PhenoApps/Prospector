@@ -163,8 +163,11 @@
     <string name="frag_scan_list_converted_x_axis">Wavelength (nm)</string>
     <string name="frag_scan_list_pixel_x_axis">Pixel (px)</string>
     <string name="frag_scan_list_y_axis">Intensity (a.u)</string>
+
     <string name="dialog_citation_title">Citation</string>
-    <string name="dialog_citation_message">Rife, TW, Courtney, C, Hershberger, J, Gore, MA, Neilsen, M, Poland, J. Prospector: A mobile application for portable, high-throughput near-infrared spectroscopy phenotyping. \n<i>Plant Phenome J.</i> 2021; 4:e20024. \nhttps://doi.org/10.1002/ppj2.20024</string>
+    <string name="dialog_citation_string">If you utilize  for research, please cite the following journal article:</string>
+    <string name="dialog_citation_message" translatable="false">Rife, T.W., C. Courtney, J. Hershberger, M.A. Gore, M. Neilsen, J.A. Poland. Prospector: A mobile application for portable, high-throughput near-infrared spectroscopy phenotyping. \n<i>Plant Phenome J.</i> 2021; 4:e20024.</string>
+
     <string name="pref_profile_verify_operator_title">Verify Operator</string>
     <string name="pref_profile_verify_operator_summary">Shows a dialog every 24 hours to verify the current operator is set and has not changed.</string>
     <string name="dialog_ask_input_operator_title">Please set an operator name.</string>
