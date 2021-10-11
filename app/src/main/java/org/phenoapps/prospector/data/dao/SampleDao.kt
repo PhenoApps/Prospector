@@ -2,22 +2,24 @@ package org.phenoapps.prospector.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
+import org.phenoapps.prospector.data.models.SampleFramesCount
 import org.phenoapps.prospector.data.models.SampleScanCount
 
 @Dao
 interface SampleDao {
 
     /** View queries **/
-    @Query("SELECT * FROM DeviceTypeExport")
-    fun getDeviceTypeExports(): LiveData<List<DeviceTypeExport>>
+    @Query("SELECT * FROM DeviceTypeExport WHERE experimentId = :eid")
+    fun getDeviceTypeExports(eid: Long): LiveData<List<DeviceTypeExport>>
 
     @Query("SELECT DISTINCT * FROM SampleScanCount WHERE eid = :eid")
     fun getSampleScanCounts(eid: Long): LiveData<List<SampleScanCount>>
+
+    @Query("SELECT DISTINCT * FROM SampleFramesCount WHERE eid = :eid")
+    fun getSampleFramesCount(eid: Long): LiveData<List<SampleFramesCount>>
 
     @Query("SELECT DISTINCT * FROM samples")
     fun getSamples(): LiveData<List<Sample>>

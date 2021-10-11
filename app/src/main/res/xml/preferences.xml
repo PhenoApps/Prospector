@@ -9,17 +9,16 @@
 
         <EditTextPreference
             android:icon="@drawable/ic_setting_person"
-            android:key="org.phenoapps.prospector.OPERATOR"
+            android:key="@string/key_operator"
             android:title="@string/pref_operator_title"
-            app:useSimpleSummaryProvider="true" />
+            android:summary="@string/pref_operator_not_set_summary" />
 
-        <!--        <ListPreference-->
-        <!--            android:icon="@drawable/ic_nv_export"-->
-        <!--            android:title="@string/pref_export_type"-->
-        <!--            android:defaultValue="0"-->
-        <!--            android:key="org.phenoapps.prospector.EXPORT_TYPE"-->
-        <!--            android:entryValues="@array/export_indices_array"-->
-        <!--            android:entries="@array/export_types_array"/>-->
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:icon="@drawable/ic_pref_profile_verify"
+            android:key="@string/key_pref_profile_verify_operator"
+            android:summary="@string/pref_profile_verify_operator_summary"
+            android:title="@string/pref_profile_verify_operator_title" />
 
     </PreferenceCategory>
 

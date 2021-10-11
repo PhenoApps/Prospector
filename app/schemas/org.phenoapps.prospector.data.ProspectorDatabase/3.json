@@ -1,0 +1,323 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "a410bfefe8eaf512f6cc1c79c3447e3a",
+    "entities": [
+      {
+        "tableName": "experiments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `note` TEXT, `eid` INTEGER PRIMARY KEY AUTOINCREMENT, `date` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceType",
+            "columnName": "deviceType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "eid",
+            "columnName": "eid",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "eid"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_experiments_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_experiments_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "scans",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`eid` INTEGER NOT NULL, `name` TEXT NOT NULL, `date` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `color` TEXT, `deviceId` TEXT, `alias` TEXT, `operator` TEXT, `lightSource` INTEGER, `sid` INTEGER PRIMARY KEY AUTOINCREMENT, FOREIGN KEY(`eid`, `name`) REFERENCES `samples`(`eid`, `name`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "eid",
+            "columnName": "eid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceType",
+            "columnName": "deviceType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "alias",
+            "columnName": "alias",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "operator",
+            "columnName": "operator",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lightSource",
+            "columnName": "lightSource",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sid",
+            "columnName": "sid",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "sid"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_scans_eid",
+            "unique": false,
+            "columnNames": [
+              "eid"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scans_eid` ON `${TABLE_NAME}` (`eid`)"
+          },
+          {
+            "name": "index_scans_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scans_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "samples",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "eid",
+              "name"
+            ],
+            "referencedColumns": [
+              "eid",
+              "name"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "spectral_frames",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sid` INTEGER NOT NULL, `fid` INTEGER NOT NULL, `spectralValues` TEXT NOT NULL, `lightSource` INTEGER NOT NULL, `color` TEXT, PRIMARY KEY(`fid`, `sid`), FOREIGN KEY(`sid`) REFERENCES `scans`(`sid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "sid",
+            "columnName": "sid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frameId",
+            "columnName": "fid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spectralValues",
+            "columnName": "spectralValues",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lightSource",
+            "columnName": "lightSource",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "fid",
+            "sid"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_spectral_frames_sid",
+            "unique": false,
+            "columnNames": [
+              "sid"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_spectral_frames_sid` ON `${TABLE_NAME}` (`sid`)"
+          },
+          {
+            "name": "index_spectral_frames_fid",
+            "unique": false,
+            "columnNames": [
+              "fid"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_spectral_frames_fid` ON `${TABLE_NAME}` (`fid`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "scans",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "sid"
+            ],
+            "referencedColumns": [
+              "sid"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "samples",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`eid` INTEGER NOT NULL, `name` TEXT NOT NULL, `date` TEXT NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY(`eid`, `name`), FOREIGN KEY(`eid`) REFERENCES `experiments`(`eid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "eid",
+            "columnName": "eid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "eid",
+            "name"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_samples_eid",
+            "unique": false,
+            "columnNames": [
+              "eid"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_eid` ON `${TABLE_NAME}` (`eid`)"
+          },
+          {
+            "name": "index_samples_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "experiments",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "eid"
+            ],
+            "referencedColumns": [
+              "eid"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewName": "SampleScanCount",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT DISTINCT S.eid as eid, S.name as name, S.date as date, S.note as note,\n\t(SELECT COUNT(*) \n\tFROM scans\n\tWHERE S.eid = scans.eid and S.name = scans.name) as count\nfrom samples as S"
+      },
+      {
+        "viewName": "DeviceTypeExport",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT \n    E.eid as experimentId,\n    E.name as experiment, \n    S.name as sample, \n    S.date as date, \n    S.deviceType as deviceType,     \n    S.deviceId as deviceId, \n    S.operator as operator, \n    F.lightSource as lightSource, \n    F.spectralValues as spectralData, \n    SA.note as note\nFROM experiments as E\nINNER JOIN samples as SA ON SA.eid = E.eid\nINNER JOIN scans as S ON S.eid = E.eid AND SA.name = S.name\nINNER JOIN spectral_frames as F on F.sid = S.sid"
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a410bfefe8eaf512f6cc1c79c3447e3a')"
+    ]
+  }
+}

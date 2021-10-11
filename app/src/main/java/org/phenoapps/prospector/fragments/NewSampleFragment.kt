@@ -392,4 +392,11 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
         mTimer = null
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
+
+    }
 }

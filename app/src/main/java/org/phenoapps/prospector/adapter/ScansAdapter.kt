@@ -11,14 +11,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.callbacks.DiffCallbacks
-import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.databinding.ListItemScanBinding
+import org.phenoapps.prospector.fragments.ScanListFragment
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
 import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.Dialogs
 
-class ScansAdapter(val context: Context, private val listener: GraphItemClickListener) : ListAdapter<Scan,
-        ScansAdapter.ScanGraphViewHolder>(DiffCallbacks.Companion.ScanDiffCallback()) {
+class ScansAdapter(val context: Context, private val listener: GraphItemClickListener) : ListAdapter<ScanListFragment.ScanFrames,
+        ScansAdapter.ScanGraphViewHolder>(DiffCallbacks.Companion.ScanFrameDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScanGraphViewHolder {
 
@@ -44,11 +44,8 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
 
                 bind(scan) {
 
-                    scan.sid?.let { id ->
+                    listener.onItemClicked(scan.sid, scan.fid, scan.color)
 
-                        listener.onItemClicked(id, scan.color)
-
-                    }
                 }
             }
         }
@@ -57,7 +54,7 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
     inner class ScanGraphViewHolder(
             private val binding: ListItemScanBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(scan: Scan, onClick: View.OnClickListener) {
+        fun bind(scan: ScanListFragment.ScanFrames, onClick: View.OnClickListener) {
 
             with(binding) {
 
@@ -71,26 +68,17 @@ class ScansAdapter(val context: Context, private val listener: GraphItemClickLis
                         Dialogs.showColorChooserDialog(adapter, AlertDialog.Builder(context),
                                 context.getString(R.string.frag_scan_list_dialog_choose_color_title)) {
 
-                            scan.sid?.let { id ->
+                            listener.onItemLongClicked(scan.sid, scan.fid, it)
 
-                                listener.onItemLongClicked(id, it)
-
-                            }
                         }
 
                         true
                     }
-//                    this.nameView.text = scan.date
 
                     this.onClick = onClick
 
-                    this.scan = scan
-//
                     this.date = DateUtil().displayScanTime(scan.date)
-//                    this.deviceType = when(scan.deviceType) {
-//                        "0" -> "LinkSquare 1"
-//                        else -> "Unknown"
-//                    }
+
                 }
             }
         }

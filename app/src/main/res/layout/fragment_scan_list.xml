@@ -78,7 +78,7 @@
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/graphView"
+            app:layout_constraintBottom_toTopOf="@id/frag_scan_list_line_chart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/frag_scan_list_count_tv"
@@ -96,15 +96,35 @@
 
         </com.google.android.material.tabs.TabLayout>
 
-        <com.jjoe64.graphview.GraphView
-            android:id="@+id/graphView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_margin="8dp"
-            android:visibility="gone"
+        <org.phenoapps.prospector.utils.VerticalTextView
+            android:id="@+id/frag_scan_list_y_axis_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Y-Axis"
             app:layout_constraintBottom_toTopOf="@id/recyclerView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tabLayout" />
+
+        <TextView
+            android:id="@+id/frag_scan_list_x_axis_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="X-Axis"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frag_scan_list_line_chart" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/frag_scan_list_line_chart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="4dp"
+            app:layout_constraintBottom_toTopOf="@id/frag_scan_list_x_axis_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/frag_scan_list_y_axis_tv"
             app:layout_constraintTop_toBottomOf="@id/tabLayout"
             app:layout_constraintVertical_weight="3" />
 
@@ -118,7 +138,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/graphView"
+            app:layout_constraintTop_toBottomOf="@id/frag_scan_list_x_axis_tv"
             app:layout_constraintVertical_weight="2"
             tools:listitem="@layout/list_item_scan" />
 

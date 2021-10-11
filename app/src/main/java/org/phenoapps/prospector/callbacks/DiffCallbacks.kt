@@ -5,6 +5,7 @@ import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.models.SampleScanCount
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.fragments.SampleListFragment
+import org.phenoapps.prospector.fragments.ScanListFragment
 
 /**
  * DiffCallbacks are used in each adapter implementation.
@@ -37,14 +38,14 @@ class DiffCallbacks {
             }
         }
 
-        class ScanDiffCallback : DiffUtil.ItemCallback<Scan>() {
+        class ScanFrameDiffCallback : DiffUtil.ItemCallback<ScanListFragment.ScanFrames>() {
 
-            override fun areItemsTheSame(oldItem: Scan, newItem: Scan): Boolean {
-                return oldItem.sid == newItem.sid
+            override fun areItemsTheSame(oldItem: ScanListFragment.ScanFrames, newItem: ScanListFragment.ScanFrames): Boolean {
+                return oldItem.sid == newItem.sid && oldItem.fid == newItem.fid
             }
 
-            override fun areContentsTheSame(oldItem: Scan, newItem: Scan): Boolean {
-                return oldItem.sid == newItem.sid
+            override fun areContentsTheSame(oldItem: ScanListFragment.ScanFrames, newItem: ScanListFragment.ScanFrames): Boolean {
+                return oldItem.sid == newItem.sid && oldItem.fid == newItem.fid
             }
         }
     }

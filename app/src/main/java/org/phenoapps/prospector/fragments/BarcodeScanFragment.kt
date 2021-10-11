@@ -1,7 +1,6 @@
 package org.phenoapps.prospector.fragments
 
 import android.Manifest
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,8 +19,10 @@ import com.journeyapps.barcodescanner.BarcodeResult
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.databinding.FragmentBarcodeScanBinding
 import org.phenoapps.prospector.utils.KeyUtil
+import org.phenoapps.prospector.utils.MediaUtil
 
 /**
  * A barcode fragment that uses Zebra SDK. Specifically, this fragment returns the first scanned
@@ -45,12 +46,8 @@ class BarcodeScanFragment : Fragment() {
         }
     }
 
-    private val mPrefs by lazy {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-
-    private val mKeyUtil by lazy {
-        KeyUtil(context)
+    private val mMediaUtil by lazy {
+        MediaUtil(context)
     }
 
     private fun setupBarcodeScanner() {
@@ -78,9 +75,7 @@ class BarcodeScanFragment : Fragment() {
 
                             if (result.text == null) return // || result.text == lastText) return
 
-                            if (mPrefs.getBoolean(mKeyUtil.audioEnabled, true)) {
-                                MediaPlayer.create(context, R.raw.notification_simple).start()
-                            }
+                            mMediaUtil.play(MediaUtil.BARCODE_SCAN)
 
                             setFragmentResult("BarcodeResult",
                                 bundleOf("barcode_result" to result.text.toString()))
@@ -119,6 +114,9 @@ class BarcodeScanFragment : Fragment() {
         super.onResume()
 
         mBinding?.barcodeScanner?.resume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
+
     }
 
     override fun onPause() {

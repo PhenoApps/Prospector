@@ -198,29 +198,29 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun updateUi() {
 
-        sViewModel.experimentCounts.observe(viewLifecycleOwner, {
+        sViewModel.getExperimentCounts().observe(viewLifecycleOwner, {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                 ?.submitList(when (mSortState) {
 
                     DATE_DESC -> {
 
-                        it.sortedByDescending { it.date }
+                        it.sortedByDescending { x -> x.date }
                     }
 
                     DATE_ASC -> {
 
-                        it.sortedBy { it.date }
+                        it.sortedBy { x -> x.date }
                     }
 
                     ALPHA_DESC -> {
 
-                        it.sortedByDescending { it.name }
+                        it.sortedByDescending { x -> x.name }
                     }
 
                     else -> {
 
-                        it.sortedBy { it.name }
+                        it.sortedBy { x -> x.name }
                     }
                 })
 
@@ -265,5 +265,12 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
         mTimer?.purge()
 
         mTimer = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
+
     }
 }
