@@ -3,6 +3,7 @@ package org.phenoapps.prospector.fragments
 import CONVERT_TO_WAVELENGTHS
 import DEVICE_ALIAS
 import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import OPERATOR
 import android.graphics.Color
@@ -12,10 +13,10 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -23,7 +24,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import com.stratiotechnology.linksquareapi.LSFrame
-import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
@@ -32,7 +32,6 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ScansAdapter
 import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.data.models.SpectralFrame
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ScanViewModel
 import org.phenoapps.prospector.databinding.FragmentScanListBinding
 import org.phenoapps.prospector.interfaces.GraphItemClickListener
@@ -40,8 +39,9 @@ import org.phenoapps.prospector.utils.*
 import java.lang.IllegalStateException
 import java.util.*
 import com.github.mikephil.charting.components.XAxis
-
-
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
+import org.phenoapps.prospector.interfaces.Spectrometer
 
 
 /**
@@ -63,8 +63,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
     private val TAG = this.tag ?: "ScanListFragment"
 
     private val sDeviceScope = CoroutineScope(Dispatchers.IO)
-
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     private var mSelectedScanId: Long = -1
     private var mSelectedFrameId: Int = -1
@@ -98,19 +96,17 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
     //navigate to the instructions page if the device is not connected
     private val sOnClickScan = View.OnClickListener {
 
-        if (sDeviceViewModel.isConnected()) {
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
+        if (deviceViewModel?.isConnected() == true) {
 
             if (!mIsScanning) {
 
                 mIsScanning = true
 
-                sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+                callScanDialog(deviceViewModel.getDeviceInfo())
 
-                    callScanDialog(connectedDeviceInfo)
-
-                }
             }
-
 
         } else {
 
@@ -123,14 +119,15 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private suspend fun insertScan(name: String, frames: List<LSFrame>) {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         val alias = mPrefs.getString(DEVICE_ALIAS, "")
         val operator = mPrefs.getString(OPERATOR, "") ?: ""
-        val device = sDeviceViewModel.getDeviceInfo()?.DeviceID ?: "Unknown Device Id"
-        val deviceType = if (device.startsWith("NIR")) DEVICE_TYPE_NIR else DEVICE_TYPE_LS1
 
+        val info = deviceViewModel?.getDeviceInfo()
         val scan = Scan(mExpId, name).apply {
-            this.deviceId = device
-            this.deviceType = deviceType
+            this.deviceId = info?.deviceId ?: ""
+            this.deviceType = info?.deviceType ?: ""
             this.alias = alias
             this.operator = operator
         }
@@ -152,17 +149,30 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      * Dialog is only called if the current connected deviceType matches the experiment deviceType.
      * If they match, the dialog begins which displays the status of the scan (indeterminately)
      */
-    private fun callScanDialog(device: LinkSquareAPI.LSDeviceInfo) {
+    private fun callScanDialog(device: Spectrometer.DeviceInfo, manual: Boolean? = false) {
+
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
         activity?.let { act ->
 
             context?.let { ctx ->
 
+                if (deviceViewModel is InnoSpectraViewModel) {
+
+                    if (!deviceViewModel.hasActiveScan()) {
+
+                        Toast.makeText(ctx, R.string.inno_spectra_device_not_ready, Toast.LENGTH_SHORT).show()
+                        mIsScanning = false
+                        return
+                    }
+
+                }
+
                 sViewModel.experiments.observeOnce(viewLifecycleOwner, { experiments ->
 
                     val exp = experiments?.find { it.eid == mExpId }
 
-                    if (exp?.deviceType == resolveDeviceType(ctx, device)) {
+                    if (exp?.deviceType == device.deviceType) {
 
                         val dialog = Dialogs.askForScan(act, R.string.scanning, R.string.close)
 
@@ -170,7 +180,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         val dialogInterface = dialog.show()
 
-                        sDeviceViewModel.scan(ctx).observeOnce(viewLifecycleOwner) {
+                        deviceViewModel?.scan(ctx, manual)?.observeOnce(viewLifecycleOwner) {
 
                             it?.let { frames ->
 
@@ -276,6 +286,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
         mBinding?.let { ui ->
 
+            val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
             ui.fragScanListLineChart.legend.isEnabled = false
             ui.fragScanListLineChart.description.text = ""
             ui.fragScanListLineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
@@ -339,13 +351,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
             }
 
-            if (startScan && sDeviceViewModel.isConnected()) {
+            if (startScan && deviceViewModel?.isConnected() == true) {
 
-                sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+                callScanDialog(deviceViewModel.getDeviceInfo())
 
-                    callScanDialog(connectedDeviceInfo)
-
-                }
             }
         }
 
@@ -364,7 +373,9 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
     }
 
     private fun FragmentScanListBinding.setupToolbar() {
-        
+
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         scanToolbar.setNavigationOnClickListener {
 
             findNavController().popBackStack()
@@ -381,7 +392,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                         if (this?.mConnected == true) {
 
-                            sDeviceViewModel.reset()
+                            deviceViewModel?.reset(context)
+
                         } else {
 
                             if (findNavController().currentDestination?.id == R.id.scan_list_fragment) {
@@ -484,7 +496,10 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                             DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
 
-                            else -> LinkSquareRange.max
+                            DEVICE_TYPE_LS1 -> LinkSquareRange.max
+
+                            else -> InnoSpectraRange.max
+
                         }
 
                     } else frameList.toPixelArray()).movingAverageSmooth(),
@@ -562,6 +577,8 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
     private fun startTimer() {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         val check = object : TimerTask() {
 
             override fun run() {
@@ -572,7 +589,7 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                         with(mBinding?.titleToolbar) {
 
                             this?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(if (sDeviceViewModel.isConnected()) {
+                                ?.setIcon(if (deviceViewModel?.isConnected() == true) {
                                     attachDeviceButtonPressListener()
                                     R.drawable.ic_vector_link
                                 }
@@ -624,7 +641,6 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
                     ui.fragScanListXAxisTv.visibility = View.INVISIBLE
                 }
 
-
                 ui.scanCount = this.resources.getQuantityString(
                     R.plurals.numberOfScans, count, count)
                 ui.tabLayout.getTabAt(0)?.text = getString(R.string.bulb, bulbFrames.size)
@@ -658,9 +674,11 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
      */
     private fun attachDeviceButtonPressListener() {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         try {
 
-            sDeviceViewModel.setEventListener {
+            deviceViewModel?.setEventListener {
 
                 if (!mIsScanning) {
 
@@ -668,22 +686,21 @@ class ScanListFragment : Fragment(), CoroutineScope by MainScope(), GraphItemCli
 
                     activity?.runOnUiThread {
 
-                        if (sDeviceViewModel.isConnected()) {
+                        if (deviceViewModel.isConnected()) {
 
-                            sDeviceViewModel.getDeviceInfo()?.let { connectedDeviceInfo ->
+                            callScanDialog(deviceViewModel.getDeviceInfo(), manual = true)
 
-                                callScanDialog(connectedDeviceInfo)
-
-                            }
                         }
                     }
                 }
-            }.observe(viewLifecycleOwner, {})
+
+            }?.observe(viewLifecycleOwner, {})
 
         } catch (e: IllegalStateException) {
 
-            Log.d(TAG, "Failed to connect LS")
+            Log.d(TAG, "Failed to connect.")
         }
+
     }
 
     private suspend fun deleteScans(exp: Long, sample: String) = withContext(Dispatchers.IO) {

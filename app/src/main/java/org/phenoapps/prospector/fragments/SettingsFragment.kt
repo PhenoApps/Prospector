@@ -1,7 +1,10 @@
 package org.phenoapps.prospector.fragments
 
+import DEVICE_INNO_SPECTRA
 import DEVICE_IOT_LIST
 import DEVICE_IP
+import DEVICE_LINK_SQUARE
+import DEVICE_MANUFACTURER
 import DEVICE_PASSWORD
 import DEVICE_PORT
 import DEVICE_SSID
@@ -11,6 +14,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
@@ -20,9 +24,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
-import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel_Factory
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.utils.KeyUtil
+import org.phenoapps.prospector.utils.LinkSquare
 import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
 
@@ -35,15 +39,15 @@ import org.phenoapps.prospector.utils.observeOnce
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
-
     private val mKeyUtil by lazy {
         KeyUtil(context)
     }
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    //private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+
+        //val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
@@ -70,13 +74,6 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
             }
         }
 
-        //set iot device list to disabled, enable it when devcies are found
-        with(findPreference<Preference>(DEVICE_IOT_LIST)) {
-
-           this?.summary = getString(R.string.pref_iot_list_no_devices)
-
-        }
-
         //sets pref summary to the inputted operator name
         findPreference<EditTextPreference>(OPERATOR)?.setOnPreferenceChangeListener { preference, newValue ->
 
@@ -86,168 +83,26 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         }
 
-        //this is the connect IoT button which searches the subnet
-        findPreference<Preference>(DEVICE_IOT_LIST)?.setOnPreferenceClickListener { pref ->
+        findPreference<Preference>(DEVICE_LINK_SQUARE)?.let { devicePref ->
 
-            pref.summary = getString(R.string.pref_device_iot_searching)
+            devicePref.setOnPreferenceClickListener {
 
-            sDeviceViewModel.scanArp().observeOnce(viewLifecycleOwner, {
+                findNavController().navigate(SettingsFragmentDirections
+                    .actionToLinksquareSettingsFragment())
 
-                if (it == "fail") { //back down to the brute force network search
-
-                    Log.d("LSSearch", "Starting brute force search.")
-
-                    sDeviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner, {
-
-                        pref.summary = it
-
-                        findPreference<EditTextPreference>(DEVICE_IP)?.text = it
-
-                        scope.launch {
-
-                            sDeviceViewModel.connect(requireContext())
-
-                            buildDeviceSummary()
-
-                        }
-
-                    })
-
-                } else { //use arp to find TI devices and connect if found
-
-                    pref.summary = it
-
-                    findPreference<EditTextPreference>(DEVICE_IP)?.text = it
-
-                    scope.launch {
-
-                        sDeviceViewModel.connect(requireContext())
-
-                        buildDeviceSummary()
-
-                    }
-                }
-            })
-
-            true
-        }
-
-        //this is less of a device type and more of a device info placeholder
-        findPreference<Preference>(DEVICE_TYPE)?.let { etPref ->
-
-            buildDeviceSummary()
-        }
-
-//        //sets device alias
-//        findPreference<EditTextPreference>(DEVICE_ALIAS)?.setOnPreferenceChangeListener { _, newValue ->
-//
-//            launch {
-//
-//                sDeviceViewModel.setAlias(newValue as? String ?: String())
-//
-//            }
-
-//            true
-//
-//        }
-
-        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            val mode = newValue as? Boolean ?: true
-
-            preference.summary = if (mode) "AP" else "IoT"
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_PASSWORD)?.setOnPreferenceChangeListener { _, _ ->
-
-            setWLanInfo()
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_SSID)?.setOnPreferenceChangeListener { _, _ ->
-
-            setWLanInfo()
-
-            true
-
-        }
-
-//        findPreference<ListPreference>(DEVICE_WIFI_MODE)?.setOnPreferenceChangeListener { preference, newValue ->
-//
-//            val mode = newValue as? Boolean ?: true
-//
-//            preference.summary = if (mode) "AP" else "IoT"
-//
-//            true
-//
-//        }
-
-        findPreference<EditTextPreference>(DEVICE_IP)?.setOnPreferenceChangeListener { _, _ ->
-
-            scope.launch {
-
-                sDeviceViewModel.connect(requireContext())
-
-                buildDeviceSummary()
-            }
-
-            true
-
-        }
-
-        findPreference<EditTextPreference>(DEVICE_PORT)?.setOnPreferenceChangeListener { _, _ ->
-
-            scope.launch {
-
-                sDeviceViewModel.connect(requireContext())
-
-            }
-
-            true
-
-        }
-    }
-
-    private fun buildDeviceSummary() {
-
-        scope.launch {
-
-            val summary = when (sDeviceViewModel.isConnected()) {
-
-                true -> buildLinkSquareDeviceInfo(requireContext(),
-                    sDeviceViewModel.getDeviceInfo())
-
-                else -> sDeviceViewModel.getDeviceError()
-
-            }
-
-            if (isAdded) {
-
-                activity?.runOnUiThread {
-
-                    findPreference<Preference>(DEVICE_TYPE)?.summary = summary
-                }
+                true
             }
         }
-    }
 
-    private fun setWLanInfo() {
+        findPreference<Preference>(DEVICE_INNO_SPECTRA)?.let { devicePref ->
 
-        val ssid = findPreference<EditTextPreference>(DEVICE_SSID)
-        val password = findPreference<EditTextPreference>(DEVICE_PASSWORD)
+            devicePref.setOnPreferenceClickListener {
 
-        scope.launch {
+                findNavController().navigate(SettingsFragmentDirections
+                    .actionToInnoSpectraSettingsFragment())
 
-            sDeviceViewModel.setWLanInfoAsync(
-                ssid?.text ?: "",
-                password?.text ?: "",
-                DeviceViewModel.WPA).await()
-
+                true
+            }
         }
     }
 

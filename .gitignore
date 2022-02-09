@@ -91,3 +91,11 @@ app/src/main/java/org/phenoapps/prospector/utils/SecretLinkSquareUtils.kt
 *.jks
 *.keystore
 keystore.config
+/app/libs/arm64-v8a/
+/app/libs/armeabi/
+/app/libs/armeabi-v7a/
+/app/libs/mips/
+/app/libs/mips64/
+/app/libs/x86/
+/app/libs/x86_64/
+/app/libs/ISCSDK-release.aar

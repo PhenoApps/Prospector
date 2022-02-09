@@ -9,7 +9,31 @@
     <fragment
         android:id="@+id/settings_fragment"
         android:name="org.phenoapps.prospector.fragments.SettingsFragment"
-        android:label="@string/nav_label_settings"/>
+        android:label="@string/nav_label_settings">
+        <action android:id="@+id/action_to_linksquare_settings_fragment"
+            app:destination="@id/linksquare_settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
+        <action android:id="@+id/action_to_inno_spectra_settings_fragment"
+            app:destination="@id/inno_spectra_settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/inno_spectra_new_config_fragment"
+        android:name="org.phenoapps.prospector.fragments.InnoSpectraNewConfigFragment"
+        android:label="@string/nav_label_inno_spectra_new_config_label">
+        <action android:id="@+id/action_to_new_section_creator"
+            app:destination="@id/inno_spectra_new_section_fragment"
+            app:popUpTo="@id/inno_spectra_new_config_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/inno_spectra_new_section_fragment"
+        android:name="org.phenoapps.prospector.fragments.InnoSpectraNewSectionFragment"
+        android:label="@string/nav_label_inno_spectra_new_section_label"/>
 
     <fragment
         android:id="@+id/about_fragment"
@@ -39,6 +63,20 @@
 
     </fragment>
 
+    <fragment
+        android:id="@+id/inno_spectra_settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.InnoSpectraSettingsFragment"
+        android:label="@string/inno_spectra_settings_fragment_label">
+        <action android:id="@+id/action_to_new_config_creator"
+            app:destination="@id/inno_spectra_new_config_fragment"
+            app:popUpTo="@id/inno_spectra_settings_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/linksquare_settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.LinkSquareSettingsFragment"
+        android:label="@string/linksquare_settings_fragment_label"/>
 <!--    <fragment-->
 <!--        android:id="@+id/scan_detail_fragment"-->
 <!--        android:name="org.phenoapps.prospector.fragments.ScanDetailFragment"-->

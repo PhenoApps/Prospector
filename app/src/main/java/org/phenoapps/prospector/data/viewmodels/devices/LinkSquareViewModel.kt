@@ -1,28 +1,28 @@
-package org.phenoapps.prospector.data.viewmodels
+package org.phenoapps.prospector.data.viewmodels.devices
 
 import BULB_FRAMES
 import DEVICE_IP
 import DEVICE_PORT
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NIR
 import LED_FRAMES
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import androidx.preference.PreferenceManager
 import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import org.phenoapps.prospector.interfaces.Spectrometer
 import java.io.BufferedReader
 import java.io.FileReader
 import java.lang.IndexOutOfBoundsException
 import javax.inject.Inject
 
-/**
- * TODO: Implement an interface for spectrometers then generalize this to devices other than LS.
- */
 @HiltViewModel
-class DeviceViewModel @Inject constructor() : ViewModel() {
+class LinkSquareViewModel @Inject constructor() : ViewModel(), Spectrometer {
 
     init {
 
@@ -42,15 +42,13 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
         super.onCleared()
     }
 
-    private fun manager(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
-
     private var sDevice: LinkSquareAPI? = LinkSquareAPI.getInstance().also {
 
         it?.Initialize()
 
     }
 
-    suspend fun connect(context: Context) {
+    override suspend fun connect(context: Context) {
 
         with (manager(context)) {
 
@@ -63,7 +61,7 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun reset() {
+    override fun reset(context: Context?) {
 
         sDevice?.Close()
 
@@ -74,15 +72,26 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun getDeviceError() = sDevice?.GetLSError()
+    override fun getDeviceError() = sDevice?.GetLSError()
+    override fun getDeviceInfo() = with(sDevice?.GetDeviceInfo()) {
+        Spectrometer.DeviceInfo(
+            this?.SWVersion ?: "?",
+            this?.HWVersion ?: "?",
+            this?.DeviceID ?: "-1",
+            this?.Alias ?: "?",
+            this?.OPMode ?: "?",
+            when (this?.DeviceType ?: 0) {
+                0 -> DEVICE_TYPE_LS1
+                else -> DEVICE_TYPE_NIR
+            }
+        )
+    }
 
-    fun getDeviceInfo() = sDevice?.GetDeviceInfo()
+    override fun disconnect(context: Context): Int? = sDevice?.Close()
 
-    fun disconnect() = sDevice?.Close()
+    override fun isConnected() = sDevice?.IsConnected() ?: false
 
-    fun isConnected() = sDevice?.IsConnected() ?: false
-
-    fun setEventListener(onClick: () -> Unit) = liveData(sDeviceScope.coroutineContext, 2000L) {
+    override fun setEventListener(onClick: () -> Unit) = liveData(sDeviceScope.coroutineContext, 2000L) {
 
         sDevice.let { device ->
 
@@ -107,42 +116,7 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
         emit("DONE")
     }
 
-//    fun connection(context: Context) = liveData(sDeviceScope.coroutineContext, 500L) {
-//
-//        val connecting = -1
-//
-//        var result: Int? = LinkSquareAPI.RET_ERR
-//
-//        //emit(connecting)
-//
-//        while (result == LinkSquareAPI.RET_ERR) {
-//
-//            with (manager(context)) {
-//
-//                val ip = getString(DEVICE_IP, "192.168.1.1") ?: "192.168.1.1"
-//
-//                val port = (getString(DEVICE_PORT, "18630") ?: "18630").toInt()
-//
-//                result = connect(ip, port)
-//
-//                emit(when (result) {
-//
-//                    LinkSquareAPI.RET_OK -> {
-//
-//                        getDeviceInfo()
-//
-//                    }
-//                    else -> {
-//
-//                        getDeviceError()
-//
-//                    }
-//                })
-//            }
-//        }
-//    }
-
-    fun scan(context: Context) = liveData {
+    override fun scan(context: Context, manual: Boolean?): LiveData<List<LSFrame>?> = liveData {
 
         with (manager(context)) {
 
@@ -153,9 +127,7 @@ class DeviceViewModel @Inject constructor() : ViewModel() {
             val frames = scan(ledFrames, bulbFrames)
 
             emit(frames)
-
         }
-
     }
 
     private val mFrames = ArrayList<LSFrame>()

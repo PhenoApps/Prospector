@@ -5,6 +5,7 @@ import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
+import DEVICE_TYPE_LS1
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -31,9 +31,7 @@ import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
-import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
@@ -54,8 +52,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
-
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     //fragment argument
     private var mExpId: Long = -1L
@@ -241,6 +237,19 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             mDeviceType = deviceType
             mName = name
 
+            val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1) ?: DEVICE_TYPE_LS1
+            if (maker !in deviceType) {
+
+                if (DEVICE_TYPE_LS1 in deviceType) {
+
+                    (activity as MainActivity).switchLinkSquare()
+
+                } else {
+
+                    (activity as MainActivity).switchInnoSpectra()
+                }
+            }
+
             val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
             val localInflater = inflater.cloneInContext(contextThemeWrapper)
@@ -292,11 +301,13 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 R.id.action_connection -> {
 
+                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
                     with (activity as? MainActivity) {
 
                         if (this?.mConnected == true) {
 
-                            sDeviceViewModel.reset()
+                            deviceViewModel?.reset(context)
                         } else {
 
                             if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
@@ -406,6 +417,8 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     private fun startTimer() {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
 
@@ -417,7 +430,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                         with(mBinding?.samplesToolbar) {
 
                             this?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                                ?.setIcon(if (deviceViewModel?.isConnected() == true) R.drawable.ic_vector_link
                                 else R.drawable.ic_vector_difference_ab)
 
                         }
@@ -518,4 +531,3 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     }
 }
-

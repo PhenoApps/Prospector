@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.chip.ChipGroup
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_cg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+            <com.google.android.material.chip.Chip
+                android:id="@+id/frag_new_section_column_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:checkable="true"
+                android:text="@string/frag_new_section_column_chip_text"/>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/frag_new_section_hadamard_chip"
+                android:checkable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/frag_new_section_hadamard_chip_text"/>
+        </com.google.android.material.chip.ChipGroup>
+
+        <View android:id="@+id/frag_new_section_sep_one"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_cg"
+            android:background="#c0c0c0"/>
+
+        <TextView style="?android:textAppearanceLarge"
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_spectral_header_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_sep_one"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="@string/frag_new_section_spectral_header_text"/>
+
+        <Spinner
+            android:paddingTop="4dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:id="@+id/frag_new_section_width_sp"
+            android:text="@string/frag_new_section_sp_text"
+            android:entries="@array/inno_spectra_widths"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/frag_new_config_repeats_hint"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_sep_one"
+            app:layout_constraintStart_toStartOf="@id/frag_new_section_exposure_time_sp"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView style="?android:textAppearanceLarge"
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_exposure_header_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_width_sp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="@string/frag_new_section_exposure_header_text"/>
+
+        <Spinner
+            android:paddingTop="4dp"
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_exposure_time_sp"
+            android:entries="@array/inno_spectra_exposure_times"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/frag_new_config_repeats_hint"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_width_sp"
+            app:layout_constraintStart_toEndOf="@id/frag_new_section_exposure_header_tv"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <View android:id="@+id/frag_new_section_sep_two"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_exposure_time_sp"
+            android:background="#c0c0c0"/>
+
+        <TextView style="?android:textAppearanceLarge"
+            android:layout_margin="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/frag_new_section_spectral_values_header_tv"
+            android:text="@string/frag_new_section_spectral_values_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_sep_two"/>
+
+        <com.google.android.material.slider.RangeSlider
+            style="@style/Widget.MaterialComponents.Slider"
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_spectral_range_sl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:valueFrom="900"
+            android:valueTo="1700"
+            android:stepSize="1"
+            app:values="@array/inno_spectra_values"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_spectral_values_header_tv" />
+
+        <View android:id="@+id/frag_new_section_sep_three"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#c0c0c0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_spectral_range_sl" />
+
+        <TextView style="?android:textAppearanceLarge"
+            android:layout_margin="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/frag_new_section_digital_resolution_header_tv"
+            android:text="@string/frag_new_section_digital_resolution_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_sep_three"/>
+
+        <com.google.android.material.slider.Slider
+            style="@style/Widget.MaterialComponents.Slider"
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_section_digital_resolution_sl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:valueFrom="3"
+            android:valueTo="349"
+            android:stepSize="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_digital_resolution_header_tv" />
+
+        <View android:id="@+id/frag_new_section_sep_four"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_digital_resolution_sl"
+            android:background="#c0c0c0"/>
+
+        <Button
+            android:layout_margin="16dp"
+            android:id="@+id/frag_new_config_add_section_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_section_sep_four"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/frag_new_config_add_section_btn"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

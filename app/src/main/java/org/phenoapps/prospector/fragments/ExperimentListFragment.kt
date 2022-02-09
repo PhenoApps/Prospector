@@ -11,7 +11,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -25,7 +24,6 @@ import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
@@ -38,8 +36,6 @@ import java.util.*
 @WithFragmentBindings
 @AndroidEntryPoint
 class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
-
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     /**
      * Used to query experiment list
@@ -123,9 +119,11 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 R.id.action_connection -> {
 
-                    if (sDeviceViewModel.isConnected()) {
+                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
-                        sDeviceViewModel.reset()
+                    if (deviceViewModel?.isConnected() == true) {
+
+                        deviceViewModel.reset(context)
 
                     } else {
 
@@ -230,6 +228,8 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private fun startTimer() {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         //use the activity view model to access the current connection status
         val check = object : TimerTask() {
 
@@ -242,7 +242,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                             this?.menu?.findItem(R.id.action_connection)
                                 ?.setIcon(
-                                    if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
+                                    if (deviceViewModel?.isConnected() == true) R.drawable.ic_vector_link
                                     else R.drawable.ic_vector_difference_ab
                                 )
 

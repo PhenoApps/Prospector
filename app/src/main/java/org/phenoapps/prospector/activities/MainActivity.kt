@@ -1,16 +1,23 @@
 package org.phenoapps.prospector.activities
 
 import BULB_FRAMES
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -25,9 +32,11 @@ import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.*
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.util.*
@@ -52,7 +61,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     /**
      * This activity view model is used throughout all the fragments to update connection status.
      */
-    val sDeviceViewModel: DeviceViewModel by viewModels()
+    var sDeviceViewModel: Spectrometer? = null
 
     private var doubleBackToExitPressedOnce = false
 
@@ -132,7 +141,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     val last = mConnected
 
-                    mConnected = sDeviceViewModel.isConnected()
+                    mConnected = sDeviceViewModel?.isConnected() ?: false
 
                     if (last != mConnected) {
                         mSnackbar.push(
@@ -180,9 +189,56 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    private val permissionGranter = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+
+        if (permissions.all { it.value }) {
+
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+
+                startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+
+            } else {
+
+                startDeviceConnection()
+
+            }
+        }
+    }
+
+    fun switchInnoSpectra() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_NANO).apply()
+
+        sDeviceViewModel = InnoSpectraViewModel()
+
+        runtimeBluetoothCheck()
+
+    }
+
+    fun switchLinkSquare() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1).apply()
+
+        sDeviceViewModel = LinkSquareViewModel()
+
+        startDeviceConnection()
+    }
+
+    private fun runtimeBluetoothCheck() {
+        permissionGranter.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        runtimeBluetoothCheck()
 
         if ("release" in BuildConfig.FLAVOR) {
 
@@ -195,6 +251,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 throwable.printStackTrace()
 
             }
+        }
+
+        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
+        if (maker == DEVICE_TYPE_LS1) {
+
+            sDeviceViewModel = LinkSquareViewModel()
+
+        } else {
+
+            sDeviceViewModel = InnoSpectraViewModel()
         }
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
@@ -405,7 +471,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         lifecycleScope.launch {
 
-            sDeviceViewModel.connect(this@MainActivity.applicationContext)
+            sDeviceViewModel?.connect(this@MainActivity.applicationContext)
 
         }
     }
@@ -414,7 +480,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         lifecycleScope.launch {
 
-            sDeviceViewModel.disconnect()
+            sDeviceViewModel?.disconnect(this@MainActivity)
 
         }
     }
@@ -433,7 +499,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onPause() {
 
-        sDeviceViewModel.reset()
+        sDeviceViewModel?.reset(this)
 
         super.onPause()
     }

@@ -143,7 +143,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                     activity?.runOnUiThread {
 
-                        if (sDeviceViewModel.isConnected()) {
+                        if (sDeviceViewModel?.isConnected() == true) {
 
                             mBinding?.checkInsert(true)
 
@@ -303,7 +303,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                         if (this?.mConnected == true) {
 
-                            sDeviceViewModel.reset()
+                            sDeviceViewModel?.reset(context)
+
                         } else {
 
                             if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {

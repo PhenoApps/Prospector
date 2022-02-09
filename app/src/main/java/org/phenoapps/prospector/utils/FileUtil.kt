@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.utils
 
+import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import android.content.Context
 import android.net.Uri
@@ -80,14 +81,18 @@ open class FileUtil(private val ctx: Context) {
 
                         DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
 
-                        else -> LinkSquareExportRange.max
+                        DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+
+                        else -> InnoSpectraExportRange.max
                     }
 
                     val deviceTypeMin = when(firstExport.deviceType) {
 
                         DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
-                        else -> LinkSquareExportRange.min
+                        DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
+
+                        else -> InnoSpectraExportRange.min
                     }
 
                     it.first in deviceTypeMin..deviceTypeMax
@@ -120,14 +125,18 @@ open class FileUtil(private val ctx: Context) {
 
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
 
-                                else -> LinkSquareExportRange.max
+                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+
+                                else -> InnoSpectraExportRange.max
                             }
 
                             val deviceTypeMin = when(firstExport.deviceType) {
 
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
-                                else -> LinkSquareExportRange.min
+                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+
+                                else -> InnoSpectraExportRange.min
                             }
 
                             it.first in deviceTypeMin..deviceTypeMax
