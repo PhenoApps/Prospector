@@ -84,5 +84,5 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
-app/src/main/java/org/phenoapps/prospector/utils/SecretLinkSquareUtils.kt
-app/src/main/java/org/phenoapps/prospector/utils/InnoSpectraUtil.kt
+src/main/java/org/phenoapps/prospector/utils/SecretLinkSquareUtils.kt
+src/main/java/org/phenoapps/prospector/utils/InnoSpectraUtil.kt
