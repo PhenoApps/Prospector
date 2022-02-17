@@ -20,6 +20,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.utils.KeyUtil
 import org.phenoapps.prospector.utils.LinkSquare
@@ -43,7 +44,12 @@ class LinkSquareSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
-        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+        var deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
+        if (deviceViewModel !is LinkSquareViewModel) {
+            (activity as MainActivity).switchLinkSquare()
+            deviceViewModel = (activity as MainActivity).sDeviceViewModel as LinkSquareViewModel
+        }
 
         setPreferencesFromResource(R.xml.link_square_preferences, rootKey)
 
@@ -59,31 +65,13 @@ class LinkSquareSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by
 
             pref.summary = getString(R.string.pref_device_iot_searching)
 
-            if (deviceViewModel is LinkSquareViewModel) {
+            deviceViewModel.scanArp().observeOnce(viewLifecycleOwner) {
 
-                deviceViewModel.scanArp().observeOnce(viewLifecycleOwner) {
+                if (it == "fail") { //back down to the brute force network search
 
-                    if (it == "fail") { //back down to the brute force network search
+                    Log.d("LSSearch", "Starting brute force search.")
 
-                        Log.d("LSSearch", "Starting brute force search.")
-
-                        deviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner) {
-
-                            pref.summary = it
-
-                            findPreference<EditTextPreference>(DEVICE_IP)?.text = it
-
-                            scope.launch {
-
-                                deviceViewModel.connect(requireContext())
-
-                                buildDeviceSummary()
-
-                            }
-
-                        }
-
-                    } else { //use arp to find TI devices and connect if found
+                    deviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner) {
 
                         pref.summary = it
 
@@ -96,6 +84,21 @@ class LinkSquareSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by
                             buildDeviceSummary()
 
                         }
+
+                    }
+
+                } else { //use arp to find TI devices and connect if found
+
+                    pref.summary = it
+
+                    findPreference<EditTextPreference>(DEVICE_IP)?.text = it
+
+                    scope.launch {
+
+                        deviceViewModel.connect(requireContext())
+
+                        buildDeviceSummary()
+
                     }
                 }
             }

@@ -8,10 +8,12 @@
         app:iconSpaceReserved="false">
 
         <Preference
+            android:icon="@drawable/ic_cellphone_information"
             android:key="@string/key_pref_inno_spectra_device_info"
             android:title="@string/pref_inno_spectra_device_info_title" />
 
         <Preference
+            android:icon="@drawable/ic_clipboard_pulse_outline"
             android:key="@string/key_pref_inno_spectra_device_status"
             android:title="@string/device_status" />
 

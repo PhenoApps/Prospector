@@ -13,7 +13,7 @@ class ExperimentRepository @Inject constructor(
 
     suspend fun deleteExperiment(eid: Long) = dao.deleteExperiment(eid)
 
-    suspend fun insertExperiment(name: String, deviceType: String, date: String): Long {
+    suspend fun insertExperiment(name: String, deviceType: String, date: String, config: String? = null): Long {
 
         var actualDate = date
 
@@ -23,7 +23,7 @@ class ExperimentRepository @Inject constructor(
 
         }
 
-        return dao.insertExperiment(name, deviceType, actualDate)
+        return dao.insertExperiment(name, deviceType, actualDate, config)
 
     }
 

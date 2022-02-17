@@ -5,6 +5,8 @@
 <resources>
 
     <string name="key_pref_last_graph_selected">&package;LAST_SELECTED_GRAPH</string>
+    <string name="key_pref_return_from_new_config">&package;RETURN_FROM_NEW_CONFIG</string>
+    <string name="key_pref_last_connected_device_id">&package;LAST_CONNECTED_DEVICE_ID</string>
     <string name="key_pref_target_scan">&package;TARGET_SCANS</string>
     <string name="key_pref_audio_enabled">&package;AUDIO_ENABLED</string>
     <string name="key_pref_workflow_new_sample_by_scan">&package;SAMPLE_SCAN</string>

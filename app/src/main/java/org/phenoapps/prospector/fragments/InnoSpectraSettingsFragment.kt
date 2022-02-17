@@ -41,53 +41,60 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+        var deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
-        if (deviceViewModel is InnoSpectraViewModel) {
+        if (deviceViewModel !is InnoSpectraViewModel) {
+            (activity as MainActivity).switchInnoSpectra()
+            deviceViewModel = (activity as MainActivity).sDeviceViewModel as InnoSpectraViewModel
+        }
 
-            findPreference<Preference>(mKeyUtil.innoInformation)?.let { pref ->
+        findPreference<Preference>(mKeyUtil.innoInformation)?.let { pref ->
 
-                if (deviceViewModel.isConnected()) {
+            context?.let { ctx ->
 
-                    context?.let { ctx ->
+                scope.launch {
 
-                        scope.launch {
+                    while (!deviceViewModel.isConnected() || deviceViewModel.getDeviceInfo(ctx).isEmpty()) {
+                        Log.d(TAG, "Waiting for device info...")
+                        delay(1000)
+                    }
 
-                            while (deviceViewModel.getDeviceInfo(ctx).isEmpty()) {
-                                Log.d(TAG, "Waiting for device info...")
-                            }
-
-                            activity?.runOnUiThread {
-                                pref.summary = deviceViewModel.getDeviceInfo(ctx)
-                            }
-                        }
+                    activity?.runOnUiThread {
+                        pref.summary = deviceViewModel.getDeviceInfo(ctx)
                     }
                 }
             }
+        }
 
-            findPreference<Preference>(mKeyUtil.innoStatus)?.let { pref ->
+        findPreference<Preference>(mKeyUtil.innoStatus)?.let { pref ->
 
-                if (deviceViewModel.isConnected()) {
+            context?.let { ctx ->
 
-                    context?.let { ctx ->
+                scope.launch {
 
-                        scope.launch {
+                    while (!deviceViewModel.isConnected() || deviceViewModel.getDeviceStatus(ctx).isEmpty()) {
+                        Log.d(TAG, "Waiting for device status.")
+                        delay(1000)
+                    }
 
-                            while (deviceViewModel.getDeviceStatus(ctx).isEmpty()) {
-                                Log.d(TAG, "Waiting for device status.")
-                            }
-
-                            activity?.runOnUiThread {
-                                pref.summary = deviceViewModel.getDeviceStatus(ctx)
-                            }
-                        }
+                    activity?.runOnUiThread {
+                        pref.summary = deviceViewModel.getDeviceStatus(ctx)
                     }
                 }
             }
+        }
 
-            findPreference<Preference>(mKeyUtil.innoConfigRestore)?.setOnPreferenceClickListener {
+        findPreference<Preference>(mKeyUtil.innoConfigRestore)?.setOnPreferenceClickListener {
+
+            (activity as MainActivity).showAskFactoryReset {
 
                 try {
+
+                    val configList = findPreference<ListPreference>(mKeyUtil.innoActive)
+                    val addConfig = findPreference<Preference>(mKeyUtil.innoCreateNew)
+
+                    configList?.isEnabled = false
+                    addConfig?.isEnabled = false
 
                     InnoSpectraUtil.factoryReset()
 
@@ -119,41 +126,36 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
 
                     Log.d(TAG, "Something went wrong with factory reset.")
                 }
-
-                true
-
             }
 
-            setFragmentResultListener("new_config") { _, _ ->
+            true
 
-                setupScanConfigs()
-
-            }
-
-            findPreference<Preference>(mKeyUtil.innoCreateNew)?.let { pref ->
-
-                pref.setOnPreferenceClickListener {
-
-                    findNavController().navigate(InnoSpectraSettingsFragmentDirections
-                        .actionToNewConfigCreator())
-
-                    true
-                }
-            }
-
-            setupScanConfigs()
         }
+
+        setupScanConfigs()
     }
 
     private fun setupScanConfigs() {
 
         val deviceViewModel = (activity as MainActivity).sDeviceViewModel as InnoSpectraViewModel
 
-        val configList = findPreference<ListPreference>(mKeyUtil.innoActive)
+        deviceViewModel.refreshConfigs()
 
+        val configList = findPreference<ListPreference>(mKeyUtil.innoActive)
+        val addConfig = findPreference<Preference>(mKeyUtil.innoCreateNew)
+        val restorePref = findPreference<Preference>(mKeyUtil.innoConfigRestore)
+
+        restorePref?.isEnabled = false
         configList?.isEnabled = false
+        addConfig?.isEnabled = false
 
         scope.launch {
+
+            deviceViewModel.forceRefreshConfigs()
+
+            while (!deviceViewModel.isConnected()) {
+                delay(1000)
+            }
 
             var size = deviceViewModel.getScanConfigSize()
             while (size == -1
@@ -193,8 +195,23 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
                         }
                     }
 
+                    restorePref?.isEnabled = true
                     configList?.isEnabled = true
+                    addConfig?.isEnabled = true
 
+                    findPreference<Preference>(mKeyUtil.innoCreateNew)?.let { pref ->
+
+                        pref.setOnPreferenceClickListener {
+
+                            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                                .putBoolean(mKeyUtil.returnFromNewConfig, true).apply()
+
+                            findNavController().navigate(InnoSpectraToolbarSettingsFragmentDirections
+                                .actionToNewConfigCreator(names = configs.map { it.configName }.toTypedArray()))
+
+                            true
+                        }
+                    }
                 }
             }
         }
@@ -203,7 +220,21 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
     override fun onResume() {
         super.onResume()
 
-        (activity as? MainActivity)?.setToolbar(R.id.action_nav_settings)
+        if (PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(mKeyUtil.returnFromNewConfig, false)) {
 
+            with(activity as MainActivity) {
+                try {
+                    (sDeviceViewModel as? InnoSpectraViewModel)?.refreshConfigs()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            setupScanConfigs()
+
+            PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().putBoolean(mKeyUtil.returnFromNewConfig, false).apply()
+        }
     }
 }

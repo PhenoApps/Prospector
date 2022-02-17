@@ -46,6 +46,15 @@ data class Scan(
         @ColumnInfo(name = "lightSource")
         var lightSource: Int? = null,
 
+        @ColumnInfo(name = "serial")
+        var serial: String? = null,
+
+        @ColumnInfo(name = "humidity")
+        var humidity: String? = null,
+
+        @ColumnInfo(name = "temperature")
+        var temperature: String? = null,
+
         @ColumnInfo(name = "sid")
         @PrimaryKey(autoGenerate = true)
         var sid: Long? = null) {

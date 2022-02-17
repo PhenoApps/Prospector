@@ -5,6 +5,8 @@ import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -35,7 +37,7 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
+class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_list), CoroutineScope by MainScope() {
 
     /**
      * Used to query experiment list
@@ -58,8 +60,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mSortState = ALPHA_ASC
 
-    private var mTimer: Timer? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -73,8 +73,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
             ui.setupRecyclerView()
 
             ui.setupToolbar()
-
-            startTimer()
 
             setupButtons()
 
@@ -92,7 +90,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun FragmentExperimentListBinding.setupToolbar() {
 
-        experimentToolbar.setOnMenuItemClickListener {
+        toolbar.setOnMenuItemClickListener {
 
             when (it.itemId) {
 
@@ -196,7 +194,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun updateUi() {
 
-        sViewModel.getExperimentCounts().observe(viewLifecycleOwner, {
+        sViewModel.getExperimentCounts().observe(viewLifecycleOwner) {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                 ?.submitList(when (mSortState) {
@@ -223,48 +221,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
                 })
 
             mBinding?.recyclerView?.adapter?.notifyItemRangeChanged(0, it.size)
-        })
-    }
-
-    private fun startTimer() {
-
-        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
-
-        //use the activity view model to access the current connection status
-        val check = object : TimerTask() {
-
-            override fun run() {
-
-                activity?.runOnUiThread {
-
-                    if (isAdded) {
-                        with(mBinding?.experimentToolbar) {
-
-                            this?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(
-                                    if (deviceViewModel?.isConnected() == true) R.drawable.ic_vector_link
-                                    else R.drawable.ic_vector_difference_ab
-                                )
-
-                        }
-                    }
-                }
-            }
         }
-
-        mTimer = Timer()
-
-        mTimer?.scheduleAtFixedRate(check, 0, 1500)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        mTimer?.cancel()
-
-        mTimer?.purge()
-
-        mTimer = null
     }
 
     override fun onResume() {

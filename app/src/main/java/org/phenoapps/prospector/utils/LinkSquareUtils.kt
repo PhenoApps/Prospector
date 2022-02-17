@@ -14,6 +14,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import org.apache.commons.math.stat.StatUtils
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.fragments.ScanListFragment
 import org.phenoapps.prospector.interfaces.Spectrometer
 
@@ -130,7 +131,7 @@ fun List<Entry>.movingAverageSmooth(): List<Entry> {
  * Mainly used to translate pixel strings to a list of the converted values.
  * Similar to List<SpectralFrame>.toWaveArray but doesn't use GraphView data points.
  */
-fun String.toWaveArray(deviceType: String): ArrayList<Pair<Float, Float>> {
+fun DeviceTypeExport.toWaveArray(deviceType: String): ArrayList<Pair<Float, Float>> {
 
     val result = ArrayList<Pair<Float, Float>>()
 

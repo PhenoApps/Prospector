@@ -20,6 +20,9 @@
     <string name="scan_device_id_header">deviceid</string>
     <string name="spec_light_source_header">lightsource</string>
     <string name="scan_note_header">scannote</string>
+    <string name="serial_header">serial</string>
+    <string name="humidity_header">humidity</string>
+    <string name="temperature_header">temperature</string>
     <string name="alias_header">Alias</string>
     <string name="device_id_header">Device ID</string>
     <string name="device_type_header">Device Type</string>

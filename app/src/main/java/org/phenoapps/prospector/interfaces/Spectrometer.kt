@@ -20,7 +20,10 @@ interface Spectrometer {
         val deviceId: String,
         val alias: String,
         val opMode: String,
-        val deviceType: String)
+        val deviceType: String,
+        val serialNumber: String? = null,
+        val humidity: String? = null,
+        val temperature: String? = null)
 
     fun manager(context: Context): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 

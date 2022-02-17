@@ -20,21 +20,16 @@ import com.ISCSDK.ISCNIRScanSDK
 import com.ISCSDK.ISCNIRScanSDK.*
 import com.stratiotechnology.linksquareapi.LSFrame
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.fragments.InnoSpectraNewConfigFragment
 import org.phenoapps.prospector.fragments.InnoSpectraSettingsFragment
+import org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config
 import org.phenoapps.prospector.interfaces.NanoEventListener
 import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.receivers.DeviceInfoReceiver
 import org.phenoapps.prospector.utils.KeyUtil
-import java.io.ByteArrayOutputStream
-import java.io.UnsupportedEncodingException
 import java.lang.IllegalArgumentException
-import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
 
@@ -117,8 +112,6 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
                                             scanner.stopScan(this)
 
-                                            mConnected = true
-
                                             mNanoSdk = NanoConnection(sdk, nanoDevice)
 
                                             val configIndex = PreferenceManager.getDefaultSharedPreferences(context)
@@ -181,10 +174,16 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         return 1
     }
 
-    override fun isConnected() = if (mBluetoothDevice != null) {
+    private fun isGattStateConnected() = if (mBluetoothDevice != null) {
 
         mBluetoothManager?.getConnectionState(mBluetoothDevice,
             BluetoothProfile.GATT_SERVER) == BluetoothProfile.STATE_CONNECTED
+
+    } else false
+
+    override fun isConnected() = if (mBluetoothDevice != null && mConnected) {
+
+        isGattStateConnected()
 
     } else false
 
@@ -263,7 +262,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun onNotifyReceived() {
 
-        if (isConnected()) {
+        if (isGattStateConnected()) {
 
            // ControlPhysicalButton(PhysicalButton.Lock)
 
@@ -277,7 +276,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun onRefDataReady() {
 
-        if (isConnected()) {
+        if (isGattStateConnected()) {
 
             mRefDataReady = true
 
@@ -289,7 +288,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun onScanStarted() {
 
-        if (isConnected() && !mIsScanning) {
+        if (isGattStateConnected() && !mIsScanning) {
 
             mIsScanning = true
 
@@ -305,7 +304,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun onScanDataReady(spectral: Spectrometer.Frame) {
 
-        if (isConnected()) {
+        if (isGattStateConnected()) {
 
             mSpectralData = spectral
 
@@ -338,9 +337,12 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 this.model,
                 "",
                 "",
-                DEVICE_TYPE_NANO
+                DEVICE_TYPE_NANO,
+                serialNumber = serial,
             )
         }
+
+        mConnected = true
 
         GetUUID()
     }
@@ -385,6 +387,10 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         //requestStoredConfigurationList()
     }
 
+    fun forceRefreshConfigs() {
+        GetScanConfig()
+    }
+
     fun getConfigSaved() = mConfigSaved
 
     fun resetConfigSaved() {
@@ -396,7 +402,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
     /**
      * Save the config byte array as a string in user preferences.
      */
-    fun addConfig(config: InnoSpectraNewConfigFragment.Config) {
+    fun addConfig(config: Config) {
 
         val nameSize = config.name.length
         val bytes = config.name.toByteArray()
@@ -412,16 +418,17 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
             ScanConfigInfo.scanConfigSerialNumber[i] = serialBytes[i]
         }
         ScanConfigInfo.write_scanConfigIndex = 255
-        ScanConfigInfo.write_numSections = config.sections.size.toByte()
+        ScanConfigInfo.write_numSections = (config.sections?.size ?: 1).toByte()
         ScanConfigInfo.write_numRepeat = config.repeats
 
-        config.sections.forEachIndexed { i, section ->
-            ScanConfigInfo.sectionScanType[i] = section.type.toByte()
+        config.sections?.forEachIndexed { i, section ->
+            ScanConfigInfo.sectionScanType[i] = section.methodIndex.toByte()
             ScanConfigInfo.sectionWavelengthStartNm[i] = section.start.toInt()
             ScanConfigInfo.sectionWavelengthEndNm[i] = section.end.toInt()
             ScanConfigInfo.sectionNumPatterns[i] = section.resolution
-            ScanConfigInfo.sectionWidthPx[i] = section.width.toInt().toByte()
-            ScanConfigInfo.sectionExposureTime[i] = section.exposure.toInt()
+            //width index starts from 2 for whatever reason (2-52)
+            ScanConfigInfo.sectionWidthPx[i] = (section.widthIndex + 2).toByte()
+            ScanConfigInfo.sectionExposureTime[i] = section.exposureIndex
         }
 
         ScanConfig(WriteScanConfiguration(ScanConfigInfo()), ScanConfig.SAVE)
@@ -456,6 +463,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         return mConfigSize ?: -1
     }
 
+    fun getDeviceStatusObject() = mDeviceStatus
+
     fun getDeviceStatus(context: Context): String {
 
         val temperatureHeader = context.getString(R.string.header_temperature)
@@ -478,6 +487,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         val softwareHeader = context.getString(R.string.header_software_version)
         val hardwareHeader = context.getString(R.string.header_hardware_version)
         val deviceIdHeader = context.getString(R.string.header_device_id)
+        val serialHeader = context.getString(R.string.header_serial_id)
 
         if (mDeviceInfo == null) return ""
 
@@ -485,6 +495,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
             $softwareHeader: ${mDeviceInfo?.softwareVersion}
             $hardwareHeader: ${mDeviceInfo?.hardwareVersion}
             $deviceIdHeader: ${mDeviceInfo?.deviceId}
+            $serialHeader:   ${mDeviceInfo?.serialNumber}
         """.trimIndent()
     }
 

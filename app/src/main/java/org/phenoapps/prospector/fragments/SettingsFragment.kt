@@ -87,7 +87,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
             devicePref.setOnPreferenceClickListener {
 
-                findNavController().navigate(SettingsFragmentDirections
+                findNavController().navigate(SettingsContainerFragmentDirections
                     .actionToLinksquareSettingsFragment())
 
                 true
@@ -98,7 +98,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
             devicePref.setOnPreferenceClickListener {
 
-                findNavController().navigate(SettingsFragmentDirections
+                findNavController().navigate(SettingsContainerFragmentDirections
                     .actionToInnoSpectraSettingsFragment())
 
                 true

@@ -35,11 +35,11 @@ interface ScanDao {
     /**
      * Inserts
      */
-    @Query("INSERT OR REPLACE INTO spectral_frames(sid, fid, spectralValues, lightSource) VALUES(:sid, :fid, :values, :light)")
-    suspend fun insertFrame(sid: Long, fid: Int, values: String, light: Int)
+    @Query("INSERT OR REPLACE INTO spectral_frames(sid, fid, spectralValues, lightSource, wavelengths) VALUES(:sid, :fid, :values, :light, :wavelengths)")
+    suspend fun insertFrame(sid: Long, fid: Int, values: String, light: Int, wavelengths: String?)
 
-    @Query("INSERT INTO scans (eid, name, date, deviceId, operator, deviceType, lightSource) VALUES (:eid, :name, :date, :deviceId, :operator, :deviceType, :lightSource)")
-    suspend fun insertScan(eid: Long, name: String, date: String, deviceId: String, operator: String, deviceType: String, lightSource: Int): Long
+    @Query("INSERT INTO scans (eid, name, date, deviceId, operator, deviceType, lightSource, serial, humidity, temperature) VALUES (:eid, :name, :date, :deviceId, :operator, :deviceType, :lightSource, :serial, :humidity, :temperature)")
+    suspend fun insertScan(eid: Long, name: String, date: String, deviceId: String, operator: String, deviceType: String, lightSource: Int, serial: String, humidity: String, temperature: String): Long
 
     @Query("UPDATE spectral_frames SET color = :color WHERE sid = :sid AND fid = :fid")
     suspend fun updateFrameColor(sid: Long, fid: Int, color: String)

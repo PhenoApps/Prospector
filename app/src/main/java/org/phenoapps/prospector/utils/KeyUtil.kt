@@ -13,7 +13,11 @@ class KeyUtil(private val ctx: Context?) {
     private fun key(id: Int): ReadOnlyProperty<Any?, String> =
         ReadOnlyProperty { _, _ -> ctx?.getString(id)!! }
 
+    val returnFromNewConfig by key(R.string.key_pref_return_from_new_config)
+
     val lastSelectedGraph by key(R.string.key_pref_last_graph_selected)
+
+    val lastConnectedDeviceId by key(R.string.key_pref_last_connected_device_id)
 
     val targetScans by key(R.string.key_pref_target_scan)
 

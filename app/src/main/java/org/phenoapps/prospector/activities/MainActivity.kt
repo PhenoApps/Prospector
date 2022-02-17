@@ -9,10 +9,7 @@ import LED_FRAMES
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,6 +53,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     //flag to track when a device is connected, used to change the options menu icon
     var mConnected: Boolean = false
 
+    private val mConnectionHandlerThread = HandlerThread("activity connection checker")
+
     private val sViewModel: MainActivityViewModel by viewModels()
 
     /**
@@ -74,6 +73,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mCitationDialog: AlertDialog? = null
     private var mAskForOperatorDialog: AlertDialog? = null
     private var mAskChangeOperatorDialog: AlertDialog? = null
+    private var mConfirmFactoryResetDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -98,6 +98,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun setupActivity() {
+
+        mConnectionHandlerThread.looper
+        mConnectionHandlerThread.start()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -133,35 +136,38 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun startConnectionWatcher() {
 
-        val check = object : TimerTask() {
+        Handler(mConnectionHandlerThread.looper).postDelayed({
 
-            override fun run() {
+            runOnUiThread {
 
-                runOnUiThread {
+                val last = mConnected
 
-                    val last = mConnected
+                mConnected = sDeviceViewModel?.isConnected() ?: false
 
-                    mConnected = sDeviceViewModel?.isConnected() ?: false
+                var name = sDeviceViewModel?.getDeviceInfo()?.deviceId
 
-                    if (last != mConnected) {
-                        mSnackbar.push(
-                            SnackbarQueue
-                                .SnackJob(
-                                    mBinding.actMainCoordinatorLayout,
-                                    if (mConnected) getString(R.string.connected)
-                                    else getString(R.string.disconnect)
-                                )
-                        )
-                    }
+                if (mConnected) {
+                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, name).apply()
+                } else {
+                    name = mPrefs.getString(mKeyUtil.lastConnectedDeviceId, "")
+                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, "").apply()
+                }
+
+                if (last != mConnected) {
+                    mSnackbar.push(
+                        SnackbarQueue
+                            .SnackJob(
+                                mBinding.actMainCoordinatorLayout,
+                                if (mConnected) getString(R.string.connected, name)
+                                else getString(R.string.disconnect, name)
+                            )
+                    )
                 }
             }
-        }
 
-        Timer().cancel()
+            startConnectionWatcher()
 
-        Timer().purge()
-
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+        }, 1500)
     }
 
     /**
@@ -326,6 +332,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 dialog.dismiss()
 
             }.create()
+
+
+    }
+
+    fun showAskFactoryReset(function: () -> Unit) {
+        mConfirmFactoryResetDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_confirm_factory_reset)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                function()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+
+                dialog.dismiss()
+            }.create()
+
+        mConfirmFactoryResetDialog?.show()
     }
 
     private fun showAskOperatorDialog() {
@@ -492,6 +516,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
+        mConfirmFactoryResetDialog?.dismiss()
+
+        mConnectionHandlerThread.quit()
 
         super.onDestroy()
 
@@ -538,7 +565,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
-                R.id.settings_fragment -> {
+                R.id.linksquare_settings_fragment -> {
 
                     onSettingsBackPressed()
 
