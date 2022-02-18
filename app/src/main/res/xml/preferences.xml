@@ -23,6 +23,24 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="org.phenoapps.prospector.DEVICE_MANUFACTURERS"
+        android:summary=""
+        android:title="@string/pref_compatible_devices"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:icon="@mipmap/linksquare_logo"
+            android:key="org.phenoapps.prospector.DEVICE_TYPE_LINK_SQUARE"
+            android:title="@string/pref_device_type_link_square" />
+
+        <Preference
+            android:icon="@mipmap/isc_logo"
+            android:key="org.phenoapps.prospector.DEVICE_TYPE_INNO_SPECTRA"
+            android:title="@string/pref_device_type_inno_spectra" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/pref_cat_workflow_title"
         app:iconSpaceReserved="false">
 
@@ -46,24 +64,6 @@
             android:key="@string/key_pref_audio_enabled"
             android:summary="@string/pref_workflow_audio_summary"
             android:title="@string/pref_workflow_audio_title" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="org.phenoapps.prospector.DEVICE_MANUFACTURERS"
-        android:summary=""
-        android:title="@string/pref_compatible_devices"
-        app:iconSpaceReserved="false">
-
-        <Preference
-            android:icon="@mipmap/linksquare_logo"
-            android:key="org.phenoapps.prospector.DEVICE_TYPE_LINK_SQUARE"
-            android:title="@string/pref_device_type_link_square" />
-
-        <Preference
-            android:icon="@mipmap/isc_logo"
-            android:key="org.phenoapps.prospector.DEVICE_TYPE_INNO_SPECTRA"
-            android:title="@string/pref_device_type_inno_spectra" />
 
     </PreferenceCategory>
 
