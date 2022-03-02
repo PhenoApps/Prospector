@@ -13,8 +13,8 @@ import java.io.File
 
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
         views = [SampleScanCount::class, SampleFramesCount::class, DeviceTypeExport::class],
-    version = 4, exportSchema = true,
-    autoMigrations = [AutoMigration(from = 3, to = 4)])
+    version = 5, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)])
 abstract class ProspectorDatabase : RoomDatabase() {
 
 
@@ -89,6 +89,7 @@ abstract class ProspectorDatabase : RoomDatabase() {
             return Room.databaseBuilder(ctx, ProspectorDatabase::class.java, "PROSPECTOR")
                 .addMigrations(MigrationV2())
                 .addMigrations(MigrationV3())
+//                .addMigrations(MigrationV4())
                 .build()
 
         }

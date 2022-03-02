@@ -6,9 +6,9 @@
     <!-- -->
 
 
-    <string name="connected">Connected</string>
+    <string name="connected">Connected %s</string>
 
-    <string name="disconnect">Disconnect</string>
+    <string name="disconnect">Disconnect %s</string>
     <string name="close">Close</string>
     <string name="delete_all">Delete All</string>
     <string name="ok">OK</string>
@@ -231,4 +231,49 @@
     <string name="pref_key_inno_spectra_restore_config_title">Restore Default Configs</string>
     <string name="frag_settings_inno_spectra_reset_app">Resetting device to load default configurations. Please wait.</string>
     <string name="inno_spectra_device_not_ready">Please wait, device initializing.</string>
+    <string name="loading_configurations">Loading configs…</string>
+    <string name="conflicting_configs">You cannot choose this configuration, please manage saved configurations in the settings.</string>
+    <string name="new_section_button">Add new section to config</string>
+    <string name="frag_inno_spectra_new_config_maxed">Maximum resolution or spectral range has been reached.</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="frag_cc_naming_title">Naming</string>
+    <string name="frag_cc_naming_subtitle">Choose a name and the number of times to average this scan. The name should be unique and will be associated with a given experiment.</string>
+    <string name="frag_cc_naming_name_hint">Enter a unique name here</string>
+    <string name="frag_cc_naming_average_hint">Enter the number of scans to average</string>
+    <string name="frag_cc_sections_title">Sections</string>
+    <string name="frag_cc_sections_subtitle">This device has the ability to split a single scan into multiple sections. Different sections can have a custom resolution to fine-tune scans.</string>
+    <string name="frag_cc_sections_number_hint">Enter the number of desired sections</string>
+    <string name="frag_cc_width_title">Width</string>
+    <string name="frag_cc_width_subtitle">The width (nm) of the group of pixels scanned by the chosen method for a given section.</string>
+    <string name="frag_cc_method_title">Method</string>
+    <string name="frag_cc_method_subtitle">This device has two available methods for scanning. Column scanning focuses on each wavelength individually. The Hadamard method combines and decodes groups of wavelengths which collects more light and a better signal-noise-ratio (SNR) than the latter.</string>
+    <string name="frag_cc_digital_resolution_title">Digital Resolution</string>
+    <string name="frag_cc_digital_resolution_subtitle">This designates the number of wavelength points for the defined spectral range. Resolution should sample twice the full width half maximum (FWHM).\n<b>DR<sup>*</sup> = Digital Resolution Limit</b>\n<b>DR = Recommended Resolution</b></string>
+    <string name="frag_cc_digital_resolution_fwhm_subtitle">DR<sup>*</sup> ≥ DR ≥ 2 * (Range<sup>End</sup> - Range<sup>Start</sup>) / Width</string>
+    <string name="frag_cc_digital_resolution_fwhm_preview">%s ≥ %s ≥ 2 * (%s - %s) / %s</string>
+    <string name="frag_cc_digital_resolution_hint">Enter digital resolution</string>
+    <string name="frag_cc_exposure_title">Exposure Time</string>
+    <string name="frag_cc_exposure_subtitle">The exposure time in milliseconds for the given section.</string>
+    <string name="frag_cc_spectral_range_title">Spectral Range</string>
+    <string name="frag_cc_spectral_range_subtitle">The wavelength range for this section. This device\'s supported range is between 900 and 1700 inclusively.</string>
+    <string name="frag_cc_spectral_range_start_hint">Spectral range start</string>
+    <string name="frag_cc_spectral_range_end_hint">Spectral range end</string>
+    <string name="frag_cc_naming_blank">Name must not be blank.</string>
+    <string name="frag_cc_naming_exists">Name already exists.</string>
+    <string name="frag_cc_invalid_average_range">Repeats must be between 1 and 65535</string>
+    <string name="method_column">Column</string>
+    <string name="method_hadamard">Hadamard</string>
+    <string name="frag_cc_spectral_start_range">The start value must be between 900 and 1699 inclusively.</string>
+    <string name="frag_cc_spectral_end_range">The end value must be between 901 and 1700 inclusively.</string>
+    <string name="frag_cc_sections_invalid">Number of sections must be between 1 and 5 inclusively.</string>
+    <string name="frag_cc_digital_resolution_invalid">Digital resolution must be between 3 and 624 inclusively.</string>
+    <string name="frag_cc_digital_resolution_limit_met">Resolution limit is already met.</string>
+    <string name="frag_cc_summary_title">Summary</string>
+    <string name="frag_cc_summary_subtitle">%s will have %s section(s) that use %s total digital resolution from %s to %s.</string>
+    <string name="finish">finish</string>
+    <string name="section">Section %s</string>
+    <string name="frag_sample_list_active_config_unknown">This experiment uses a configuration that is not saved on this device.</string>
+    <string name="header_serial_id">Serial ID</string>
+    <string name="dialog_confirm_factory_reset">This will return the device to factory settings and it may take up to 15 seconds.</string>
 </resources>

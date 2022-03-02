@@ -7,7 +7,6 @@ import android.util.Log
 import com.ISCSDK.ISCNIRScanSDK
 import org.phenoapps.prospector.interfaces.NanoEventListener
 import org.phenoapps.prospector.interfaces.Spectrometer
-import kotlin.math.log10
 
 class ScanDataReadyReceiver(private val listener: NanoEventListener) : BroadcastReceiver() {
 
@@ -29,14 +28,14 @@ class ScanDataReadyReceiver(private val listener: NanoEventListener) : Broadcast
         val intensityData = FloatArray(size)
         for (i in 0 until size) {
 
-            //val x = ISCNIRScanSDK.ScanResults.getSpatialFreq(context, spectrumData.wavelength[i])
+            val x = ISCNIRScanSDK.ScanResults.getSpatialFreq(context, spectrumData.wavelength[i])
             val intensity = spectrumData.uncalibratedIntensity[i]
             //val absorbance = -1* log10(spectrumData.uncalibratedIntensity[i] / spectrumData.intensity[i].toDouble())
             val reflectance = spectrumData.uncalibratedIntensity[i] / spectrumData.intensity[i]
             //val wavelength = spectrumData.wavelength[i]
             //val reference = spectrumData.intensity[i]
 
-            reflectanceData[i] = reflectance.toFloat()
+            reflectanceData[i] = x.toFloat()//reflectance.toFloat()
             intensityData[i] = intensity.toFloat()
         }
 

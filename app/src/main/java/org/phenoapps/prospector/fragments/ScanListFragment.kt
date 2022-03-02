@@ -536,51 +536,55 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
      */
     private fun renderGraph(scanId: Long, frameId: Int) {
 
-        val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
+        context?.let { ctx ->
 
-        mBinding?.let { ui ->
+            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
-            sViewModel.getSpectralValues(mExpId, mSampleName, when (ui.tabLayout.selectedTabPosition) {
+            mBinding?.let { ui ->
 
-                0 -> LinkSquareLightSources.BULB //bulb
+                sViewModel.getSpectralValues(mExpId, mSampleName, when (ui.tabLayout.selectedTabPosition) {
 
-                else -> LinkSquareLightSources.LED //led
+                    0 -> LinkSquareLightSources.BULB //bulb
 
-            }).observeOnce(viewLifecycleOwner, { frames ->
+                    else -> LinkSquareLightSources.LED //led
 
-                val lines = ArrayList<FrameEntry>()
+                }).observeOnce(viewLifecycleOwner) { frames ->
 
-                frames.forEach { f ->
+                    val lines = ArrayList<FrameEntry>()
 
-                    val frameList = listOf(f)
+                    frames.forEach { f ->
 
-                    //trim actual values based on specs
-                    val waves = FrameEntry((if (convert) frameList.toWaveArray(f.deviceType).filter {
+                        val frameList = listOf(f)
 
-                        it.x <= when(f.deviceType) {
+                        //trim actual values based on specs
+                        val waves =
+                            FrameEntry((if (convert) frameList.toWaveArray(f.deviceType).filter {
 
-                            DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
+                                it.x <= when (f.deviceType) {
 
-                            DEVICE_TYPE_LS1 -> LinkSquareRange.max
+                                    DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
 
-                            else -> InnoSpectraRange.max
+                                    DEVICE_TYPE_LS1 -> LinkSquareRange.max
 
-                        }
+                                    else -> InnoSpectraRange.max
 
-                    } else frameList.toPixelArray()).movingAverageSmooth(),
-                        //set color if selected
-                        if (f.sid == scanId && f.fid == frameId && f.color != null)
-                            Color.parseColor(f.color)
-                        else if (f.sid == scanId && f.fid == frameId) Color.RED
-                        else Color.BLACK)
+                                }
 
-                    lines.add(waves)
+                            } else frameList.toPixelArray()).movingAverageSmooth(),
+                                //set color if selected
+                                if (f.sid == scanId && f.fid == frameId && f.color != null)
+                                    Color.parseColor(f.color)
+                                else if (f.sid == scanId && f.fid == frameId) Color.RED
+                                else Color.BLACK)
+
+                        lines.add(waves)
+
+                    }
+
+                    renderNormal(ui.fragScanListLineChart, lines)
 
                 }
-
-                renderNormal(ui.fragScanListLineChart, lines)
-
-            })
+            }
         }
     }
 

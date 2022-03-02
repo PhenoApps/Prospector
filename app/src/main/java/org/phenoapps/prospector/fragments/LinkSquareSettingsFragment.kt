@@ -10,7 +10,9 @@ import OPERATOR
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.MenuItem
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
@@ -41,6 +43,15 @@ class LinkSquareSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().popBackStack()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 

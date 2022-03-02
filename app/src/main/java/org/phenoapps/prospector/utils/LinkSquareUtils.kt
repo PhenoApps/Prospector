@@ -7,6 +7,7 @@ import android.graphics.Color
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.ISCSDK.ISCNIRScanSDK
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -59,7 +60,7 @@ class LinkSquareNIRExportRange {
 class InnoSpectraRange {
     companion object {
         const val min: Double = 900.0
-        const val max: Double = 1700.0
+        const val max: Double = 1701.0
     }
 }
 
@@ -89,18 +90,20 @@ fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observ
  */
 fun List<ScanListFragment.ScanFrames>.toWaveArray(deviceType: String): List<Entry> {
 
-    val values = this.map { it.spectralValues }.flatMap { it.split(" ") }
-
-    return (values.mapIndexed { index, value ->
-
-        when (deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble())
-            DEVICE_TYPE_LS1 -> LinkSquare.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble())
-            else -> Entry(900 + index.toFloat(), value.toFloat())
+    return when (deviceType) {
+        DEVICE_TYPE_NIR, DEVICE_TYPE_LS1 -> {
+            val values = this.map { it.spectralValues }.flatMap { it.split(" ") }
+            values.mapIndexed { index, value -> LinkSquareNIR.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble()) }
         }
 
-    })
-
+        else -> {
+            val data = this.map { it.spectralValues }.joinToString(" ").split(" ")
+            val wavelengths = this.map { it.wavelengths }.joinToString(" ").split( " ")
+            data.mapIndexed { index, value ->
+                Entry(wavelengths[index].toFloatOrNull() ?: 0f, value.toFloatOrNull() ?: 0f)
+            }
+        }
+    }
 }
 
 fun List<Entry>.movingAverageSmooth(): List<Entry> {
@@ -135,18 +138,41 @@ fun DeviceTypeExport.toWaveArray(deviceType: String): ArrayList<Pair<Float, Floa
 
     val result = ArrayList<Pair<Float, Float>>()
 
-    val tokens = this.split(" ")
+    when (deviceType) {
+        DEVICE_TYPE_NIR, DEVICE_TYPE_LS1 -> {
 
-    tokens.forEachIndexed { index, value ->
+            val tokens = this.spectralData.split(" ")
 
-        val wave = when (deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, value.toDouble())
-            DEVICE_TYPE_LS1 -> LinkSquare.pixelToWavelength(index, value.toDouble())
-            else -> Entry(900 + index.toFloat(), value.toFloat())
+            tokens.forEachIndexed { index, value ->
+
+                val wave = when (deviceType) {
+                    DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, value.toDouble())
+                    DEVICE_TYPE_LS1 -> LinkSquare.pixelToWavelength(index, value.toDouble())
+                    else -> Entry(900 + index.toFloat(), value.toFloat())
+                }
+
+                result.add(result.size, wave.x to wave.y)
+
+            }
         }
 
-        result.add(result.size, wave.x to wave.y)
+        else -> {
 
+            val values = this.spectralData.split(" ")
+            val wavelengths = this.wavelengths?.split(" ")
+
+            if (values.size == wavelengths?.size ?: 0) {
+
+                wavelengths?.forEachIndexed { index, s ->
+
+                    val wave = Entry(s.toFloat(), values[index].toFloat())
+
+                    result.add(result.size, wave.x to wave.y)
+
+                }
+            }
+
+        }
     }
 
     return result

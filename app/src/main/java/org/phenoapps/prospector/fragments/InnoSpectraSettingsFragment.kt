@@ -2,6 +2,7 @@ package org.phenoapps.prospector.fragments
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
@@ -36,6 +37,15 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
         setPreferencesFromResource(R.xml.inno_spectra_preferences, rootKey)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().popBackStack()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

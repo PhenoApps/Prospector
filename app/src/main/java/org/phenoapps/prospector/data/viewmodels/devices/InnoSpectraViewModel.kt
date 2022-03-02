@@ -434,6 +434,42 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         ScanConfig(WriteScanConfiguration(ScanConfigInfo()), ScanConfig.SAVE)
     }
 
+    fun readScanConfig(spec: ByteArray): ScanConfiguration {
+        return GetScanConfiguration(spec)
+    }
+
+    //return sdk bytes representation of a config
+    fun getConfigBytes(config: ScanConfiguration): ByteArray {
+
+        val nameSize = config.configName.length
+        val bytes = config.configName.toByteArray()
+        for (i in 0..nameSize) {
+            ScanConfigInfo.configName[i] = if (i == nameSize) 0
+            else bytes[i]
+        }
+        ScanConfigInfo.write_scanType = 2
+        val serialNum = config.scanConfigSerialNumber
+        val serialBytes = serialNum.toByteArray()
+        val serialNumSize = serialNum.length
+        for (i in 0 until serialNumSize) {
+            ScanConfigInfo.scanConfigSerialNumber[i] = serialBytes[i]
+        }
+        ScanConfigInfo.write_scanConfigIndex = 255
+        ScanConfigInfo.write_numSections = config.slewNumSections
+        ScanConfigInfo.write_numRepeat = config.numRepeats
+
+        for (i in 0 until config.slewNumSections) {
+            ScanConfigInfo.sectionScanType[i] = config.sectionScanType[i]
+            ScanConfigInfo.sectionWavelengthStartNm[i] = config.sectionWavelengthStartNm[i]
+            ScanConfigInfo.sectionWavelengthEndNm[i] = config.sectionWavelengthEndNm[i]
+            ScanConfigInfo.sectionNumPatterns[i] = config.sectionNumPatterns[i]
+            ScanConfigInfo.sectionWidthPx[i] = config.sectionWidthPx[i]
+            ScanConfigInfo.sectionExposureTime[i] = config.sectionExposureTime[i]
+        }
+
+        return WriteScanConfiguration(ScanConfigInfo())
+    }
+
     fun refreshConfigs() {
 
         mActiveIndex = null
@@ -455,6 +491,12 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
     fun setActiveConfig(index: Int) {
 
         SetActiveConfig(byteArrayOf(index.toByte(), (index/256).toByte()))
+
+    }
+
+    fun setActiveConfig(data: ByteArray) {
+
+        ScanConfig(data, ScanConfig.SET)
 
     }
 

@@ -28,4 +28,7 @@ data class SpectralFrame(
         var lightSource: Int,
 
         @ColumnInfo(name = "color")
-        var color: String? = null)
+        var color: String? = null,
+
+        @ColumnInfo(name = "wavelengths")
+        var wavelengths: String? = null)

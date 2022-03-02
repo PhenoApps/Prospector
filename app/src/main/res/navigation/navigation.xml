@@ -52,7 +52,7 @@
 
     <fragment
         android:id="@+id/inno_spectra_settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.InnoSpectraSettingsFragment"
+        android:name="org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragment"
         android:label="@string/inno_spectra_settings_fragment_label">
         <action android:id="@+id/action_to_new_config_creator"
             app:destination="@id/nano_configurations"
@@ -67,7 +67,7 @@
 
     <fragment
         android:id="@+id/linksquare_settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.LinkSquareSettingsFragment"
+        android:name="org.phenoapps.prospector.fragments.LinkSquareToolbarSettingsFragment"
         android:label="@string/linksquare_settings_fragment_label"/>
 <!--    <fragment-->
 <!--        android:id="@+id/scan_detail_fragment"-->
