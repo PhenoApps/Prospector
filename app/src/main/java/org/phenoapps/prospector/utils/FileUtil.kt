@@ -143,7 +143,7 @@ open class FileUtil(private val ctx: Context) {
 
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
-                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
 
                                 else -> InnoSpectraExportRange.min
                             }

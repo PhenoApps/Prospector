@@ -183,7 +183,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         context?.let { ctx ->
 
-                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
                             nullUri?.let { uri ->
 
