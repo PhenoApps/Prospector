@@ -5,6 +5,9 @@ import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NANO
+import DEVICE_TYPE_NIR
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,7 +20,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -31,10 +33,9 @@ import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
-import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.data.models.Sample
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
@@ -49,13 +50,11 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
+class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), CoroutineScope by MainScope(),
     SampleListClickListener {
 
     //deprecated sort functionality, app only sorts by DATE_DESC atm
     private var mSortState = DATE_DESC
-
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
 
     //fragment argument
     private var mExpId: Long = -1L
@@ -65,8 +64,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     private val sViewModel: SampleViewModel by viewModels()
 
     private var mBinding: FragmentSampleListBinding? = null
-
-    private var mTimer: Timer? = null
 
     private val sOnNewClickListener = View.OnClickListener {
 
@@ -168,7 +165,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             mIsExporting = false
 
             //start observing for exportable experiments using the defined view
-            sViewModel.deviceTypeExports(mExpId).observeOnce(viewLifecycleOwner, {
+            sViewModel.deviceTypeExports(mExpId).observeOnce(viewLifecycleOwner) {
 
                 //only export if the view has rows, and only export the current selected experiment
                 it?.let { exports ->
@@ -186,7 +183,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                         context?.let { ctx ->
 
-                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, false)
+                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
                             nullUri?.let { uri ->
 
@@ -194,7 +191,14 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                                     mBinding?.toggleProgressBar()
 
-                                    FileUtil(ctx).exportCsv(uri, exports, convert)
+                                    if (it.deviceType in arrayOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR)) {
+
+                                        FileUtil(ctx).exportCsv(uri, exports, convert)
+
+                                    } else {
+
+                                        FileUtil(ctx).exportCsv(uri, exports, false)
+                                    }
 
                                     mBinding?.toggleProgressBar()
 
@@ -205,7 +209,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
                         }
                     }
                 }
-            })
+            }
         }
     }
 
@@ -216,7 +220,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             //make other elements the current vis of the progress bar
             val elementsVis = this.fragSampleListProgressBar.visibility
 
-            arrayOf(this.samplesToolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
+            arrayOf(this.toolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
                 it.visibility = elementsVis
             }
 
@@ -241,6 +245,19 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
             mDeviceType = deviceType
             mName = name
 
+            val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1) ?: DEVICE_TYPE_LS1
+            if (maker !in deviceType) {
+
+                if (DEVICE_TYPE_LS1 in deviceType) {
+
+                    (activity as MainActivity).switchLinkSquare()
+
+                } else {
+
+                    (activity as MainActivity).switchInnoSpectra()
+                }
+            }
+
             val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
 
             val localInflater = inflater.cloneInContext(contextThemeWrapper)
@@ -255,8 +272,6 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 ui.setupToolbar()
 
-                startTimer()
-
                 startObservers()
 
                 return ui.root
@@ -269,13 +284,13 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     private fun FragmentSampleListBinding.setupToolbar() {
 
-        samplesToolbar.setNavigationOnClickListener {
+        toolbar.setNavigationOnClickListener {
 
             findNavController().popBackStack()
 
         }
 
-        samplesToolbar.setOnMenuItemClickListener { item ->
+        toolbar.setOnMenuItemClickListener { item ->
 
             when(item.itemId) {
 
@@ -292,11 +307,13 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 R.id.action_connection -> {
 
+                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
                     with (activity as? MainActivity) {
 
                         if (this?.mConnected == true) {
 
-                            sDeviceViewModel.reset()
+                            deviceViewModel?.reset(context)
                         } else {
 
                             if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
@@ -404,47 +421,20 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     }
 
-    private fun startTimer() {
-
-        //use the activity view model to access the current connection status
-        val check = object : TimerTask() {
-
-            override fun run() {
-
-                activity?.runOnUiThread {
-
-                    if (isAdded) {
-                        with(mBinding?.samplesToolbar) {
-
-                            this?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
-                                else R.drawable.ic_vector_difference_ab)
-
-                        }
-                    }
-                }
-            }
-        }
-
-        mTimer = Timer()
-
-        mTimer?.scheduleAtFixedRate(check, 0, 1500)
-    }
-
     private fun startObservers() {
 
         //set the title header
-        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+        sViewModel.experiments.observe(viewLifecycleOwner) { experiments ->
 
             experiments.first { it.eid == mExpId }.also {
 
                 activity?.runOnUiThread {
 
-                    mBinding?.samplesToolbar?.title = it.name
+                    mBinding?.toolbar?.title = it.name
 
                 }
             }
-        })
+        }
 
         updateUi()
 
@@ -460,7 +450,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
     )
     private val dummyRow = IndexedSampleScanCount(-1, -1, "", "", "", -1)
     private fun updateUi() {
-        sViewModel.getSampleFramesCount(mExpId).observe(viewLifecycleOwner, { samples ->
+        sViewModel.getSampleFramesCount(mExpId).observe(viewLifecycleOwner) { samples ->
 
             samples?.let { data ->
 
@@ -498,17 +488,7 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
                 }, 250)
             }
-        })
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        mTimer?.cancel()
-
-        mTimer?.purge()
-
-        mTimer = null
+        }
     }
 
     override fun onResume() {
@@ -518,4 +498,3 @@ class SampleListFragment : Fragment(), CoroutineScope by MainScope(),
 
     }
 }
-

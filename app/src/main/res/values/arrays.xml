@@ -4,9 +4,76 @@
     <string-array name="device_types_array">
         <item>@string/linksquare_nir</item>
         <item>@string/linksquare</item>
+        <item>@string/innospectra_nano</item>
+    </string-array>
+    <string-array name="inno_spectra_widths">
+        <item>2.34</item>
+        <item>3.51"</item>
+        <item>4.68</item>
+        <item>5.85</item>
+        <item>7.03</item>
+        <item>8.20</item>
+        <item>9.37</item>
+        <item>10.54</item>
+        <item>11.71</item>
+        <item>12.88</item>
+        <item>14.05</item>
+        <item>15.22</item>
+        <item>16.39</item>
+        <item>17.56</item>
+        <item>18.74</item>
+        <item>19.91</item>
+        <item>21.08</item>
+        <item>22.25</item>
+        <item>23.42</item>
+        <item>24.59</item>
+        <item>25.76</item>
+        <item>26.93</item>
+        <item>28.10</item>
+        <item>29.27</item>
+        <item>30.44</item>
+        <item>31.62</item>
+        <item>32.79</item>
+        <item>33.96</item>
+        <item>35.13</item>
+        <item>36.30</item>
+        <item>37.47</item>
+        <item>38.64</item>
+        <item>39.81</item>
+        <item>40.98</item>
+        <item>42.15</item>
+        <item>43.33</item>
+        <item>44.50</item>
+        <item>45.67</item>
+        <item>46.84</item>
+        <item>48.01</item>
+        <item>49.18</item>
+        <item>50.35</item>
+        <item>51.52</item>
+        <item>52.69</item>
+        <item>53.86</item>
+        <item>55.04</item>
+        <item>56.21</item>
+        <item>57.38</item>
+        <item>58.55</item>
+        <item>59.72</item>
+        <item>60.89</item>
     </string-array>
 
-<!--    <string-array name="device_wifi_mode_indices">-->
+    <string-array name="inno_spectra_exposure_times">
+        <item>0.635</item>
+        <item>1.27</item>
+        <item>2.54</item>
+        <item>5.08</item>
+        <item>15.24</item>
+        <item>30.48</item>
+        <item>60.96</item>
+    </string-array>
+    <string-array name="inno_spectra_values">
+        <item>900</item>
+        <item>1700</item>
+    </string-array>
+    <!--    <string-array name="device_wifi_mode_indices">-->
 <!--        <item>0</item>-->
 <!--        <item>1</item>-->
 <!--    </string-array>-->
@@ -21,4 +88,5 @@
 
     <string name="linksquare">LinkSquare</string>
     <string name="linksquare_nir">LinkSquareNIR</string>
+    <string name="innospectra_nano">InnoSpectra Nano</string>
 </resources>

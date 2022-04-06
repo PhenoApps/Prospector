@@ -85,9 +85,18 @@ lint/tmp/
 # lint/reports/
 
 app/src/main/java/org/phenoapps/prospector/utils/SecretLinkSquareUtils.kt
+app/src/main/java/org/phenoapps/prospector/utils/InnoSpectraUtil.kt
 
 # Keystore files
 # Uncomment the following lines if you do not want to check your keystore files in.
 *.jks
 *.keystore
 keystore.config
+/app/libs/arm64-v8a/
+/app/libs/armeabi/
+/app/libs/armeabi-v7a/
+/app/libs/mips/
+/app/libs/mips64/
+/app/libs/x86/
+/app/libs/x86_64/
+/app/libs/ISCSDK-release.aar

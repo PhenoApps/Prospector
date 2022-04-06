@@ -24,9 +24,12 @@ class ScanRepository @Inject constructor(
 
     suspend fun deleteScans(eid: Long, name: String) = dao.deleteScans(eid, name)
 
-    suspend fun insertFrame(sid: Long, frame: SpectralFrame) = dao.insertFrame(sid, frame.frameId, frame.spectralValues, frame.lightSource)
+    suspend fun insertFrame(sid: Long, frame: SpectralFrame) = dao.insertFrame(sid, frame.frameId, frame.spectralValues, frame.lightSource, frame.wavelengths)
 
-    suspend fun insertScan(scan: Scan): Long = dao.insertScan(scan.eid, scan.name, scan.date, scan.deviceId ?: "", scan.operator ?: "", scan.deviceType, scan.lightSource ?: -1)
+    suspend fun insertScan(scan: Scan): Long = dao.insertScan(scan.eid, scan.name, scan.date,
+        scan.deviceId ?: "", scan.operator ?: "", scan.deviceType,
+        scan.lightSource ?: -1, scan.serial ?: "", scan.humidity ?: "",
+        scan.temperature ?: "")
 
     suspend fun updateFrameColor(sid: Long, fid: Int, color: String) = dao.updateFrameColor(sid, fid, color)
 

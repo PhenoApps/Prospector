@@ -6,10 +6,21 @@
     android:id="@+id/navigation_root"
     app:startDestination="@+id/experiment_list_fragment">
 
+    <include app:graph="@navigation/nano_configurations"/>
+
     <fragment
         android:id="@+id/settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.SettingsFragment"
-        android:label="@string/nav_label_settings"/>
+        android:name="org.phenoapps.prospector.fragments.SettingsContainerFragment"
+        android:label="@string/nav_label_settings">
+        <action android:id="@+id/action_to_linksquare_settings_fragment"
+            app:destination="@id/linksquare_settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
+        <action android:id="@+id/action_to_inno_spectra_settings_fragment"
+            app:destination="@id/inno_spectra_settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
 
     <fragment
         android:id="@+id/about_fragment"
@@ -39,6 +50,25 @@
 
     </fragment>
 
+    <fragment
+        android:id="@+id/inno_spectra_settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragment"
+        android:label="@string/inno_spectra_settings_fragment_label">
+        <action android:id="@+id/action_to_new_config_creator"
+            app:destination="@id/nano_configurations"
+            app:popUpTo="@id/inno_spectra_settings_fragment"
+            app:launchSingleTop="true">
+            <argument android:name="names"
+                android:defaultValue="@null"
+                app:nullable="true"
+                app:argType="string[]"/>
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/linksquare_settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.LinkSquareToolbarSettingsFragment"
+        android:label="@string/linksquare_settings_fragment_label"/>
 <!--    <fragment-->
 <!--        android:id="@+id/scan_detail_fragment"-->
 <!--        android:name="org.phenoapps.prospector.fragments.ScanDetailFragment"-->

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:key="org.phenoapps.prospector.DEVICE_INFO"
+        android:summary=""
+        android:title="@string/pref_link_square_scanning_title"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:key="org.phenoapps.prospector.DEVICE_TYPE"
+            android:title="@string/pref_device_type" />
+
+        <!--        <ListPreference-->
+        <!--            android:title="@string/pref_wifi_mode"-->
+        <!--            android:key="org.phenoapps.prospector.DEVICE_WIFI_MODE"-->
+        <!--            android:entries="@array/device_wifi_mode_indices"-->
+        <!--            android:entryValues="@array/device_wifi_mode"-->
+        <!--            android:defaultValue="0"/>-->
+
+        <!--        <EditTextPreference-->
+        <!--            android:key="org.phenoapps.prospector.DEVICE_ALIAS"-->
+        <!--            android:title="@string/pref_device_alias"-->
+        <!--            android:summary="@string/pref_device_alias_summary" />-->
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_device_default_ip"
+            android:icon="@drawable/ic_settings_input_antenna_black_18dp"
+            android:key="org.phenoapps.prospector.DEVICE_IP"
+            android:summary="@string/pref_device_ip_summary"
+            android:title="@string/pref_device_ip" />
+
+        <!--        <EditTextPreference-->
+        <!--            android:icon="@drawable/ic_settings_input_svideo_black_18dp"-->
+        <!--            android:key="org.phenoapps.prospector.DEVICE_PORT"-->
+        <!--            android:title="@string/pref_device_port"-->
+        <!--            android:defaultValue="@string/pref_device_default_port"-->
+        <!--            android:summary="@string/pref_device_port_summary" />-->
+
+        <SeekBarPreference
+            android:defaultValue="1"
+            android:icon="@drawable/ic_wb_iridescent_24px"
+            android:key="org.phenoapps.prospector.LED_FRAMES"
+            android:max="8"
+            android:summary="@string/pref_led_frames_summary"
+            android:title="@string/pref_led_frames_title"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            android:defaultValue="1"
+            android:icon="@drawable/ic_wb_incandescent_24px"
+            android:key="org.phenoapps.prospector.BULB_FRAMES"
+            android:max="8"
+            android:summary="@string/pref_led_frames_summary"
+            android:title="@string/pref_bulb_frames_title"
+            app:showSeekBarValue="true" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="org.phenoapps.prospector.CONVERT_TO_WAVELENGTHS"
+            android:summary="@string/pref_convert_wavelengths_summary"
+            android:title="@string/pref_convert_wavelengths_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:enabled="true"
+        android:key="org.phenoapps.prospector.DEVICE_IOT"
+        android:summary="@string/pref_iot_summary"
+        android:title="@string/pref_iot_title"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference
+            android:icon="@drawable/ic_wifi"
+            android:key="org.phenoapps.prospector.DEVICE_SSID"
+            android:summary="@string/pref_device_ssid_summary"
+            android:title="@string/pref_device_ssid" />
+
+        <EditTextPreference
+            android:icon="@drawable/ic_lock"
+            android:inputType="textPassword"
+            android:key="org.phenoapps.prospector.DEVICE_PASSWORD"
+            android:title="@string/pref_device_password" />
+
+        <Preference
+            android:icon="@drawable/ic_connection"
+            android:key="org.phenoapps.prospector.DEVICE_IOT_LIST"
+            android:title="@string/pref_device_iot_list" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

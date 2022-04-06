@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.utils
 
+import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import android.content.Context
 import android.net.Uri
@@ -33,6 +34,12 @@ open class FileUtil(private val ctx: Context) {
     private val specLightSourceHeader: String by lazy { ctx.getString(R.string.spec_light_source_header) }
 
     private val scanNoteHeader: String by lazy { ctx.getString(R.string.scan_note_header) }
+
+    private val serialHeader: String by lazy { ctx.getString(R.string.serial_header) }
+
+    private val humidityHeader: String by lazy { ctx.getString(R.string.humidity_header) }
+
+    private val temperatureHeader: String by lazy { ctx.getString(R.string.temperature_header) }
 
 //    private val scanModelHeaderString by lazy {
 //        arrayOf(scanIdHeader, scanDateHeader, scanDeviceIdHeader,
@@ -68,26 +75,30 @@ open class FileUtil(private val ctx: Context) {
         ctx.contentResolver.openOutputStream(uri)?.let { stream ->
 
             val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader," +
-                    "$deviceTypeHeader,$scanDeviceIdHeader,$operatorHeader," +
+                    "$deviceTypeHeader,$scanDeviceIdHeader,$serialHeader,$humidityHeader,$temperatureHeader,$operatorHeader," +
                     "$specLightSourceHeader,$scanNoteHeader,"
 
             if (convert) {
 
                 val firstExport = exports.firstOrNull() //used to print header wavelength range, which is dependent on the device
-                val first = firstExport?.spectralData?.toWaveArray(firstExport.deviceType)?.filter {
+                val first = firstExport?.toWaveArray(firstExport.deviceType)?.filter {
 
                     val deviceTypeMax = when(firstExport.deviceType) {
 
                         DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
 
-                        else -> LinkSquareExportRange.max
+                        DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+
+                        else -> InnoSpectraExportRange.max
                     }
 
                     val deviceTypeMin = when(firstExport.deviceType) {
 
                         DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
-                        else -> LinkSquareExportRange.min
+                        DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
+
+                        else -> InnoSpectraExportRange.min
                     }
 
                     it.first in deviceTypeMin..deviceTypeMax
@@ -104,30 +115,37 @@ open class FileUtil(private val ctx: Context) {
                     exports.forEach { export ->
 
                         val data = arrayOf(
-                                export.experiment,
-                                export.sample,
-                                export.date,
-                                export.deviceType,
-                                export.deviceId,
-                                export.operator,
-                                export.lightSource,
-                                export.note
+                            export.experiment,
+                            export.sample,
+                            export.date,
+                            export.deviceType,
+                            export.deviceId,
+                            export.serial,
+                            export.humidity,
+                            export.temperature,
+                            export.operator,
+                            export.lightSource,
+                            export.note
                         )
 
-                        val wave = export.spectralData.toWaveArray(firstExport.deviceType).filter {
+                        val wave = export.toWaveArray(firstExport.deviceType).filter {
 
                             val deviceTypeMax = when(firstExport.deviceType) {
 
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.max
 
-                                else -> LinkSquareExportRange.max
+                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
+
+                                else -> InnoSpectraExportRange.max
                             }
 
                             val deviceTypeMin = when(firstExport.deviceType) {
 
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
-                                else -> LinkSquareExportRange.min
+                                DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
+
+                                else -> InnoSpectraExportRange.min
                             }
 
                             it.first in deviceTypeMin..deviceTypeMax
@@ -143,24 +161,32 @@ open class FileUtil(private val ctx: Context) {
 
             } else {
 
-                exports.firstOrNull()?.spectralData?.split(" ")?.size?.let { size ->
+                exports.firstOrNull()?.let { export ->
 
-                    val headers = (prefixHeaders + (1..size).joinToString(","))
-                        .split(",").toTypedArray()
+                    val size = export.spectralData.split(" ").size
+
+                    val wavelengths = export.wavelengths?.split(" ")
+
+                    val headers = (prefixHeaders + if (export.deviceType in arrayOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR))
+                        ((1..size).joinToString(","))
+                    else (wavelengths?.joinToString(","))).split(",").toTypedArray()
 
                     val csvWriter = CSVPrinter(stream.buffered().writer(), CSVFormat.DEFAULT.withHeader(*headers))
 
                     exports.forEach { e ->
 
                         val data = arrayOf(
-                                e.experiment,
-                                e.sample,
-                                e.date,
-                                e.deviceType,
-                                e.deviceId,
-                                e.operator,
-                                e.lightSource,
-                                e.note
+                            e.experiment,
+                            e.sample,
+                            e.date,
+                            e.deviceType,
+                            e.deviceId,
+                            e.serial,
+                            e.humidity,
+                            e.temperature,
+                            e.operator,
+                            e.lightSource,
+                            e.note
                         )
 
                         val frameData = e.spectralData.split(" ")

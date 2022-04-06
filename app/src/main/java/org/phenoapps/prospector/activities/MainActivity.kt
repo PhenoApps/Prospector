@@ -1,16 +1,20 @@
 package org.phenoapps.prospector.activities
 
 import BULB_FRAMES
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -25,9 +29,11 @@ import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.*
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.util.*
@@ -47,12 +53,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     //flag to track when a device is connected, used to change the options menu icon
     var mConnected: Boolean = false
 
+    private val mConnectionHandlerThread = HandlerThread("activity connection checker")
+
     private val sViewModel: MainActivityViewModel by viewModels()
 
     /**
      * This activity view model is used throughout all the fragments to update connection status.
      */
-    val sDeviceViewModel: DeviceViewModel by viewModels()
+    var sDeviceViewModel: Spectrometer? = null
 
     private var doubleBackToExitPressedOnce = false
 
@@ -65,6 +73,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mCitationDialog: AlertDialog? = null
     private var mAskForOperatorDialog: AlertDialog? = null
     private var mAskChangeOperatorDialog: AlertDialog? = null
+    private var mConfirmFactoryResetDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -89,6 +98,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun setupActivity() {
+
+        mConnectionHandlerThread.looper
+        mConnectionHandlerThread.start()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -124,35 +136,38 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun startConnectionWatcher() {
 
-        val check = object : TimerTask() {
+        Handler(mConnectionHandlerThread.looper).postDelayed({
 
-            override fun run() {
+            runOnUiThread {
 
-                runOnUiThread {
+                val last = mConnected
 
-                    val last = mConnected
+                mConnected = sDeviceViewModel?.isConnected() ?: false
 
-                    mConnected = sDeviceViewModel.isConnected()
+                var name = sDeviceViewModel?.getDeviceInfo()?.deviceId
 
-                    if (last != mConnected) {
-                        mSnackbar.push(
-                            SnackbarQueue
-                                .SnackJob(
-                                    mBinding.actMainCoordinatorLayout,
-                                    if (mConnected) getString(R.string.connected)
-                                    else getString(R.string.disconnect)
-                                )
-                        )
-                    }
+                if (mConnected) {
+                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, name).apply()
+                } else {
+                    name = mPrefs.getString(mKeyUtil.lastConnectedDeviceId, "")
+                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, "").apply()
+                }
+
+                if (last != mConnected) {
+                    mSnackbar.push(
+                        SnackbarQueue
+                            .SnackJob(
+                                mBinding.actMainCoordinatorLayout,
+                                if (mConnected) getString(R.string.connected, name)
+                                else getString(R.string.disconnect, name)
+                            )
+                    )
                 }
             }
-        }
 
-        Timer().cancel()
+            startConnectionWatcher()
 
-        Timer().purge()
-
-        Timer().scheduleAtFixedRate(check, 0, 1500)
+        }, 1500)
     }
 
     /**
@@ -180,9 +195,56 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    private val permissionGranter = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+
+        if (permissions.all { it.value }) {
+
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+
+                startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+
+            } else {
+
+                startDeviceConnection()
+
+            }
+        }
+    }
+
+    fun switchInnoSpectra() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_NANO).apply()
+
+        sDeviceViewModel = InnoSpectraViewModel()
+
+        runtimeBluetoothCheck()
+
+    }
+
+    fun switchLinkSquare() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1).apply()
+
+        sDeviceViewModel = LinkSquareViewModel()
+
+        startDeviceConnection()
+    }
+
+    private fun runtimeBluetoothCheck() {
+        permissionGranter.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        runtimeBluetoothCheck()
 
         if ("release" in BuildConfig.FLAVOR) {
 
@@ -195,6 +257,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 throwable.printStackTrace()
 
             }
+        }
+
+        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
+        if (maker == DEVICE_TYPE_LS1) {
+
+            sDeviceViewModel = LinkSquareViewModel()
+
+        } else {
+
+            sDeviceViewModel = InnoSpectraViewModel()
         }
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
@@ -260,6 +332,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 dialog.dismiss()
 
             }.create()
+
+
+    }
+
+    fun showAskFactoryReset(function: () -> Unit) {
+        mConfirmFactoryResetDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_confirm_factory_reset)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                function()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+
+                dialog.dismiss()
+            }.create()
+
+        mConfirmFactoryResetDialog?.show()
     }
 
     private fun showAskOperatorDialog() {
@@ -405,7 +495,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         lifecycleScope.launch {
 
-            sDeviceViewModel.connect(this@MainActivity.applicationContext)
+            sDeviceViewModel?.connect(this@MainActivity.applicationContext)
 
         }
     }
@@ -414,7 +504,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         lifecycleScope.launch {
 
-            sDeviceViewModel.disconnect()
+            sDeviceViewModel?.disconnect(this@MainActivity)
 
         }
     }
@@ -426,6 +516,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
+        mConfirmFactoryResetDialog?.dismiss()
+
+        mConnectionHandlerThread.quit()
 
         super.onDestroy()
 
@@ -433,7 +526,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onPause() {
 
-        sDeviceViewModel.reset()
+        sDeviceViewModel?.reset(this)
 
         super.onPause()
     }
@@ -472,7 +565,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
-                R.id.settings_fragment -> {
+                R.id.linksquare_settings_fragment -> {
 
                     onSettingsBackPressed()
 

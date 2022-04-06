@@ -34,7 +34,7 @@
         android:keepScreenOn="true">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/titleToolbar"
+            android:id="@+id/toolbar"
             style="@style/Text.Header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
             app:layout_constraintBottom_toTopOf="@id/tabLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/titleToolbar"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
             app:layout_constraintVertical_bias="0"
             app:menu="@menu/menu_scan_list"
             app:navigationIcon="@drawable/ic_subdirectory_arrow_right"

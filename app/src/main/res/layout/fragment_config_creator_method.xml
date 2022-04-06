@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        app:menu="@menu/menu_inno_config_settings"
+        app:navigationIcon="@drawable/ic_back_arrow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ProgressBar style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        android:secondaryProgress="15"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        android:id="@+id/frag_cc_pb"/>
+
+    <TextView style="@style/TextAppearance.MaterialComponents.Headline4"
+        android:layout_margin="16dp"
+        android:id="@+id/frag_cc_title_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_cc_method_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"/>
+
+    <TextView style="@style/TextAppearance.MaterialComponents.Subtitle1"
+        android:layout_margin="16dp"
+        android:id="@+id/frag_cc_subtitle_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_cc_method_subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frag_cc_title_tv"/>
+
+    <ListView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/frag_cc_subtitle_tv"
+        app:layout_constraintBottom_toTopOf="@id/frag_cc_next_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@android:layout/simple_list_item_checked"
+        android:id="@+id/frag_cc_method_lv"
+        android:layout_margin="16dp"
+        android:orientation="horizontal"/>
+
+    <Button
+        android:layout_margin="16dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/frag_cc_back_btn"
+        android:text="@string/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/frag_cc_next_btn"
+        app:layout_constraintStart_toEndOf="@id/frag_cc_back_btn"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:layout_margin="16dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/frag_cc_next_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/frag_cc_back_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/next"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
