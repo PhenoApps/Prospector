@@ -42,4 +42,7 @@ class KeyUtil(private val ctx: Context?) {
     val innoCreateNew by key(R.string.key_pref_inno_spectra_new_config)
     val innoConfigRestore by key(R.string.key_pref_inno_spectra_restore_configs)
     val innoConfig by key(R.string.key_pref_inno_spectra_config)
+
+    //storage definer key
+    val workflowDirectoryDefiner by key(R.string.key_pref_workflow_root_directory)
 }

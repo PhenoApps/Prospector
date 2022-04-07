@@ -13,8 +13,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +40,10 @@ import java.util.*
 @WithFragmentBindings
 @AndroidEntryPoint
 class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_list), CoroutineScope by MainScope() {
+
+    companion object {
+        const val REQUEST_STORAGE_DEFINER = "org.phenoapps.prospector.requests.storage_definer"
+    }
 
     /**
      * Used to query experiment list
@@ -78,6 +84,25 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
             updateUi()
 
+            //ask the user once, otherwise use the settings to define the storage location
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            if (prefs.getBoolean("STORAGE_DEFINE", true)) {
+
+                prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+
+                setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
+
+                    if (code == REQUEST_STORAGE_DEFINER) {
+
+                        (activity as? MainActivity)?.askSampleImport()
+
+                    }
+                }
+
+                findNavController().navigate(ExperimentListFragmentDirections
+                    .actionToStorageDefiner())
+
+            } else (activity as? MainActivity)?.askSampleImport()
         }
 
         return mBinding?.root

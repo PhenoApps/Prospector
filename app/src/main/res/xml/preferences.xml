@@ -44,6 +44,12 @@
         android:title="@string/pref_cat_workflow_title"
         app:iconSpaceReserved="false">
 
+        <Preference
+            android:icon="@drawable/ic_folder"
+            android:key="@string/key_pref_workflow_root_directory"
+            android:summary="@string/pref_workflow_root_directory_summary"
+            android:title="@string/workflow_root_directory_title"/>
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_barcode_scan"

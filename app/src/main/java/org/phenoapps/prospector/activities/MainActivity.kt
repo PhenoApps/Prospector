@@ -10,6 +10,7 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
 import android.widget.Toast
@@ -17,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -177,15 +179,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setupBotNav()
 
+        runtimeBluetoothCheck()
+
+        startConnectionWatcher()
+    }
+
+    fun askSampleImport() {
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
         //on first load ask user if they want to load sample data
         if (prefs.getBoolean("FIRST_LOAD_SAMPLE_DATA", true)) {
 
             prefs.edit().putBoolean("FIRST_LOAD_SAMPLE_DATA", false).apply()
 
             Dialogs.onOk(AlertDialog.Builder(this),
-                    getString(R.string.activity_main_sample_data_title),
-                    getString(R.string.cancel),
-                    getString(R.string.ok)) {
+                getString(R.string.activity_main_sample_data_title),
+                getString(R.string.cancel),
+                getString(R.string.ok)) {
 
 
                 if (it) {
@@ -195,10 +206,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 }
             }
         }
-
-        runtimeBluetoothCheck()
-
-        startConnectionWatcher()
     }
 
     private fun startConnectionWatcher() {
@@ -268,7 +275,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
 
-                startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+
+                    val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
+                    startActivity(intent)
+                }
 
             } else {
 
@@ -311,8 +323,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun runtimeBluetoothCheck() {
-        permissionGranter.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionGranter.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION))
+        } else {
+            permissionGranter.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
