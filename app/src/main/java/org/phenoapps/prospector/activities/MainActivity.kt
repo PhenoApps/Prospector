@@ -7,6 +7,7 @@ import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.*
@@ -14,7 +15,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -36,7 +36,6 @@ import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
 import java.io.File
-import java.util.*
 
 /**
  * The main activity controls device connection across all fragments.
@@ -50,6 +49,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    companion object {
+        const val TAG = "MainActivity"
+    }
+
     //flag to track when a device is connected, used to change the options menu icon
     var mConnected: Boolean = false
 
@@ -99,8 +103,69 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun setupActivity() {
 
-        mConnectionHandlerThread.looper
-        mConnectionHandlerThread.start()
+        if (mConnectionHandlerThread.state == Thread.State.NEW) {
+            mConnectionHandlerThread.looper
+            mConnectionHandlerThread.start()
+        }
+
+        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
+        sDeviceViewModel = if (maker == DEVICE_TYPE_LS1) {
+
+            LinkSquareViewModel()
+
+        } else {
+
+            InnoSpectraViewModel()
+        }
+
+        mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
+
+        setupNavController()
+
+        mCitationDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_citation_title)
+            .setMessage(getString(R.string.dialog_citation_string) + "\n\n" + getString(R.string.dialog_citation_message))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        mAskForOperatorDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_ask_input_operator_title)
+            .setMessage(R.string.dialog_ask_input_operator_message)
+            .setNegativeButton(R.string.no) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                dialog.dismiss()
+
+                mNavController.navigate(R.id.action_to_settings,
+                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
+
+            }.create()
+
+        mAskChangeOperatorDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_ask_change_operator_title)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                dialog.dismiss()
+
+                mNavController.navigate(R.id.action_to_settings,
+                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
+            }
+            .setNeutralButton(R.string.dialog_dont_ask_again) { dialog, _ ->
+
+                mPrefs.edit().putBoolean(mKeyUtil.verifyOperator, false).apply()
+
+                dialog.dismiss()
+
+            }
+            .setNegativeButton(R.string.no) { dialog, _ ->
+
+                dialog.dismiss()
+
+            }.create()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -113,9 +178,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         setupBotNav()
 
         //on first load ask user if they want to load sample data
-        if (prefs.getBoolean("FIRST_LOAD", true)) {
+        if (prefs.getBoolean("FIRST_LOAD_SAMPLE_DATA", true)) {
 
-            prefs.edit().putBoolean("FIRST_LOAD", true).apply()
+            prefs.edit().putBoolean("FIRST_LOAD_SAMPLE_DATA", false).apply()
 
             Dialogs.onOk(AlertDialog.Builder(this),
                     getString(R.string.activity_main_sample_data_title),
@@ -131,6 +196,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
 
+        runtimeBluetoothCheck()
+
         startConnectionWatcher()
     }
 
@@ -138,22 +205,22 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         Handler(mConnectionHandlerThread.looper).postDelayed({
 
-            runOnUiThread {
+            val last = mConnected
 
-                val last = mConnected
+            mConnected = sDeviceViewModel?.isConnected() ?: false
 
-                mConnected = sDeviceViewModel?.isConnected() ?: false
+            var name = sDeviceViewModel?.getDeviceInfo()?.deviceId
 
-                var name = sDeviceViewModel?.getDeviceInfo()?.deviceId
+            if (mConnected) {
+                mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, name).apply()
+            } else {
+                name = mPrefs.getString(mKeyUtil.lastConnectedDeviceId, "")
+                mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, "").apply()
+            }
 
-                if (mConnected) {
-                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, name).apply()
-                } else {
-                    name = mPrefs.getString(mKeyUtil.lastConnectedDeviceId, "")
-                    mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, "").apply()
-                }
+            if (last != mConnected) {
 
-                if (last != mConnected) {
+                runOnUiThread {
                     mSnackbar.push(
                         SnackbarQueue
                             .SnackJob(
@@ -211,6 +278,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    private val introActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            setupActivity()
+
+        }
+    }
+
     fun switchInnoSpectra() {
 
         stopDeviceConnection()
@@ -239,16 +315,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             Manifest.permission.ACCESS_COARSE_LOCATION))
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
-        runtimeBluetoothCheck()
+        Log.d(TAG, sViewModel.toString())
 
         if ("release" in BuildConfig.FLAVOR) {
-
-            //TODO add firebase analytics event on error
 
             Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
 
@@ -259,20 +332,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
 
-        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
-        if (maker == DEVICE_TYPE_LS1) {
-
-            sDeviceViewModel = LinkSquareViewModel()
-
-        } else {
-
-            sDeviceViewModel = InnoSpectraViewModel()
-        }
-
-        mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
-
-        setupNavController()
-
         //check cold load, load sample data and navigate to intro activity
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -280,63 +339,19 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             prefs.edit().putBoolean("FIRST_LOAD", false).apply()
 
-            startLoadSampleData()
+            introActivityResult.launch(Intent(this, IntroActivity::class.java))
 
-            startActivity(Intent(this, IntroActivity::class.java))
+        } else {
+
+            setupActivity()
 
         }
-
-        setupActivity()
-
-        mCitationDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.dialog_citation_title)
-            .setMessage(getString(R.string.dialog_citation_string) + "\n\n" + getString(R.string.dialog_citation_message))
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-
-        mAskForOperatorDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.dialog_ask_input_operator_title)
-            .setMessage(R.string.dialog_ask_input_operator_message)
-            .setNegativeButton(R.string.no) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-
-                dialog.dismiss()
-
-                mNavController.navigate(R.id.action_to_settings,
-                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
-
-            }.create()
-
-        mAskChangeOperatorDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.dialog_ask_change_operator_title)
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-
-                dialog.dismiss()
-
-                mNavController.navigate(R.id.action_to_settings,
-                    bundleOf(mKeyUtil.argOpenOperatorSettings to true))
-            }
-            .setNeutralButton(R.string.dialog_dont_ask_again) { dialog, _ ->
-
-                mPrefs.edit().putBoolean(mKeyUtil.verifyOperator, false).apply()
-
-                dialog.dismiss()
-
-            }
-            .setNegativeButton(R.string.no) { dialog, _ ->
-
-                dialog.dismiss()
-
-            }.create()
-
-
     }
 
     fun showAskFactoryReset(function: () -> Unit) {
+
+        runtimeBluetoothCheck()
+
         mConfirmFactoryResetDialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_confirm_factory_reset)
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
