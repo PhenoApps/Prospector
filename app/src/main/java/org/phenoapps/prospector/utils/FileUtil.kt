@@ -72,7 +72,7 @@ open class FileUtil(private val ctx: Context) {
     suspend fun exportCsv(uri: Uri, exports: List<DeviceTypeExport>, convert: Boolean = false) = withContext(Dispatchers.IO) {
 
         //false warning, this function is run always in Dispatchers.IO
-        ctx.contentResolver.openOutputStream(uri)?.let { stream ->
+        ctx.contentResolver.openOutputStream(uri)?.use { stream ->
 
             val prefixHeaders = "${experimentNameHeader},$scanIdHeader,$scanDateHeader," +
                     "$deviceTypeHeader,$scanDeviceIdHeader,$serialHeader,$humidityHeader,$temperatureHeader,$operatorHeader," +
@@ -200,8 +200,6 @@ open class FileUtil(private val ctx: Context) {
                     csvWriter.close()
                 }
             }
-
-            stream.close()
         }
     }
 

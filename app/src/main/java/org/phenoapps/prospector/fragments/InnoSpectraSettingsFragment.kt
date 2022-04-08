@@ -106,7 +106,7 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
                     configList?.isEnabled = false
                     addConfig?.isEnabled = false
 
-                    InnoSpectraUtil.factoryReset()
+                    InnoSpectraUtil.factoryReset(context)
 
                     deviceViewModel.refreshConfigs()
 

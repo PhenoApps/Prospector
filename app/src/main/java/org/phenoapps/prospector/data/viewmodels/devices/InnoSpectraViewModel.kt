@@ -1,6 +1,7 @@
 package org.phenoapps.prospector.data.viewmodels.devices
 
 import DEVICE_TYPE_NANO
+import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -10,7 +11,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.IBinder
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
@@ -89,42 +92,54 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 mBluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
                 val adapter = mBluetoothManager?.adapter
                 val scanner = adapter?.bluetoothLeScanner
-                scanner?.startScan(object: ScanCallback() {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
 
-                    override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                        super.onScanResult(callbackType, result)
+                    scanner?.startScan(object: ScanCallback() {
 
-                        result?.device?.let { device ->
+                        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+                            super.onScanResult(callbackType, result)
 
-                            val nanoName = getStringPref(context, SharedPreferencesKeys.DeviceFilter, "NIR")
+                            try {
 
-                            device.name?.let { name ->
+                                result?.device?.let { device ->
 
-                                if (name.contains(nanoName)) {
+                                    val nanoName = getStringPref(context, SharedPreferencesKeys.DeviceFilter, "NIR")
 
-                                    result.scanRecord?.let { record ->
+                                    device.name?.let { name ->
 
-                                        mBluetoothDevice = device
+                                        if (name.contains(nanoName)) {
 
-                                        val nanoDevice = NanoDevice(device, result.rssi, record.bytes)
+                                            result.scanRecord?.let { record ->
 
-                                        if (sdk.connect(nanoDevice.nanoMac)) {
+                                                mBluetoothDevice = device
 
-                                            scanner.stopScan(this)
+                                                val nanoDevice = NanoDevice(device, result.rssi, record.bytes)
 
-                                            mNanoSdk = NanoConnection(sdk, nanoDevice)
+                                                if (sdk.connect(nanoDevice.nanoMac)) {
 
-                                            val configIndex = PreferenceManager.getDefaultSharedPreferences(context)
-                                                .getInt(KeyUtil(context).innoConfig, 0)
+                                                    scanner.stopScan(this)
 
-                                            setActiveConfig(configIndex)
+                                                    mNanoSdk = NanoConnection(sdk, nanoDevice)
+
+                                                    val configIndex = PreferenceManager.getDefaultSharedPreferences(context)
+                                                        .getInt(KeyUtil(context).innoConfig, 0)
+
+                                                    setActiveConfig(configIndex)
+                                                }
+                                            }
                                         }
                                     }
                                 }
+
+                            } catch (e: SecurityException) {
+
+                                e.printStackTrace()
+
                             }
                         }
-                    }
-                })
+                    })
+                }
             }
         }
 
@@ -176,8 +191,18 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     private fun isGattStateConnected() = if (mBluetoothDevice != null) {
 
-        mBluetoothManager?.getConnectionState(mBluetoothDevice,
-            BluetoothProfile.GATT_SERVER) == BluetoothProfile.STATE_CONNECTED
+        try {
+
+            mBluetoothManager?.getConnectionState(mBluetoothDevice,
+                BluetoothProfile.GATT_SERVER) == BluetoothProfile.STATE_CONNECTED
+
+        } catch (e: SecurityException) {
+
+            e.printStackTrace()
+
+            false
+            
+        }
 
     } else false
 

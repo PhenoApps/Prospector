@@ -25,10 +25,8 @@ import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
-import org.phenoapps.prospector.utils.KeyUtil
-import org.phenoapps.prospector.utils.LinkSquare
-import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
-import org.phenoapps.prospector.utils.observeOnce
+import org.phenoapps.prospector.utils.*
+import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.getStem
 
 /**
  * Simple pref fragment that listens for connected devices and can scan subnets for IoT devices. (uses activity view model)
@@ -74,6 +72,14 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
             }
         }
 
+        findPreference<Preference>(mKeyUtil.workflowDirectoryDefiner)?.setOnPreferenceClickListener { _ ->
+
+            findNavController().navigate(SettingsContainerFragmentDirections
+                .actionToStorageDefiner())
+
+            true
+        }
+
         //sets pref summary to the inputted operator name
         findPreference<EditTextPreference>(OPERATOR)?.setOnPreferenceChangeListener { preference, newValue ->
 
@@ -106,9 +112,26 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
         }
     }
 
+    private fun updateStorageDirectory() {
+
+        context?.let { ctx ->
+
+            if (DocumentTreeUtil.isEnabled(ctx)) {
+
+                findPreference<Preference>(mKeyUtil.workflowDirectoryDefiner)?.let { dirPref ->
+
+                    dirPref.summary = DocumentTreeUtil.getRoot(ctx)?.uri?.getStem(context)
+
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
         (activity as? MainActivity)?.setToolbar(R.id.action_nav_settings)
+
+        updateStorageDirectory()
     }
 }

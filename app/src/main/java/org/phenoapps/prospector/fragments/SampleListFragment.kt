@@ -8,6 +8,7 @@ import DATE_DESC
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -40,6 +41,7 @@ import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
 import java.util.*
+import kotlin.math.exp
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -143,8 +145,33 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                     mIsExporting = true
 
-                    requestExportLauncher.launch("${mName}_${mDeviceType}_${DateUtil().getTime()}.csv")
+                    context?.let { ctx ->
 
+                        val fileName = "${mName}_${mDeviceType}_${DateUtil().getTime()}.csv"
+
+                        if (DocumentTreeUtil.isEnabled(ctx)) {
+
+                            DocumentTreeUtil.getDirectory(ctx, R.string.dir_exports)?.let { dir ->
+
+                                if (dir.exists()) {
+
+                                    dir.createFile("*/*", fileName)?.let { file ->
+
+                                        if (file.exists()) {
+
+                                            export(file.uri)
+
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+
+                            requestExportLauncher.launch(fileName)
+
+                        }
+                    }
                 }
             }
         }
@@ -162,50 +189,55 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
         requestExportLauncher = registerForActivityResult(
             ActivityResultContracts.CreateDocument()) { nullUri ->
 
-            mIsExporting = false
+            nullUri?.let { uri ->
 
-            //start observing for exportable experiments using the defined view
-            sViewModel.deviceTypeExports(mExpId).observeOnce(viewLifecycleOwner) {
+                export(uri)
+            }
+        }
+    }
 
-                //only export if the view has rows, and only export the current selected experiment
-                it?.let { exports ->
+    private fun export(uri: Uri) {
 
-                    //grab the first experiment as an example to find the name and device type for the filename
-                    val example = exports.firstOrNull()
+        mIsExporting = false
 
-                    if (example == null) {
+        //start observing for exportable experiments using the defined view
+        sViewModel.deviceTypeExports(mExpId).observeOnce(viewLifecycleOwner) {
 
-                        (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
+            //only export if the view has rows, and only export the current selected experiment
+            it?.let { exports ->
 
-                    }
+                //grab the first experiment as an example to find the name and device type for the filename
+                val example = exports.firstOrNull()
 
-                    example?.let { it ->
+                if (example == null) {
 
-                        context?.let { ctx ->
+                    (activity as MainActivity).notify(getString(R.string.frag_sample_list_non_to_export))
 
-                            val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
+                }
 
-                            nullUri?.let { uri ->
+                example?.let { it ->
 
-                                mScope.launch {
+                    context?.let { ctx ->
 
-                                    mBinding?.toggleProgressBar()
+                        val convert = mPrefs.getBoolean(CONVERT_TO_WAVELENGTHS, true)
 
-                                    if (it.deviceType in arrayOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR)) {
+                        mScope.launch {
 
-                                        FileUtil(ctx).exportCsv(uri, exports, convert)
+                            mBinding?.toggleProgressBar()
 
-                                    } else {
+                            if (it.deviceType in arrayOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR)) {
 
-                                        FileUtil(ctx).exportCsv(uri, exports, false)
-                                    }
+                                FileUtil(ctx).exportCsv(uri, exports, convert)
 
-                                    mBinding?.toggleProgressBar()
+                            } else {
 
-                                    (activity as? MainActivity)?.showCitationDialog()
-
-                                }
+                                FileUtil(ctx).exportCsv(uri, exports, false)
                             }
+
+                            mBinding?.toggleProgressBar()
+
+                            (activity as? MainActivity)?.showCitationDialog()
+
                         }
                     }
                 }
