@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.activities
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.github.appintro.AppIntro
@@ -12,6 +13,8 @@ class IntroActivity : AppIntro() {
         // Make sure you don't call setContentView!
 
         isWizardMode = true
+
+        setResult(Activity.RESULT_OK)
 
         askForPermissions(arrayOf(android.Manifest.permission.CAMERA,
             android.Manifest.permission.BLUETOOTH,
