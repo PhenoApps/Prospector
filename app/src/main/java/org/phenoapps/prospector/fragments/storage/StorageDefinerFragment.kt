@@ -23,7 +23,6 @@ import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.createFolderStr
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-@WithFragmentBindings
 @AndroidEntryPoint
 class StorageDefinerFragment: Fragment(R.layout.fragment_storage_definer) {
 
