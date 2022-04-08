@@ -10,7 +10,6 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
 import android.widget.Toast
@@ -18,10 +17,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -87,6 +84,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val mKeyUtil by lazy {
         KeyUtil(this)
+    }
+
+    private val enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        startDeviceConnection()
+
     }
 
     private fun setupDirs() {
@@ -260,12 +263,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun startLoadSampleData() {
 
-        lifecycleScope.launch {
+        launch {
 
-            loadSampleData()
+            withContext(Dispatchers.IO) {
 
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
+                loadSampleData()
 
+                runOnUiThread {
+
+                    mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
+
+                }
+            }
         }
     }
 
@@ -275,12 +284,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
 
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-
-                    val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-
-                    startActivity(intent)
-                }
+                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
 
             } else {
 
@@ -524,20 +528,19 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     fun startDeviceConnection() {
-
-        lifecycleScope.launch {
-
-            sDeviceViewModel?.connect(this@MainActivity.applicationContext)
-
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.connect(this@MainActivity.applicationContext)
+            }
         }
     }
 
     private fun stopDeviceConnection() {
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.disconnect(this@MainActivity)
 
-        lifecycleScope.launch {
-
-            sDeviceViewModel?.disconnect(this@MainActivity)
-
+            }
         }
     }
 
@@ -558,7 +561,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onPause() {
 
-        sDeviceViewModel?.reset(this)
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.reset(this@MainActivity)
+            }
+        }
 
         super.onPause()
     }
