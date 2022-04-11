@@ -34,7 +34,7 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
+class NewSampleFragment : ConnectionFragment(R.layout.fragment_new_sample), CoroutineScope by MainScope() {
 
     private var mExpId: Long = -1L
 
@@ -47,8 +47,6 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
     private val argUpdateNote by lazy {
         arguments?.getString("note")
     }
-
-    private var mTimer: Timer? = null
 
     private val sOnBarcodeScanClick = View.OnClickListener {
 
@@ -98,8 +96,6 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
             setupButtons()
 
-            startTimer()
-
             binding.setupToolbar()
 
             //possible arguments sent if the sample is being edited
@@ -143,7 +139,7 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                     activity?.runOnUiThread {
 
-                        if (sDeviceViewModel.isConnected()) {
+                        if (sDeviceViewModel?.isConnected() == true) {
 
                             mBinding?.checkInsert(true)
 
@@ -242,59 +238,31 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun startTimer() {
-
-        //use the activity view model to access the current connection status
-        val check = object : TimerTask() {
-
-            override fun run() {
-
-                activity?.runOnUiThread {
-
-                    if (isAdded) {
-                        with (activity as? MainActivity) {
-                            mBinding?.fragNewSampleToolbar?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(if (this?.sDeviceViewModel?.isConnected() == true){
-                                    attachDeviceButtonPressListener()
-                                    R.drawable.ic_vector_link
-                                }
-                                else R.drawable.ic_vector_difference_ab)
-                        }
-                    }
-                }
-            }
-        }
-
-        mTimer = Timer()
-
-        mTimer?.scheduleAtFixedRate(check, 0, 1500)
-    }
-
     private fun startObservers() {
 
         //set the title header
-        sViewModel.experiments.observe(viewLifecycleOwner, { experiments ->
+        sViewModel.experiments.observe(viewLifecycleOwner) { experiments ->
 
             experiments.first { it.eid == mExpId }.also {
 
                 activity?.runOnUiThread {
 
-                    mBinding?.fragNewSampleToolbar?.title = it.name
+                    mBinding?.toolbar?.title = it.name
 
                 }
             }
-        })
+        }
 
         attachDeviceButtonPressListener()
     }
 
     private fun FragmentNewSampleBinding.setupToolbar() {
 
-        fragNewSampleToolbar.setNavigationOnClickListener {
+        toolbar.setNavigationOnClickListener {
             findNavController().popBackStack()
         }
 
-        fragNewSampleToolbar.setOnMenuItemClickListener {
+        toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
 
                 R.id.action_connection -> {
@@ -303,7 +271,8 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
 
                         if (this?.mConnected == true) {
 
-                            sDeviceViewModel.reset()
+                            sDeviceViewModel?.reset(context)
+
                         } else {
 
                             if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
@@ -381,16 +350,6 @@ class NewSampleFragment : Fragment(), CoroutineScope by MainScope() {
         mBinding?.onCancelClick = sOnCancelClick
 
         mBinding?.onBarcodeScanClick = sOnBarcodeScanClick
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        mTimer?.cancel()
-
-        mTimer?.purge()
-
-        mTimer = null
     }
 
     override fun onResume() {

@@ -17,7 +17,7 @@ class ExperimentViewModel @Inject constructor(
 
     fun insertExperimentAsync(exp: Experiment) = viewModelScope.async {
 
-        return@async repo.insertExperiment(exp.name, exp.deviceType, exp.date)
+        return@async repo.insertExperiment(exp.name, exp.deviceType, exp.date, exp.config)
 
     }
 

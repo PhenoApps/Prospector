@@ -2,6 +2,7 @@ package org.phenoapps.prospector.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
 import androidx.room.*
 import org.phenoapps.prospector.data.dao.ExperimentDao
 import org.phenoapps.prospector.data.dao.SampleDao
@@ -13,10 +14,9 @@ import java.io.File
 
 @Database(entities = [Experiment::class, Scan::class, SpectralFrame::class, Sample::class],
         views = [SampleScanCount::class, SampleFramesCount::class, DeviceTypeExport::class],
-    version = 4, exportSchema = true,
-    autoMigrations = [AutoMigration(from = 3, to = 4)])
+    version = 5, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)])
 abstract class ProspectorDatabase : RoomDatabase() {
-
 
     private fun ifExists(path: String): Boolean {
 
@@ -73,6 +73,8 @@ abstract class ProspectorDatabase : RoomDatabase() {
 
     companion object {
 
+        const val DATABASE_NAME = "PROSPECTOR"
+
         //singleton pattern
         @Volatile private var instance: ProspectorDatabase? = null
 
@@ -86,9 +88,11 @@ abstract class ProspectorDatabase : RoomDatabase() {
 
         private fun buildDatabase(ctx: Context): ProspectorDatabase {
 
-            return Room.databaseBuilder(ctx, ProspectorDatabase::class.java, "PROSPECTOR")
+            return Room.databaseBuilder(ctx, ProspectorDatabase::class.java, DATABASE_NAME)
+                .setJournalMode(JournalMode.TRUNCATE)
                 .addMigrations(MigrationV2())
                 .addMigrations(MigrationV3())
+//                .addMigrations(MigrationV4())
                 .build()
 
         }

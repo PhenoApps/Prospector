@@ -1,4 +1,4 @@
-package org.phenoapps.prospector.fragments
+package org.phenoapps.prospector.fragments.preferences
 
 import DEVICE_IOT_LIST
 import DEVICE_IP
@@ -6,11 +6,10 @@ import DEVICE_PASSWORD
 import DEVICE_PORT
 import DEVICE_SSID
 import DEVICE_TYPE
-import OPERATOR
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
-import androidx.fragment.app.activityViewModels
+import android.view.MenuItem
+import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
@@ -20,10 +19,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
-import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel_Factory
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.utils.KeyUtil
-import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
 
 /**
@@ -33,9 +30,7 @@ import org.phenoapps.prospector.utils.observeOnce
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
-
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
+class LinkSquareSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
     private val mKeyUtil by lazy {
         KeyUtil(context)
@@ -43,32 +38,25 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-
-        setPreferencesFromResource(R.xml.preferences, rootKey)
-
-        with(findPreference<EditTextPreference>(mKeyUtil.targetScans)) {
-
-            //androidx sets input type of et preferences (doesn't work in xml)
-            this?.setOnBindEditTextListener {
-                it.inputType = InputType.TYPE_CLASS_NUMBER
-            }
-
-            this?.setOnPreferenceChangeListener { preference, newValue ->
-
-                when (val target = newValue as? Int) {
-                    is Int -> {
-                        this.summary = getString(R.string.pref_workflow_target_scan_set_summary, target)
-                    }
-                    else -> {
-                        this.text = ""
-                        this.summary = getString(R.string.pref_workflow_target_summary)
-                    }
-                }
-
-                true
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().popBackStack()
             }
         }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+
+        var deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
+        if (deviceViewModel !is LinkSquareViewModel) {
+            (activity as MainActivity).switchLinkSquare()
+            deviceViewModel = (activity as MainActivity).sDeviceViewModel as LinkSquareViewModel
+        }
+
+        setPreferencesFromResource(R.xml.link_square_preferences, rootKey)
 
         //set iot device list to disabled, enable it when devcies are found
         with(findPreference<Preference>(DEVICE_IOT_LIST)) {
@@ -77,27 +65,18 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         }
 
-        //sets pref summary to the inputted operator name
-        findPreference<EditTextPreference>(OPERATOR)?.setOnPreferenceChangeListener { preference, newValue ->
-
-            preference.summary = newValue as? String ?: ""
-
-            true
-
-        }
-
         //this is the connect IoT button which searches the subnet
         findPreference<Preference>(DEVICE_IOT_LIST)?.setOnPreferenceClickListener { pref ->
 
             pref.summary = getString(R.string.pref_device_iot_searching)
 
-            sDeviceViewModel.scanArp().observeOnce(viewLifecycleOwner, {
+            deviceViewModel.scanArp().observeOnce(viewLifecycleOwner) {
 
                 if (it == "fail") { //back down to the brute force network search
 
                     Log.d("LSSearch", "Starting brute force search.")
 
-                    sDeviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner, {
+                    deviceViewModel.scanSubNet().observeOnce(viewLifecycleOwner) {
 
                         pref.summary = it
 
@@ -105,13 +84,13 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
                         scope.launch {
 
-                            sDeviceViewModel.connect(requireContext())
+                            deviceViewModel.connect(requireContext())
 
                             buildDeviceSummary()
 
                         }
 
-                    })
+                    }
 
                 } else { //use arp to find TI devices and connect if found
 
@@ -121,13 +100,13 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
                     scope.launch {
 
-                        sDeviceViewModel.connect(requireContext())
+                        deviceViewModel.connect(requireContext())
 
                         buildDeviceSummary()
 
                     }
                 }
-            })
+            }
 
             true
         }
@@ -191,7 +170,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
             scope.launch {
 
-                sDeviceViewModel.connect(requireContext())
+                deviceViewModel?.connect(requireContext())
 
                 buildDeviceSummary()
             }
@@ -204,7 +183,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
             scope.launch {
 
-                sDeviceViewModel.connect(requireContext())
+                deviceViewModel?.connect(requireContext())
 
             }
 
@@ -215,39 +194,44 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
     private fun buildDeviceSummary() {
 
-        scope.launch {
-
-            val summary = when (sDeviceViewModel.isConnected()) {
-
-                true -> buildLinkSquareDeviceInfo(requireContext(),
-                    sDeviceViewModel.getDeviceInfo())
-
-                else -> sDeviceViewModel.getDeviceError()
-
-            }
-
-            if (isAdded) {
-
-                activity?.runOnUiThread {
-
-                    findPreference<Preference>(DEVICE_TYPE)?.summary = summary
-                }
-            }
-        }
+//        scope.launch {
+//
+//            val summary = when (sDeviceViewModel.isConnected()) {
+//
+//                true -> buildLinkSquareDeviceInfo(requireContext(),
+//                    sDeviceViewModel.getDeviceInfo())
+//
+//                else -> sDeviceViewModel.getDeviceError()
+//
+//            }
+//
+//            if (isAdded) {
+//
+//                activity?.runOnUiThread {
+//
+//                    findPreference<Preference>(DEVICE_TYPE)?.summary = summary
+//                }
+//            }
+//        }
     }
 
     private fun setWLanInfo() {
 
+        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+
         val ssid = findPreference<EditTextPreference>(DEVICE_SSID)
         val password = findPreference<EditTextPreference>(DEVICE_PASSWORD)
 
-        scope.launch {
+        if (deviceViewModel is LinkSquareViewModel) {
 
-            sDeviceViewModel.setWLanInfoAsync(
-                ssid?.text ?: "",
-                password?.text ?: "",
-                DeviceViewModel.WPA).await()
+            scope.launch {
 
+                deviceViewModel.setWLanInfoAsync(
+                    ssid?.text ?: "",
+                    password?.text ?: "",
+                    LinkSquareViewModel.WPA).await()
+
+            }
         }
     }
 

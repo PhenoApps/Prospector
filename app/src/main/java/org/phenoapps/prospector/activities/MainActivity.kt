@@ -1,21 +1,24 @@
 package org.phenoapps.prospector.activities
 
 import BULB_FRAMES
+import DEVICE_TYPE_LS1
+import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
@@ -25,12 +28,13 @@ import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.*
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
+import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
 import java.io.File
-import java.util.*
 
 /**
  * The main activity controls device connection across all fragments.
@@ -44,15 +48,22 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //    private val mFirebaseAnalytics by lazy {
 //        FirebaseAnalytics.getInstance(this)
 //    }
+
+    companion object {
+        const val TAG = "MainActivity"
+    }
+
     //flag to track when a device is connected, used to change the options menu icon
     var mConnected: Boolean = false
+
+    private val mConnectionHandlerThread = HandlerThread("activity connection checker")
 
     private val sViewModel: MainActivityViewModel by viewModels()
 
     /**
      * This activity view model is used throughout all the fragments to update connection status.
      */
-    val sDeviceViewModel: DeviceViewModel by viewModels()
+    var sDeviceViewModel: Spectrometer? = null
 
     private var doubleBackToExitPressedOnce = false
 
@@ -65,6 +76,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mCitationDialog: AlertDialog? = null
     private var mAskForOperatorDialog: AlertDialog? = null
     private var mAskChangeOperatorDialog: AlertDialog? = null
+    private var mConfirmFactoryResetDialog: AlertDialog? = null
+    private var mFirstDeleteDatabaseDialog: AlertDialog? = null
+    private var mSecondDeleteDatabaseDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -72,6 +86,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val mKeyUtil by lazy {
         KeyUtil(this)
+    }
+
+    private val enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        startDeviceConnection()
+
     }
 
     private fun setupDirs() {
@@ -90,131 +110,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun setupActivity() {
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
-
-        setupDirs()
-
-        mSnackbar = SnackbarQueue()
-
-        setupBotNav()
-
-        //on first load ask user if they want to load sample data
-        if (prefs.getBoolean("FIRST_LOAD", true)) {
-
-            prefs.edit().putBoolean("FIRST_LOAD", true).apply()
-
-            Dialogs.onOk(AlertDialog.Builder(this),
-                    getString(R.string.activity_main_sample_data_title),
-                    getString(R.string.cancel),
-                    getString(R.string.ok)) {
-
-
-                if (it) {
-
-                    startLoadSampleData()
-
-                }
-            }
+        if (mConnectionHandlerThread.state == Thread.State.NEW) {
+            mConnectionHandlerThread.looper
+            mConnectionHandlerThread.start()
         }
 
-        startConnectionWatcher()
-    }
+        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
+        sDeviceViewModel = if (maker == DEVICE_TYPE_LS1) {
 
-    private fun startConnectionWatcher() {
+            LinkSquareViewModel()
 
-        val check = object : TimerTask() {
+        } else {
 
-            override fun run() {
-
-                runOnUiThread {
-
-                    val last = mConnected
-
-                    mConnected = sDeviceViewModel.isConnected()
-
-                    if (last != mConnected) {
-                        mSnackbar.push(
-                            SnackbarQueue
-                                .SnackJob(
-                                    mBinding.actMainCoordinatorLayout,
-                                    if (mConnected) getString(R.string.connected)
-                                    else getString(R.string.disconnect)
-                                )
-                        )
-                    }
-                }
-            }
-        }
-
-        Timer().cancel()
-
-        Timer().purge()
-
-        Timer().scheduleAtFixedRate(check, 0, 1500)
-    }
-
-    /**
-     * Displays a snack bar message.
-     */
-    fun notify(message: String) {
-
-        mSnackbar.push(
-            SnackbarQueue
-                .SnackJob(
-                    mBinding.actMainCoordinatorLayout,
-                    message
-                )
-        )
-    }
-
-    private fun startLoadSampleData() {
-
-        lifecycleScope.launch {
-
-            loadSampleData()
-
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
-
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
-        if ("release" in BuildConfig.FLAVOR) {
-
-            //TODO add firebase analytics event on error
-
-            Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
-
-                Log.e("ProspectorCrash", throwable.message ?: "Unknown Error")
-
-                throwable.printStackTrace()
-
-            }
+            InnoSpectraViewModel()
         }
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
 
         setupNavController()
-
-        //check cold load, load sample data and navigate to intro activity
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        if (prefs.getBoolean("FIRST_LOAD", true)) {
-
-            prefs.edit().putBoolean("FIRST_LOAD", false).apply()
-
-            startLoadSampleData()
-
-            startActivity(Intent(this, IntroActivity::class.java))
-
-        }
-
-        setupActivity()
 
         mCitationDialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_citation_title)
@@ -260,6 +173,273 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 dialog.dismiss()
 
             }.create()
+
+        mFirstDeleteDatabaseDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.database_reset)
+            .setMessage(getString(R.string.database_reset_warning1))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+                mSecondDeleteDatabaseDialog?.show()
+            }
+            .create()
+
+        mSecondDeleteDatabaseDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.database_reset)
+            .setMessage(getString(R.string.database_reset_warning2))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
+
+        setupDirs()
+
+        mSnackbar = SnackbarQueue()
+
+        setupBotNav()
+
+        runtimeBluetoothCheck()
+
+        startConnectionWatcher()
+    }
+
+    fun askDeleteDatabase(success: () -> Unit) {
+
+        mFirstDeleteDatabaseDialog?.let { firstDialog ->
+
+            if (!firstDialog.isShowing) {
+
+                mSecondDeleteDatabaseDialog?.let { secondDialog ->
+
+                    if (!secondDialog.isShowing) {
+
+                        mFirstDeleteDatabaseDialog = AlertDialog.Builder(this)
+                            .setTitle(R.string.database_reset)
+                            .setMessage(getString(R.string.database_reset_warning1))
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                dialog.dismiss()
+                                mSecondDeleteDatabaseDialog?.show()
+                            }
+                            .create()
+
+                        mSecondDeleteDatabaseDialog = AlertDialog.Builder(this)
+                            .setTitle(R.string.database_reset)
+                            .setMessage(getString(R.string.database_reset_warning2))
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                success()
+                                dialog.dismiss()
+                            }
+                            .create()
+
+                        mFirstDeleteDatabaseDialog?.show()
+                    }
+                }
+            }
+        }
+    }
+
+    fun askSampleImport() {
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        //on first load ask user if they want to load sample data
+        if (prefs.getBoolean("FIRST_LOAD_SAMPLE_DATA", true)) {
+
+            prefs.edit().putBoolean("FIRST_LOAD_SAMPLE_DATA", false).apply()
+
+            Dialogs.onOk(AlertDialog.Builder(this),
+                getString(R.string.activity_main_sample_data_title),
+                getString(R.string.cancel),
+                getString(R.string.ok)) {
+
+
+                if (it) {
+
+                    startLoadSampleData()
+
+                }
+            }
+        }
+    }
+
+    private fun startConnectionWatcher() {
+
+        Handler(mConnectionHandlerThread.looper).postDelayed({
+
+            val last = mConnected
+
+            mConnected = sDeviceViewModel?.isConnected() ?: false
+
+            var name = sDeviceViewModel?.getDeviceInfo()?.deviceId
+
+            if (mConnected) {
+                mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, name).apply()
+            } else {
+                name = mPrefs.getString(mKeyUtil.lastConnectedDeviceId, "")
+                mPrefs.edit().putString(mKeyUtil.lastConnectedDeviceId, "").apply()
+            }
+
+            if (last != mConnected) {
+
+                runOnUiThread {
+                    mSnackbar.push(
+                        SnackbarQueue
+                            .SnackJob(
+                                mBinding.actMainCoordinatorLayout,
+                                if (mConnected) getString(R.string.connected, name)
+                                else getString(R.string.disconnect, name)
+                            )
+                    )
+                }
+            }
+
+            startConnectionWatcher()
+
+        }, 1500)
+    }
+
+    /**
+     * Displays a snack bar message.
+     */
+    fun notify(message: String) {
+
+        mSnackbar.push(
+            SnackbarQueue
+                .SnackJob(
+                    mBinding.actMainCoordinatorLayout,
+                    message
+                )
+        )
+    }
+
+    private fun startLoadSampleData() {
+
+        launch {
+
+            withContext(Dispatchers.IO) {
+
+                loadSampleData()
+
+                runOnUiThread {
+
+                    mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
+
+                }
+            }
+        }
+    }
+
+    private val permissionGranter = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+
+        if (permissions.all { it.value }) {
+
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+
+                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+
+            } else {
+
+                startDeviceConnection()
+
+            }
+        }
+    }
+
+    private val introActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            setupActivity()
+
+        }
+    }
+
+    fun switchInnoSpectra() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_NANO).apply()
+
+        sDeviceViewModel = InnoSpectraViewModel()
+
+        runtimeBluetoothCheck()
+
+    }
+
+    fun switchLinkSquare() {
+
+        stopDeviceConnection()
+
+        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1).apply()
+
+        sDeviceViewModel = LinkSquareViewModel()
+
+        startDeviceConnection()
+    }
+
+    private fun runtimeBluetoothCheck() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionGranter.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION))
+        } else {
+            permissionGranter.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        Log.d(TAG, sViewModel.toString())
+
+        if ("release" in BuildConfig.FLAVOR) {
+
+            Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+
+                Log.e("ProspectorCrash", throwable.message ?: "Unknown Error")
+
+                throwable.printStackTrace()
+
+            }
+        }
+
+        //check cold load, load sample data and navigate to intro activity
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        if (prefs.getBoolean("FIRST_LOAD", true)) {
+
+            prefs.edit().putBoolean("FIRST_LOAD", false).apply()
+
+            introActivityResult.launch(Intent(this, IntroActivity::class.java))
+
+        } else {
+
+            setupActivity()
+
+        }
+    }
+
+    fun showAskFactoryReset(function: () -> Unit) {
+
+        runtimeBluetoothCheck()
+
+        mConfirmFactoryResetDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_confirm_factory_reset)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+
+                function()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+
+                dialog.dismiss()
+            }.create()
+
+        mConfirmFactoryResetDialog?.show()
     }
 
     private fun showAskOperatorDialog() {
@@ -402,20 +582,19 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     fun startDeviceConnection() {
-
-        lifecycleScope.launch {
-
-            sDeviceViewModel.connect(this@MainActivity.applicationContext)
-
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.connect(this@MainActivity.applicationContext)
+            }
         }
     }
 
     private fun stopDeviceConnection() {
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.disconnect(this@MainActivity)
 
-        lifecycleScope.launch {
-
-            sDeviceViewModel.disconnect()
-
+            }
         }
     }
 
@@ -426,6 +605,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
+        mConfirmFactoryResetDialog?.dismiss()
+
+        mConnectionHandlerThread.quit()
 
         super.onDestroy()
 
@@ -433,7 +615,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onPause() {
 
-        sDeviceViewModel.reset()
+        launch {
+            withContext(Dispatchers.IO) {
+                sDeviceViewModel?.reset(this@MainActivity)
+            }
+        }
 
         super.onPause()
     }
@@ -472,7 +658,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
-                R.id.settings_fragment -> {
+                R.id.linksquare_settings_fragment -> {
 
                     onSettingsBackPressed()
 

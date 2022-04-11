@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prospector directory structure names -->
+    <string name="dir_root">Prospector</string>
+    <string name="dir_exports">Exports</string>
+    <string name="dir_database">Database</string>
+</resources>

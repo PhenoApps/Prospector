@@ -26,7 +26,7 @@ class MainActivityViewModel @Inject constructor(
 
     fun insertExperimentAsync(exp: Experiment) = viewModelScope.async {
 
-        return@async experimentRepo.insertExperiment(exp.name, exp.deviceType, exp.date)
+        return@async experimentRepo.insertExperiment(exp.name, exp.deviceType, exp.date, exp.config)
 
     }
 

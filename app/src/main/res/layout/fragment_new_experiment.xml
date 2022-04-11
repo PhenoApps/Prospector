@@ -78,6 +78,28 @@
             app:layout_constraintVertical_bias="0"
             app:layout_constraintTop_toBottomOf="@id/experimentNoteEditText"/>
 
+        <Spinner
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cell"
+            android:id="@+id/configSpinner"
+            android:layout_margin="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/frag_new_exp_loading_tv"
+            android:text="@string/loading_configurations"
+            android:layout_margin="16dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/configSpinner"/>
+
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -87,7 +109,7 @@
             android:onClick="@{onSaveClick}"
             app:layout_constraintVertical_bias="0"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_exp_loading_tv"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
         <Button
@@ -99,8 +121,19 @@
             android:onClick="@{onCancelClick}"
             app:layout_constraintVertical_bias="0"
             app:layout_constraintEnd_toStartOf="@id/newExperimentSaveButton"
-            app:layout_constraintTop_toBottomOf="@id/deviceTypeSpinner"
+            app:layout_constraintTop_toBottomOf="@id/frag_new_exp_loading_tv"
             app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ProgressBar style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_margin="16dp"
+            android:indeterminate="false"
+            app:layout_constraintStart_toEndOf="@id/frag_new_exp_loading_tv"
+            app:layout_constraintTop_toBottomOf="@id/configSpinner"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/frag_new_exp_pb"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

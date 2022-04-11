@@ -1,11 +1,13 @@
 package org.phenoapps.prospector.utils
 
+import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NIR
 import android.content.Context
 import android.graphics.Color
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.ISCSDK.ISCNIRScanSDK
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -13,9 +15,9 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import org.apache.commons.math.stat.StatUtils
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.data.dao.ScanDao
-import org.phenoapps.prospector.data.models.SpectralFrame
+import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.fragments.ScanListFragment
+import org.phenoapps.prospector.interfaces.Spectrometer
 
 class LinkSquareLightSources {
     companion object {
@@ -55,6 +57,20 @@ class LinkSquareNIRExportRange {
     }
 }
 
+class InnoSpectraRange {
+    companion object {
+        const val min: Double = 900.0
+        const val max: Double = 1701.0
+    }
+}
+
+class InnoSpectraExportRange {
+    companion object {
+        const val min: Double = 899.0
+        const val max: Double = 1701.0
+    }
+}
+
 /**
  * Public helper functions for LinkSquare related processing.
  *
@@ -74,17 +90,20 @@ fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observ
  */
 fun List<ScanListFragment.ScanFrames>.toWaveArray(deviceType: String): List<Entry> {
 
-    val values = this.map { it.spectralValues }.flatMap { it.split(" ") }
-
-    return (values.mapIndexed { index, value ->
-
-        when (deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble())
-            else -> LinkSquare.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble())
+    return when (deviceType) {
+        DEVICE_TYPE_NIR, DEVICE_TYPE_LS1 -> {
+            val values = this.map { it.spectralValues }.flatMap { it.split(" ") }
+            values.mapIndexed { index, value -> LinkSquareNIR.pixelToWavelength(index, if (value.isEmpty()) 0.0 else value.toDouble()) }
         }
 
-    })
-
+        else -> {
+            val data = this.map { it.spectralValues }.joinToString(" ").split(" ")
+            val wavelengths = this.map { it.wavelengths }.joinToString(" ").split( " ")
+            data.mapIndexed { index, value ->
+                Entry(wavelengths[index].toFloatOrNull() ?: 0f, value.toFloatOrNull() ?: 0f)
+            }
+        }
+    }
 }
 
 fun List<Entry>.movingAverageSmooth(): List<Entry> {
@@ -115,21 +134,45 @@ fun List<Entry>.movingAverageSmooth(): List<Entry> {
  * Mainly used to translate pixel strings to a list of the converted values.
  * Similar to List<SpectralFrame>.toWaveArray but doesn't use GraphView data points.
  */
-fun String.toWaveArray(deviceType: String): ArrayList<Pair<Float, Float>> {
+fun DeviceTypeExport.toWaveArray(deviceType: String): ArrayList<Pair<Float, Float>> {
 
     val result = ArrayList<Pair<Float, Float>>()
 
-    val tokens = this.split(" ")
+    when (deviceType) {
+        DEVICE_TYPE_NIR, DEVICE_TYPE_LS1 -> {
 
-    tokens.forEachIndexed { index, value ->
+            val tokens = this.spectralData.split(" ")
 
-        val wave = when (deviceType) {
-            DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, value.toDouble())
-            else -> LinkSquare.pixelToWavelength(index, value.toDouble())
+            tokens.forEachIndexed { index, value ->
+
+                val wave = when (deviceType) {
+                    DEVICE_TYPE_NIR -> LinkSquareNIR.pixelToWavelength(index, value.toDouble())
+                    DEVICE_TYPE_LS1 -> LinkSquare.pixelToWavelength(index, value.toDouble())
+                    else -> Entry(900 + index.toFloat(), value.toFloat())
+                }
+
+                result.add(result.size, wave.x to wave.y)
+
+            }
         }
 
-        result.add(result.size, wave.x to wave.y)
+        else -> {
 
+            val values = this.spectralData.split(" ")
+            val wavelengths = this.wavelengths?.split(" ")
+
+            if (values.size == wavelengths?.size ?: 0) {
+
+                wavelengths?.forEachIndexed { index, s ->
+
+                    val wave = Entry(s.toFloat(), values[index].toFloat())
+
+                    result.add(result.size, wave.x to wave.y)
+
+                }
+            }
+
+        }
     }
 
     return result
@@ -292,9 +335,9 @@ fun buildLinkSquareDeviceInfo(context: Context, data: LinkSquareAPI.LSDeviceInfo
  * Used to translate the device id to a device type.
  * TODO: with the new LinkSquare 1.15 api, there is a DeviceType, must confirm that NIR=1 and LS=0
  */
-fun resolveDeviceType(context: Context, data: LinkSquareAPI.LSDeviceInfo): String =
+fun resolveDeviceType(context: Context, data: Spectrometer.DeviceInfo): String =
 
-    if (data.DeviceID.startsWith("NIR")) {
+    if (data.deviceId.startsWith("NIR")) {
 
         context.getString(R.string.linksquare_nir)
 

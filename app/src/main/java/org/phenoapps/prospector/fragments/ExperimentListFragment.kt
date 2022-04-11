@@ -5,15 +5,18 @@ import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,7 +28,6 @@ import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.viewmodels.DeviceViewModel
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
@@ -37,9 +39,11 @@ import java.util.*
  */
 @WithFragmentBindings
 @AndroidEntryPoint
-class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
+class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_list), CoroutineScope by MainScope() {
 
-    private val sDeviceViewModel: DeviceViewModel by activityViewModels()
+    companion object {
+        const val REQUEST_STORAGE_DEFINER = "org.phenoapps.prospector.requests.storage_definer"
+    }
 
     /**
      * Used to query experiment list
@@ -62,8 +66,6 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var mSortState = ALPHA_ASC
 
-    private var mTimer: Timer? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val contextThemeWrapper = ContextThemeWrapper(activity, R.style.AppTheme)
@@ -78,12 +80,29 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
             ui.setupToolbar()
 
-            startTimer()
-
             setupButtons()
 
             updateUi()
 
+            //ask the user once, otherwise use the settings to define the storage location
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            if (prefs.getBoolean("STORAGE_DEFINE", true)) {
+
+                prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+
+                setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
+
+                    if (code == REQUEST_STORAGE_DEFINER) {
+
+                        (activity as? MainActivity)?.askSampleImport()
+
+                    }
+                }
+
+                findNavController().navigate(ExperimentListFragmentDirections
+                    .actionToStorageDefiner())
+
+            } else (activity as? MainActivity)?.askSampleImport()
         }
 
         return mBinding?.root
@@ -96,7 +115,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun FragmentExperimentListBinding.setupToolbar() {
 
-        experimentToolbar.setOnMenuItemClickListener {
+        toolbar.setOnMenuItemClickListener {
 
             when (it.itemId) {
 
@@ -123,9 +142,11 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
 
                 R.id.action_connection -> {
 
-                    if (sDeviceViewModel.isConnected()) {
+                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
-                        sDeviceViewModel.reset()
+                    if (deviceViewModel?.isConnected() == true) {
+
+                        deviceViewModel.reset(context)
 
                     } else {
 
@@ -198,7 +219,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
      */
     private fun updateUi() {
 
-        sViewModel.getExperimentCounts().observe(viewLifecycleOwner, {
+        sViewModel.getExperimentCounts().observe(viewLifecycleOwner) {
 
             (mBinding?.recyclerView?.adapter as? ExperimentAdapter)
                 ?.submitList(when (mSortState) {
@@ -225,46 +246,7 @@ class ExperimentListFragment : Fragment(), CoroutineScope by MainScope() {
                 })
 
             mBinding?.recyclerView?.adapter?.notifyItemRangeChanged(0, it.size)
-        })
-    }
-
-    private fun startTimer() {
-
-        //use the activity view model to access the current connection status
-        val check = object : TimerTask() {
-
-            override fun run() {
-
-                activity?.runOnUiThread {
-
-                    if (isAdded) {
-                        with(mBinding?.experimentToolbar) {
-
-                            this?.menu?.findItem(R.id.action_connection)
-                                ?.setIcon(
-                                    if (sDeviceViewModel.isConnected()) R.drawable.ic_vector_link
-                                    else R.drawable.ic_vector_difference_ab
-                                )
-
-                        }
-                    }
-                }
-            }
         }
-
-        mTimer = Timer()
-
-        mTimer?.scheduleAtFixedRate(check, 0, 1500)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        mTimer?.cancel()
-
-        mTimer?.purge()
-
-        mTimer = null
     }
 
     override fun onResume() {

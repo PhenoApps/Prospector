@@ -22,8 +22,8 @@ interface ExperimentDao {
     /**
      * Inserts
      */
-    @Query("INSERT INTO experiments (name, deviceType, date) VALUES (:name, :deviceType, :date)")
-    suspend fun insertExperiment(name: String, deviceType: String, date: String): Long
+    @Query("INSERT INTO experiments (name, deviceType, date, config) VALUES (:name, :deviceType, :date, :config)")
+    suspend fun insertExperiment(name: String, deviceType: String, date: String, config: String? = null): Long
 
     /**
      * Deletes

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nano_configurations"
+    app:startDestination="@id/namingFragment">
+
+    <fragment
+        android:id="@+id/namingFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.NamingFragment"
+        android:label="NamingFragment" >
+        <action
+            android:id="@+id/action_namingFragment_to_sectionsFragment"
+            app:destination="@id/sectionsFragment" />
+        <argument
+            android:name="names"
+            app:argType="string[]"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+    <fragment
+        android:id="@+id/methodFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.MethodFragment"
+        android:label="MethodFragment" >
+        <action
+            android:id="@+id/action_methodFragment_to_spectralRangeFragment"
+            app:destination="@id/spectralRangeFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+    </fragment>
+    <fragment
+        android:id="@+id/widthFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.WidthFragment"
+        android:label="WidthFragment" >
+        <action
+            android:id="@+id/action_widthFragment_to_digitalResolutionFragment"
+            app:destination="@id/digitalResolutionFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+    </fragment>
+    <fragment
+        android:id="@+id/exposureFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.ExposureFragment"
+        android:label="ExposureFragment" >
+        <action
+            android:id="@+id/action_exposureFragment_to_widthFragment"
+            app:destination="@id/widthFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+    </fragment>
+    <fragment
+        android:id="@+id/spectralRangeFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.SpectralRangeFragment"
+        android:label="SpectralRangeFragment" >
+        <action
+            android:id="@+id/action_spectralRangeFragment_to_exposureFragment"
+            app:destination="@id/exposureFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+    </fragment>
+    <fragment
+        android:id="@+id/digitalResolutionFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.DigitalResolutionFragment"
+        android:label="DigitalResolutionFragment" >
+        <action
+            android:id="@+id/action_digitalResolutionFragment_to_methodFragment"
+            app:destination="@id/methodFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+        <action
+            android:id="@+id/action_digitalResolutionFragment_to_summaryFragment"
+            app:destination="@id/summaryFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sectionsFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.SectionsFragment"
+        android:label="SectionsFragment" >
+        <action
+            android:id="@+id/action_sectionsFragment_to_methodFragment"
+            app:destination="@id/methodFragment" />
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+    </fragment>
+    <fragment
+        android:id="@+id/summaryFragment"
+        android:name="org.phenoapps.prospector.fragments.nano_configuration_creator.SummaryFragment"
+        android:label="SummaryFragment" >
+        <argument
+            android:name="config"
+            app:argType="org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config" />
+        <action
+            android:id="@+id/action_summaryFragment_to_innoSpectraSettingsFragment"
+            app:popUpTo="@id/nano_configurations"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>

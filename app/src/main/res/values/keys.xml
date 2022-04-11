@@ -5,6 +5,8 @@
 <resources>
 
     <string name="key_pref_last_graph_selected">&package;LAST_SELECTED_GRAPH</string>
+    <string name="key_pref_return_from_new_config">&package;RETURN_FROM_NEW_CONFIG</string>
+    <string name="key_pref_last_connected_device_id">&package;LAST_CONNECTED_DEVICE_ID</string>
     <string name="key_pref_target_scan">&package;TARGET_SCANS</string>
     <string name="key_pref_audio_enabled">&package;AUDIO_ENABLED</string>
     <string name="key_pref_workflow_new_sample_by_scan">&package;SAMPLE_SCAN</string>
@@ -13,4 +15,22 @@
     <string name="key_arg_update_person">&package;UPDATE_PERSON</string>
     <string name="key_operator">&package;OPERATOR</string>
     <string name="key_pref_profile_verify_operator">&package;VERIFY_OPERATOR</string>
+    <string name="key_pref_workflow_root_directory">&package;DEFINE_DIRECTORY</string>
+
+    <string name="key_device_maker">&package;DEVICE_MAKER</string>
+
+    <!-- Inno Spectra Preferences -->
+    <string name="key_pref_inno_spectra_device_info">&package;INNO_SPECTRA_DEVICE_INFO</string>
+    <string name="key_pref_inno_spectra_device_status">&package;INNO_SPECTRA_DEVICE_STATUS</string>
+    <string name="key_pref_inno_spectra_active_config">&package;INNO_SPECTRA_ACTIVE_CONFIG</string>
+    <string name="key_pref_inno_spectra_new_config">&package;INNO_SPECTRA_NEW_CONFIG</string>
+    <string name="key_pref_inno_spectra_config">&package;INNO_SPECTRA_CONFIG</string>
+    <string name="key_pref_inno_spectra_restore_configs">&package;INNO_SPECTRA_RESTORE_CONFIGS</string>
+
+    <!-- database preference keys -->
+    <string name="key_pref_database_import">&package;database.IMPORT</string>
+    <string name="key_pref_database_export">&package;database.EXPORT</string>
+    <string name="key_pref_database_delete">&package;database.DELETE</string>
+    <string name="key_pref_database">&package;database.DATABASE</string>
+
 </resources>

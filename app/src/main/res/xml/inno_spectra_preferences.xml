@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="@string/pref_cat_inno_spectra_device_info"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:icon="@drawable/ic_cellphone_information"
+            android:key="@string/key_pref_inno_spectra_device_info"
+            android:title="@string/pref_inno_spectra_device_info_title" />
+
+        <Preference
+            android:icon="@drawable/ic_clipboard_pulse_outline"
+            android:key="@string/key_pref_inno_spectra_device_status"
+            android:title="@string/device_status" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="org.phenoapps.prospector.CAT_INNO_SPECTRA_CONFIGURATIONS"
+        android:summary=""
+        android:title="@string/cat_inno_spectra_configurations_title"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            android:icon="@drawable/ic_form_select"
+            android:key="@string/key_pref_inno_spectra_active_config"
+            android:title="@string/pref_inno_spectra_active_config_title"
+            android:summary="@string/pref_inno_spectra_active_config_summary"/>
+
+        <Preference
+            android:icon="@drawable/ic_pencil"
+            android:key="@string/key_pref_inno_spectra_new_config"
+            android:title="@string/pref_key_inno_spectra_new_config_title"
+            android:summary="@string/pref_key_inno_spectra_new_config_summary"/>
+
+        <Preference
+            android:icon="@drawable/ic_restore"
+            android:key="@string/key_pref_inno_spectra_restore_configs"
+            android:title="@string/pref_key_inno_spectra_restore_config_title"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
