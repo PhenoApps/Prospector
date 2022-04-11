@@ -1,6 +1,8 @@
 <changelog>
     <release versionCode="9" versionName="v1.3.0" date="2022-03-01">
         <new>Added support for Inno-Spectra spectrometers</new>
+        <new>Added storage location support to simplify file exports</new>
+        <bugfix>Improved background connection code</bugfix>
     </release>
 
     <release versionCode="8" versionName="v1.2.0" date="2021-10-11">
