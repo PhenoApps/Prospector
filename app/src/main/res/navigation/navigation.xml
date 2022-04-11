@@ -11,7 +11,7 @@
 
     <fragment
         android:id="@+id/settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.SettingsContainerFragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.SettingsContainerFragment"
         android:label="@string/nav_label_settings">
         <action android:id="@+id/action_to_linksquare_settings_fragment"
             app:destination="@id/linksquare_settings_fragment"
@@ -24,6 +24,19 @@
         <action android:id="@+id/action_to_storage_definer"
             app:destination="@+id/storage_definer_graph"
             app:popUpTo="@id/settings_fragment"/>
+        <action android:id="@+id/action_to_database_preference"
+            app:destination="@id/database_preference_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
+
+    <fragment android:id="@+id/database_preference_fragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.DatabaseToolbarSettingsFragment"
+        android:label="@string/nav_label_database_preference">
+        <action android:id="@+id/action_to_settings"
+            app:destination="@id/settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
     </fragment>
 
     <fragment
@@ -56,7 +69,7 @@
 
     <fragment
         android:id="@+id/inno_spectra_settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.InnoSpectraToolbarSettingsFragment"
         android:label="@string/inno_spectra_settings_fragment_label">
         <action android:id="@+id/action_to_new_config_creator"
             app:destination="@id/nano_configurations"
@@ -71,7 +84,7 @@
 
     <fragment
         android:id="@+id/linksquare_settings_fragment"
-        android:name="org.phenoapps.prospector.fragments.LinkSquareToolbarSettingsFragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.LinkSquareToolbarSettingsFragment"
         android:label="@string/linksquare_settings_fragment_label"/>
 <!--    <fragment-->
 <!--        android:id="@+id/scan_detail_fragment"-->

@@ -1,30 +1,18 @@
-package org.phenoapps.prospector.fragments
+package org.phenoapps.prospector.fragments.preferences
 
 import DEVICE_INNO_SPECTRA
-import DEVICE_IOT_LIST
-import DEVICE_IP
 import DEVICE_LINK_SQUARE
-import DEVICE_MANUFACTURER
-import DEVICE_PASSWORD
-import DEVICE_PORT
-import DEVICE_SSID
-import DEVICE_TYPE
 import OPERATOR
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.utils.*
 import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.getStem
 
@@ -106,6 +94,17 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
                 findNavController().navigate(SettingsContainerFragmentDirections
                     .actionToInnoSpectraSettingsFragment())
+
+                true
+            }
+        }
+
+        findPreference<Preference>(mKeyUtil.database)?.let { databasePref ->
+
+            databasePref.setOnPreferenceClickListener {
+
+                findNavController().navigate(SettingsContainerFragmentDirections
+                    .actionToDatabasePreference())
 
                 true
             }

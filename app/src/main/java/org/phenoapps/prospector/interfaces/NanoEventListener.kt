@@ -1,7 +1,7 @@
 package org.phenoapps.prospector.interfaces
 
 import com.ISCSDK.ISCNIRScanSDK
-import org.phenoapps.prospector.fragments.InnoSpectraSettingsFragment
+import org.phenoapps.prospector.fragments.preferences.InnoSpectraSettingsFragment
 import org.phenoapps.prospector.receivers.DeviceInfoReceiver
 
 interface NanoEventListener {

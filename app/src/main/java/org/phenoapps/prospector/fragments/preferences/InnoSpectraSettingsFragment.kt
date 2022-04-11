@@ -1,13 +1,11 @@
-package org.phenoapps.prospector.fragments
+package org.phenoapps.prospector.fragments.preferences
 
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
-import com.ISCSDK.ISCNIRScanSDK
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*

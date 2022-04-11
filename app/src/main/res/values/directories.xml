@@ -3,4 +3,5 @@
     <!-- Prospector directory structure names -->
     <string name="dir_root">Prospector</string>
     <string name="dir_exports">Exports</string>
+    <string name="dir_database">Database</string>
 </resources>

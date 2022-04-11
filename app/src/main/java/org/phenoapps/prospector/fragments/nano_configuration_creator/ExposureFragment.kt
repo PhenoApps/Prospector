@@ -9,10 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 
 @AndroidEntryPoint
 class ExposureFragment: Fragment(R.layout.fragment_config_creator_exposure) {

@@ -1,4 +1,4 @@
-package org.phenoapps.prospector.fragments
+package org.phenoapps.prospector.fragments.preferences
 
 import android.os.Bundle
 import android.view.View
@@ -8,10 +8,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.fragments.ConnectionFragment
 
 @WithFragmentBindings
 @AndroidEntryPoint
-class LinkSquareToolbarSettingsFragment : ConnectionFragment(R.layout.fragment_ls_settings) {
+class InnoSpectraToolbarSettingsFragment : ConnectionFragment(R.layout.fragment_inno_settings) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

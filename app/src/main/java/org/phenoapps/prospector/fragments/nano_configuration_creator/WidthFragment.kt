@@ -11,7 +11,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 
 @AndroidEntryPoint
 class WidthFragment: Fragment(R.layout.fragment_config_creator_width) {

@@ -6,9 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.github.mikephil.charting.charts.LineChart
@@ -19,7 +17,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 
 @AndroidEntryPoint
 class SummaryFragment: Fragment(R.layout.fragment_config_creator_summary) {

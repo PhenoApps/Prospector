@@ -61,7 +61,7 @@ class DocumentTreeUtil {
          */
         fun DocumentFile.createFolderStructure(context: Context?) {
             context?.let { ctx ->
-                arrayOf(ctx.getString(R.string.dir_exports)
+                arrayOf(ctx.getString(R.string.dir_exports), ctx.getString(R.string.dir_database)
                 ).forEach { dir ->
 
                     val dirFile = findFile(dir)
@@ -83,8 +83,10 @@ class DocumentTreeUtil {
                     to?.let { toFile ->
                         from?.let { fromFile ->
                             with (ctx.contentResolver) {
-                                openOutputStream(toFile.uri)?.let { output ->
-                                    openInputStream(fromFile.uri)?.copyTo(output)
+                                openOutputStream(toFile.uri)?.use { output ->
+                                    openInputStream(fromFile.uri)?.use { input ->
+                                        input.copyTo(output)
+                                    }
                                 }
                             }
                         }
