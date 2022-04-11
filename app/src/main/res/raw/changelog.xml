@@ -3,6 +3,7 @@
         <new>Added support for Inno-Spectra spectrometers</new>
         <new>Added storage location support to simplify file exports</new>
         <bugfix>Improved background connection code</bugfix>
+        <bugfix>Fixed an issue with sample sorting</bugfix>
     </release>
 
     <release versionCode="8" versionName="v1.2.0" date="2021-10-11">
