@@ -292,10 +292,11 @@
     <string name="workflow_root_directory_title">Define Prospector Folder</string>
     <string name="pref_workflow_root_directory_summary">Migrate or define a new root directory structure. Export files will be saved here automatically.</string>
     <string name="pref_database_category_title">Database</string>
-    <string name="pref_database_export_title">Export</string>
-    <string name="pref_database_import_title">Import</string>
+    <string name="pref_database_export_title">Export database</string>
+    <string name="pref_database_import_title">Import database</string>
     <string name="pref_cat_database_title">Database</string>
+    <string name="pref_cat_storage_title">Storage</string>
     <string name="pref_database_summary">Preferences to import and export the database.</string>
-    <string name="pref_database_title">Manage Database</string>
+    <string name="pref_database_title">Database</string>
     <string name="nav_label_database_preference">Database Preference</string>
 </resources>

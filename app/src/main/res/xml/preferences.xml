@@ -44,12 +44,6 @@
         android:title="@string/pref_cat_workflow_title"
         app:iconSpaceReserved="false">
 
-        <Preference
-            android:icon="@drawable/ic_folder"
-            android:key="@string/key_pref_workflow_root_directory"
-            android:summary="@string/pref_workflow_root_directory_summary"
-            android:title="@string/pref_storage_definer_title"/>
-
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_barcode_scan"
@@ -74,12 +68,18 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/pref_cat_database_title"
+        android:title="@string/pref_cat_storage_title"
         app:iconSpaceReserved="false">
+
+        <Preference
+            android:icon="@drawable/ic_folder"
+            android:key="@string/key_pref_workflow_root_directory"
+            android:summary="@string/pref_workflow_root_directory_summary"
+            android:title="@string/pref_storage_definer_title"/>
+
         <Preference
             android:icon="@drawable/ic_database"
             android:key="@string/key_pref_database"
-            android:summary="@string/pref_database_summary"
             android:title="@string/pref_database_title"/>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -3,12 +3,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory
-        android:key="org.phenoapps.prospector.preferences.DATABASE_CATEGORY"
-        android:summary=""
-        android:title="@string/pref_database_category_title"
-        app:iconSpaceReserved="false">
-
         <Preference
             android:icon="@drawable/ic_pref_database_import"
             android:key="@string/key_pref_database_import"
@@ -19,5 +13,4 @@
             android:key="@string/key_pref_database_export"
             android:title="@string/pref_database_export_title" />
 
-    </PreferenceCategory>
 </PreferenceScreen>
