@@ -213,13 +213,16 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                                     sDeviceScope.launch {
 
-                                        insertScan(mSampleName, frames)
+                                        withContext(Dispatchers.IO) {
 
-                                        activity?.runOnUiThread {
-                                            dialogInterface.dismiss()
-                                            checkAudioTriggers()
-                                            loadGraph()
-                                            mIsScanning = false
+                                            insertScan(mSampleName, frames)
+
+                                            activity?.runOnUiThread {
+                                                dialogInterface.dismiss()
+                                                checkAudioTriggers()
+                                                loadGraph()
+                                                mIsScanning = false
+                                            }
                                         }
                                     }
                                 }
@@ -781,5 +784,11 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
         (activity as? MainActivity)?.setToolbar(R.id.action_nav_data)
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        sDeviceScope.cancel()
     }
 }
