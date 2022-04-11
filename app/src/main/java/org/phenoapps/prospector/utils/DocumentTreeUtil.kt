@@ -61,7 +61,7 @@ class DocumentTreeUtil {
          */
         fun DocumentFile.createFolderStructure(context: Context?) {
             context?.let { ctx ->
-                arrayOf(ctx.getString(R.string.dir_exports)
+                arrayOf(ctx.getString(R.string.dir_exports), ctx.getString(R.string.dir_database)
                 ).forEach { dir ->
 
                     val dirFile = findFile(dir)

@@ -30,6 +30,7 @@
     <!-- database preference keys -->
     <string name="key_pref_database_import">&package;database.IMPORT</string>
     <string name="key_pref_database_export">&package;database.EXPORT</string>
+    <string name="key_pref_database_delete">&package;database.DELETE</string>
     <string name="key_pref_database">&package;database.DATABASE</string>
 
 </resources>

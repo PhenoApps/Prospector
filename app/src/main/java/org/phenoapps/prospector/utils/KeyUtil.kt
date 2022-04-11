@@ -50,5 +50,6 @@ class KeyUtil(private val ctx: Context?) {
     val exportDatabase by key(R.string.key_pref_database_export)
     val importDatabase by key(R.string.key_pref_database_import)
     val database by key(R.string.key_pref_database)
+    val deleteDatabase by key(R.string.key_pref_database_delete)
 
 }

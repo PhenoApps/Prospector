@@ -299,4 +299,11 @@
     <string name="pref_database_summary">Preferences to import and export the database.</string>
     <string name="pref_database_title">Database</string>
     <string name="nav_label_database_preference">Database Preference</string>
+
+    <string name="database_reset">Delete database</string>
+    <string name="database_reset_warning1">All data will be deleted. Are you sure you want to reset the database?</string>
+    <string name="database_reset_warning2">A database reset cannot be reversed. Are you really sure you want to continue?</string>
+    <string name="database_reset_message">Database has been deleted</string>
+    <string name="pref_database_delete_title">Delete Database</string>
+    <string name="database_title">Database</string>
 </resources>

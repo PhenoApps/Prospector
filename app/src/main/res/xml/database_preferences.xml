@@ -13,4 +13,8 @@
             android:key="@string/key_pref_database_export"
             android:title="@string/pref_database_export_title" />
 
+        <Preference
+            android:icon="@drawable/ic_pref_database_delete"
+            android:key="@string/key_pref_database_delete"
+            android:title="@string/pref_database_delete_title"/>
 </PreferenceScreen>

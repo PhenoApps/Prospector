@@ -4,17 +4,19 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.*
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.contracts.OpenDocumentFancy
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.utils.DateUtil
 import org.phenoapps.prospector.utils.DocumentTreeUtil
 import org.phenoapps.prospector.utils.KeyUtil
@@ -24,7 +26,7 @@ import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 
 @AndroidEntryPoint
-class DatabaseSettingsFragment : PreferenceFragmentCompat() {
+class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope() {
 
     companion object {
         const val TAG = "DatabaseSettings"
@@ -89,6 +91,37 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat() {
                         exportDocument(ctx)
 
                     } else exportUserChoice()
+
+                    true
+                }
+            }
+        }
+
+        findPreference<Preference>(mKeyUtil.deleteDatabase)?.let { pref ->
+
+            context?.let { ctx ->
+
+                pref.setOnPreferenceClickListener { _ ->
+
+                    (activity as? MainActivity)?.askDeleteDatabase {
+
+                        launch {
+
+                            withContext(Dispatchers.Default) {
+
+                                ProspectorDatabase.getInstance(ctx)
+                                    .clearAllTables()
+
+                            }
+
+                            activity?.runOnUiThread {
+
+                                Toast.makeText(ctx, R.string.database_reset_message, Toast.LENGTH_SHORT).show()
+
+                            }
+                        }
+                    }
+
 
                     true
                 }
@@ -183,7 +216,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat() {
      */
     private fun exportDocument(ctx: Context) {
 
-        DocumentTreeUtil.getDirectory(ctx, R.string.dir_exports)?.let { dir ->
+        DocumentTreeUtil.getDirectory(ctx, R.string.dir_database)?.let { dir ->
 
             if (dir.exists()) {
 
@@ -201,7 +234,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat() {
 
                             if (databaseExport.exists() && prefExport.exists() && export.exists()) {
 
-                                    DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_exports, prefFileName)?.use { output ->
+                                    DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, prefFileName)?.use { output ->
 
                                         ObjectOutputStream(output).use { oos ->
 
@@ -215,7 +248,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat() {
 
                                         DocumentTreeUtil.copy(ctx, dbDoc, databaseExport)
 
-                                        DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_exports, fileName)?.use { output ->
+                                        DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, fileName)?.use { output ->
 
                                             ZipUtil.zip(ctx, arrayOf(databaseExport, prefExport), output)
 

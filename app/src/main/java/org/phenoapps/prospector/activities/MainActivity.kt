@@ -77,6 +77,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mAskForOperatorDialog: AlertDialog? = null
     private var mAskChangeOperatorDialog: AlertDialog? = null
     private var mConfirmFactoryResetDialog: AlertDialog? = null
+    private var mFirstDeleteDatabaseDialog: AlertDialog? = null
+    private var mSecondDeleteDatabaseDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -172,6 +174,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             }.create()
 
+        mFirstDeleteDatabaseDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.database_reset)
+            .setMessage(getString(R.string.database_reset_warning1))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+                mSecondDeleteDatabaseDialog?.show()
+            }
+            .create()
+
+        mSecondDeleteDatabaseDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.database_reset)
+            .setMessage(getString(R.string.database_reset_warning2))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -185,6 +204,41 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         runtimeBluetoothCheck()
 
         startConnectionWatcher()
+    }
+
+    fun askDeleteDatabase(success: () -> Unit) {
+
+        mFirstDeleteDatabaseDialog?.let { firstDialog ->
+
+            if (!firstDialog.isShowing) {
+
+                mSecondDeleteDatabaseDialog?.let { secondDialog ->
+
+                    if (!secondDialog.isShowing) {
+
+                        mFirstDeleteDatabaseDialog = AlertDialog.Builder(this)
+                            .setTitle(R.string.database_reset)
+                            .setMessage(getString(R.string.database_reset_warning1))
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                dialog.dismiss()
+                                mSecondDeleteDatabaseDialog?.show()
+                            }
+                            .create()
+
+                        mSecondDeleteDatabaseDialog = AlertDialog.Builder(this)
+                            .setTitle(R.string.database_reset)
+                            .setMessage(getString(R.string.database_reset_warning2))
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                success()
+                                dialog.dismiss()
+                            }
+                            .create()
+
+                        mFirstDeleteDatabaseDialog?.show()
+                    }
+                }
+            }
+        }
     }
 
     fun askSampleImport() {

@@ -17,6 +17,9 @@ class DatabaseToolbarSettingsFragment : ConnectionFragment(R.layout.fragment_dat
         super.onViewCreated(view, savedInstanceState)
 
         with (view.findViewById<Toolbar>(R.id.toolbar)) {
+
+            setTitle(R.string.database_title)
+
             setNavigationOnClickListener {
                 findNavController().popBackStack()
             }
