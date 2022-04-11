@@ -83,8 +83,10 @@ class DocumentTreeUtil {
                     to?.let { toFile ->
                         from?.let { fromFile ->
                             with (ctx.contentResolver) {
-                                openOutputStream(toFile.uri)?.let { output ->
-                                    openInputStream(fromFile.uri)?.copyTo(output)
+                                openOutputStream(toFile.uri)?.use { output ->
+                                    openInputStream(fromFile.uri)?.use { input ->
+                                        input.copyTo(output)
+                                    }
                                 }
                             }
                         }

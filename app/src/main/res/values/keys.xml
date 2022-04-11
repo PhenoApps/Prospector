@@ -26,4 +26,10 @@
     <string name="key_pref_inno_spectra_new_config">&package;INNO_SPECTRA_NEW_CONFIG</string>
     <string name="key_pref_inno_spectra_config">&package;INNO_SPECTRA_CONFIG</string>
     <string name="key_pref_inno_spectra_restore_configs">&package;INNO_SPECTRA_RESTORE_CONFIGS</string>
+
+    <!-- database preference keys -->
+    <string name="key_pref_database_import">&package;database.IMPORT</string>
+    <string name="key_pref_database_export">&package;database.EXPORT</string>
+    <string name="key_pref_database">&package;database.DATABASE</string>
+
 </resources>

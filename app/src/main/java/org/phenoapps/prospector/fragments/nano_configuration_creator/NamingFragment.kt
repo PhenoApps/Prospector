@@ -4,17 +4,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toolbar
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 import org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config
 
 @AndroidEntryPoint

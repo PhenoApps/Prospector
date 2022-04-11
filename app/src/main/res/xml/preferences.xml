@@ -73,4 +73,13 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="@string/pref_cat_database_title"
+        app:iconSpaceReserved="false">
+        <Preference
+            android:icon="@drawable/ic_database"
+            android:key="@string/key_pref_database"
+            android:summary="@string/pref_database_summary"
+            android:title="@string/pref_database_title"/>
+    </PreferenceCategory>
 </PreferenceScreen>

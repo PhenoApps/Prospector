@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 import org.phenoapps.prospector.fragments.nano_configuration_creator.models.Section
 
 @AndroidEntryPoint

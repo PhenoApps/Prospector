@@ -1,4 +1,4 @@
-package org.phenoapps.prospector.fragments
+package org.phenoapps.prospector.fragments.preferences
 
 import DEVICE_IOT_LIST
 import DEVICE_IP
@@ -6,12 +6,9 @@ import DEVICE_PASSWORD
 import DEVICE_PORT
 import DEVICE_SSID
 import DEVICE_TYPE
-import OPERATOR
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
 import android.view.MenuItem
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,11 +19,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.utils.KeyUtil
-import org.phenoapps.prospector.utils.LinkSquare
-import org.phenoapps.prospector.utils.buildLinkSquareDeviceInfo
 import org.phenoapps.prospector.utils.observeOnce
 
 /**

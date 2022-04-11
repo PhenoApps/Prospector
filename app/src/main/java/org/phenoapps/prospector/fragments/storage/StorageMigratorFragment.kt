@@ -19,7 +19,6 @@ import org.phenoapps.prospector.R
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-@WithFragmentBindings
 @AndroidEntryPoint
 class StorageMigratorFragment: Fragment(R.layout.fragment_storage_migrator) {
 

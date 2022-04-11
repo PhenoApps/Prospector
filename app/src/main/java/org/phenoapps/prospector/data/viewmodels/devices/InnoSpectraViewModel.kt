@@ -26,7 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.R
-import org.phenoapps.prospector.fragments.InnoSpectraSettingsFragment
+import org.phenoapps.prospector.fragments.preferences.InnoSpectraSettingsFragment
 import org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config
 import org.phenoapps.prospector.interfaces.NanoEventListener
 import org.phenoapps.prospector.interfaces.Spectrometer

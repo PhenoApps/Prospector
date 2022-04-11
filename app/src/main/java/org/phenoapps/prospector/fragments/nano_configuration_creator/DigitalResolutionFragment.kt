@@ -10,7 +10,6 @@ import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 
 @AndroidEntryPoint
 class DigitalResolutionFragment: Fragment(R.layout.fragment_config_creator_digital_resolution) {

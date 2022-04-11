@@ -1,6 +1,5 @@
 package org.phenoapps.prospector.fragments.storage
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -16,14 +15,12 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.fragments.ExperimentListFragment
 import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.createFolderStructure
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-@WithFragmentBindings
 @AndroidEntryPoint
 class StorageDefinerFragment: Fragment(R.layout.fragment_storage_definer) {
 

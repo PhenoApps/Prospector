@@ -45,4 +45,10 @@ class KeyUtil(private val ctx: Context?) {
 
     //storage definer key
     val workflowDirectoryDefiner by key(R.string.key_pref_workflow_root_directory)
+
+    //database preference settings keys
+    val exportDatabase by key(R.string.key_pref_database_export)
+    val importDatabase by key(R.string.key_pref_database_import)
+    val database by key(R.string.key_pref_database)
+
 }

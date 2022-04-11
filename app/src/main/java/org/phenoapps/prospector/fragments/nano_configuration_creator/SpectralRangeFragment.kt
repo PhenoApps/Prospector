@@ -5,15 +5,12 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
-import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.WithFragmentBindings
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
-import org.phenoapps.prospector.fragments.InnoSpectraToolbarSettingsFragmentDirections
 
 @AndroidEntryPoint
 class SpectralRangeFragment: Fragment(R.layout.fragment_config_creator_spectral_range) {
