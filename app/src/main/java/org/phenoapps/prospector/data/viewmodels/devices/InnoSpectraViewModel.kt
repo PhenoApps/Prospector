@@ -12,6 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
@@ -54,6 +55,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
     //track if device is currently connected
     private var mConnected = false
 
+    private var mConnectionStarting = false
+
     //track if we have the ref data ready (need this before scanning)
     private var mRefDataReady = false
 
@@ -92,8 +95,22 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 mBluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
                 val adapter = mBluetoothManager?.adapter
                 val scanner = adapter?.bluetoothLeScanner
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                val connect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
+                val scan = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
+
+                val fine = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                val coarse =  ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                if (fine && coarse && connect && scan) {
 
                     scanner?.startScan(object: ScanCallback() {
 
@@ -106,7 +123,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
                                     val nanoName = getStringPref(context, SharedPreferencesKeys.DeviceFilter, "NIR")
 
-                                    device.name?.let { name ->
+                                    result.scanRecord?.deviceName?.let { name ->
 
                                         if (name.contains(nanoName)) {
 
@@ -115,6 +132,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                                                 mBluetoothDevice = device
 
                                                 val nanoDevice = NanoDevice(device, result.rssi, record.bytes)
+
+                                                mConnectionStarting = true
 
                                                 if (sdk.connect(nanoDevice.nanoMac)) {
 
@@ -150,24 +169,24 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override suspend fun connect(context: Context) {
 
-        buildServiceConnection(context).also { conn ->
+        if (!mConnectionStarting) {
 
-            mServiceConnection = conn
+            buildServiceConnection(context).also { conn ->
 
-            val gattService = Intent(context, ISCNIRScanSDK::class.java)
+                mServiceConnection = conn
 
-            context.bindService(gattService, conn, Context.BIND_AUTO_CREATE)
+                val gattService = Intent(context, ISCNIRScanSDK::class.java)
 
-            mNanoReceiver = InnoSpectraBase(this).also {
-                it.register(context)
+                context.bindService(gattService, conn, Context.BIND_AUTO_CREATE)
+
+                mNanoReceiver = InnoSpectraBase(this).also {
+                    it.register(context)
+                }
             }
         }
     }
 
     override fun disconnect(context: Context): Int {
-
-        mNanoSdk?.sdk?.disconnect()
-        mNanoSdk?.sdk?.close()
 
         try {
             mServiceConnection?.let { conn ->
@@ -179,12 +198,15 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
             e.printStackTrace()
         }
 
+        mNanoSdk?.sdk?.disconnect()
+        mNanoSdk?.sdk?.close()
         mNanoReceiver?.unregister(context)
 
         refreshConfigs()
         mConnected = false
         mRefDataReady = false
         mBluetoothDevice = null
+        mConnectionStarting = false
 
         return 1
     }

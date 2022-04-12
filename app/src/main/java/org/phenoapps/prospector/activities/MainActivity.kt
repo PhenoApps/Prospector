@@ -9,8 +9,11 @@ import LED_FRAMES
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.*
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -79,6 +82,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mConfirmFactoryResetDialog: AlertDialog? = null
     private var mFirstDeleteDatabaseDialog: AlertDialog? = null
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
+    private var mAskLocationEnableDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         KeyUtil(this)
     }
 
-    private val enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val startActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
         startDeviceConnection()
 
@@ -191,6 +195,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             .create()
 
+        mAskLocationEnableDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_ask_location)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -204,6 +215,26 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         runtimeBluetoothCheck()
 
         startConnectionWatcher()
+    }
+
+    private fun askForLocation(success: () -> Unit) {
+
+        mAskLocationEnableDialog?.let { dialog ->
+
+            if (!dialog.isShowing) {
+
+                mAskLocationEnableDialog = AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_ask_location)
+                    .setPositiveButton(android.R.string.ok) { d, _ ->
+                        success()
+                        d.dismiss()
+                    }
+                    .setNegativeButton(android.R.string.no) { d, _ ->
+                        d.dismiss()
+                    }
+                    .show()
+            }
+        }
     }
 
     fun askDeleteDatabase(success: () -> Unit) {
@@ -338,12 +369,45 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
 
-                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                startActivityLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
 
             } else {
 
                 startDeviceConnection()
 
+            }
+
+            val lm: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps = false
+            var net = false
+
+            try {
+
+                gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            } catch (ex: java.lang.Exception) {
+
+                ex.printStackTrace()
+
+            }
+
+            try {
+
+                net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+            } catch (e: java.lang.Exception) {
+
+                e.printStackTrace()
+
+            }
+
+            if (!(net || gps)) {
+
+                askForLocation {
+
+                    startActivityLauncher.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+
+                }
             }
         }
     }
@@ -592,7 +656,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun stopDeviceConnection() {
         launch {
             withContext(Dispatchers.IO) {
-                sDeviceViewModel?.disconnect(this@MainActivity)
+                if (sDeviceViewModel?.isConnected() == true)
+                    sDeviceViewModel?.disconnect(this@MainActivity)
 
             }
         }
@@ -606,6 +671,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
         mConfirmFactoryResetDialog?.dismiss()
+        mFirstDeleteDatabaseDialog?.dismiss()
+        mSecondDeleteDatabaseDialog?.dismiss()
+        mAskLocationEnableDialog?.dismiss()
 
         mConnectionHandlerThread.quit()
 
