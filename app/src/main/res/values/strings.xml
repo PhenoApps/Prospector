@@ -306,4 +306,6 @@
     <string name="database_reset_message">Database has been deleted</string>
     <string name="pref_database_delete_title">Delete Database</string>
     <string name="database_title">Database</string>
+
+    <string name="dialog_ask_location">Location must be enabled to use the Nano</string>
 </resources>
