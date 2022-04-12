@@ -100,7 +100,12 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 } else {
                     true
                 }
-                if (connect) {
+                val scan = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
+                if (connect && scan) {
 
                     scanner?.startScan(object: ScanCallback() {
 
