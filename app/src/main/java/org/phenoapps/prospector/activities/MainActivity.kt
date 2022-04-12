@@ -656,7 +656,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun stopDeviceConnection() {
         launch {
             withContext(Dispatchers.IO) {
-                sDeviceViewModel?.disconnect(this@MainActivity)
+                if (sDeviceViewModel?.isConnected() == true)
+                    sDeviceViewModel?.disconnect(this@MainActivity)
 
             }
         }
