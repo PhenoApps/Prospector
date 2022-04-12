@@ -105,7 +105,12 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 } else {
                     true
                 }
-                if (connect && scan) {
+
+                val fine = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                val coarse =  ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                if (fine && coarse && connect && scan) {
 
                     scanner?.startScan(object: ScanCallback() {
 
