@@ -1,22 +1,16 @@
 package org.phenoapps.prospector.fragments
 
-import android.os.Build
 import android.os.Bundle
-import android.util.Base64.NO_WRAP
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.ListPreference
-import androidx.preference.PreferenceManager
-import com.ISCSDK.ISCNIRScanSDK
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
@@ -27,9 +21,6 @@ import org.phenoapps.prospector.data.models.Experiment
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.databinding.FragmentNewExperimentBinding
-import org.phenoapps.prospector.utils.observeOnce
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 /**
  * A simple data collection fragment that creates experiment models and inserts them into the db.
@@ -78,6 +69,9 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
             ) {
                 mBinding?.configSpinner?.visibility = if (position == DeviceIndex.NANO.ordinal) {
                     setupScanConfigs()
+                    View.VISIBLE
+                } else View.GONE
+                mBinding?.fragNewExpLoadingTv?.visibility = if (position == DeviceIndex.NANO.ordinal) {
                     View.VISIBLE
                 } else View.GONE
             }

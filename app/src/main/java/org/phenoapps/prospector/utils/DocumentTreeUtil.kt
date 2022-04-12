@@ -109,7 +109,7 @@ class DocumentTreeUtil {
 
                 getDirectory(ctx, dir)?.let { dir ->
 
-                    dir.findFile(fileName)?.let { file ->
+                    dir.findFile(fileName.replace(":", "_"))?.let { file ->
 
                         return file
                     }
