@@ -17,10 +17,7 @@ import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.contracts.OpenDocumentFancy
 import org.phenoapps.prospector.data.ProspectorDatabase
-import org.phenoapps.prospector.utils.DateUtil
-import org.phenoapps.prospector.utils.DocumentTreeUtil
-import org.phenoapps.prospector.utils.KeyUtil
-import org.phenoapps.prospector.utils.ZipUtil
+import org.phenoapps.prospector.utils.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
@@ -116,7 +113,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by M
 
                             activity?.runOnUiThread {
 
-                                Toast.makeText(ctx, R.string.database_reset_message, Toast.LENGTH_SHORT).show()
+                                (activity as? MainActivity)?.notify(R.string.database_reset_message)
 
                             }
                         }

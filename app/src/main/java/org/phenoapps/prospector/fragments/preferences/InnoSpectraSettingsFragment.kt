@@ -3,7 +3,6 @@ package org.phenoapps.prospector.fragments.preferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -126,7 +125,7 @@ class InnoSpectraSettingsFragment : PreferenceFragmentCompat(), CoroutineScope b
                         }
                     }
 
-                    Toast.makeText(context, R.string.frag_settings_inno_spectra_reset_app, Toast.LENGTH_SHORT).show()
+                    (activity as? MainActivity)?.notify(R.string.frag_settings_inno_spectra_reset_app)
 
                 } catch (e: Exception) {
 

@@ -5,14 +5,10 @@ import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -169,14 +165,12 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
                         else -> ALPHA_ASC
                     }
 
-                    Toast.makeText(context,
-                        when (mSortState) {
-                            ALPHA_ASC -> getString(R.string.sort_alpha_ascending)
-                            ALPHA_DESC -> getString(R.string.sort_alpha_descending)
-                            DATE_ASC -> getString(R.string.sort_date_ascending)
-                            else -> getString(R.string.sort_date_descending)
-                        }, Toast.LENGTH_SHORT
-                    ).show()
+                    (activity as? MainActivity)?.notify(when (mSortState) {
+                        ALPHA_ASC -> R.string.sort_alpha_ascending
+                        ALPHA_DESC -> R.string.sort_alpha_descending
+                        DATE_ASC -> R.string.sort_date_ascending
+                        else -> R.string.sort_date_descending
+                    })
 
                     updateUi()
                 }

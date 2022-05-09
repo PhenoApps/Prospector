@@ -53,7 +53,7 @@ class BarcodeSearchFragment : Fragment() {
     }
 
     private val mMediaUtil by lazy {
-        MediaUtil(context)
+        MediaUtil(activity)
     }
 
     private fun setupBarcodeScanner() {
