@@ -21,8 +21,6 @@ class IntroActivity : AppIntro() {
             askForPermissions(arrayOf(android.Manifest.permission.CAMERA,
                 android.Manifest.permission.BLUETOOTH_SCAN,
                 android.Manifest.permission.BLUETOOTH_CONNECT,
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
                 android.Manifest.permission.INTERNET,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.ACCESS_FINE_LOCATION,

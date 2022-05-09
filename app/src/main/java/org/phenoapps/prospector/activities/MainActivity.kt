@@ -15,6 +15,7 @@ import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private lateinit var mSnackbar: SnackbarQueue
 
-    private lateinit var mBinding: ActivityMainBinding
+    private var mBinding: ActivityMainBinding? = null
 
     private lateinit var mNavController: NavController
 
@@ -214,6 +215,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         runtimeBluetoothCheck()
 
         startConnectionWatcher()
+
+        showDefiner()
     }
 
     private fun askForLocation(success: () -> Unit) {
@@ -234,6 +237,26 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     .show()
             }
         }
+    }
+
+    private val storageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        askSampleImport()
+
+    }
+
+    private fun showDefiner() {
+
+        //ask the user once, otherwise use the settings to define the storage location
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        if (prefs.getBoolean("STORAGE_DEFINE", true)) {
+
+            prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+
+            storageLauncher.launch(Intent(this, DefineStorageActivity::class.java))
+
+        } else askSampleImport()
     }
 
     fun askDeleteDatabase(success: () -> Unit) {
@@ -334,13 +357,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     fun notify(message: String) {
 
         runOnUiThread {
-            mSnackbar.push(
-                SnackbarQueue
-                    .SnackJob(
-                        mBinding.actMainCoordinatorLayout,
-                        message
-                    )
-            )
+            mBinding?.let { ui ->
+                mSnackbar.push(
+                    SnackbarQueue
+                        .SnackJob(
+                            ui.actMainCoordinatorLayout,
+                            message
+                        )
+                )
+            }
         }
     }
 
@@ -352,12 +377,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun notifyButton(text: String, undo: String, onClick: () -> Unit) {
 
-        runOnUiThread {
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.actMainCoordinatorLayout, text, undo) {
+        mBinding?.let { ui ->
+            runOnUiThread {
+                mSnackbar.push(SnackbarQueue.SnackJob(ui.actMainCoordinatorLayout, text, undo) {
 
-                onClick()
+                    onClick()
 
-            })
+                })
+            }
         }
     }
 
@@ -547,11 +574,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun setToolbar(id: Int) {
 
-        mBinding.bottomNavView.menu.findItem(id).isEnabled = false
+        mBinding?.bottomNavView?.menu?.findItem(id)?.isEnabled = false
 
-        mBinding.bottomNavView.selectedItemId = id
+        mBinding?.bottomNavView?.selectedItemId = id
 
-        mBinding.bottomNavView.menu.findItem(id).isEnabled = true
+        mBinding?.bottomNavView?.menu?.findItem(id)?.isEnabled = true
     }
 
     private suspend fun loadSampleData() {
@@ -628,11 +655,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun setupBotNav() {
 
-        val botNavView = mBinding.bottomNavView
+        val botNavView = mBinding?.bottomNavView
 
-        botNavView.inflateMenu(R.menu.menu_bot_nav)
+        botNavView?.inflateMenu(R.menu.menu_bot_nav)
 
-        botNavView.setOnNavigationItemSelectedListener { menuItem ->
+        botNavView?.setOnNavigationItemSelectedListener { menuItem ->
 
             when (menuItem.itemId) {
 
@@ -764,8 +791,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         if (ledFrames + bulbFrames < 1) {
 
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root,
-                    getString(R.string.settings_error_num_frames_must_exceed_zero)))
+            notify(R.string.settings_error_num_frames_must_exceed_zero)
 
         } else mNavController.popBackStack()
     }

@@ -4,8 +4,10 @@ import ALPHA_ASC
 import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
@@ -26,6 +28,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.DefineStorageActivity
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
@@ -97,35 +100,9 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
                 showChangelog(managedShow = true, rateButton = true)
 
             }
-
-            showDefiner()
         }
 
         return mBinding?.root
-    }
-
-    private fun showDefiner() {
-
-        //ask the user once, otherwise use the settings to define the storage location
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-        if (prefs.getBoolean("STORAGE_DEFINE", true)) {
-
-            prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
-
-            setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
-
-                if (code == REQUEST_STORAGE_DEFINER) {
-
-                    (activity as? MainActivity)?.askSampleImport()
-
-                }
-            }
-
-            findNavController().navigate(ExperimentListFragmentDirections
-                .actionToStorageDefiner())
-
-        } else (activity as? MainActivity)?.askSampleImport()
     }
 
     fun showChangelog(managedShow: Boolean, rateButton: Boolean) {

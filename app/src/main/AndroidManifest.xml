@@ -45,6 +45,9 @@
             android:label="My Custom AppIntro"
             android:theme="@style/AppIntroTheme"/>
 
+        <activity android:name=".activities.DefineStorageActivity"
+            android:label="Storage Definer"/>
+
         <provider
             android:authorities="${applicationId}.fileprovider"
             android:name="androidx.core.content.FileProvider"

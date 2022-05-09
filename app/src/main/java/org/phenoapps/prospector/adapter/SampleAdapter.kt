@@ -63,7 +63,8 @@ class SampleAdapter(
                 clickListener = View.OnClickListener {
 
                     if (sample.count >= 0) Navigation.findNavController(binding.root).navigate(
-                            SampleListFragmentDirections.actionToScanList(sample.eid, sample.name))
+                            SampleListFragmentDirections.actionToScanList(experiment = sample.eid,
+                                sample = sample.name))
 
                 }
 

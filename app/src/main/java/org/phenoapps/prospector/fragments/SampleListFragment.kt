@@ -6,7 +6,6 @@ import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
 import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import android.net.Uri
 import android.os.Bundle
@@ -15,12 +14,10 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -36,12 +33,10 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
-import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
-import java.util.*
-import kotlin.math.exp
+import org.phenoapps.utils.BaseDocumentTreeUtil
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -98,7 +93,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
                 activity?.runOnUiThread {
                     if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
                         findNavController().navigate(SampleListFragmentDirections
-                            .actionToScanList(mExpId, sample.name))
+                            .actionToScanList(experiment = mExpId, sample = sample.name))
                     }
                 }
             }
@@ -145,9 +140,9 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         val fileName = "${mName}_${mDeviceType}_${DateUtil().getTime()}.csv"
 
-                        if (DocumentTreeUtil.isEnabled(ctx)) {
+                        if (BaseDocumentTreeUtil.isEnabled(ctx)) {
 
-                            DocumentTreeUtil.getDirectory(ctx, R.string.dir_exports)?.let { dir ->
+                            BaseDocumentTreeUtil.getDirectory(ctx, R.string.dir_export)?.let { dir ->
 
                                 if (dir.exists()) {
 
