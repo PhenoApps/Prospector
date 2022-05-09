@@ -25,6 +25,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
+import com.michaelflisar.changelog.ChangelogBuilder
+import com.michaelflisar.changelog.classes.ImportanceChangelogSorter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
@@ -275,6 +277,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     fun askSampleImport() {
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
 
         //on first load ask user if they want to load sample data
         if (prefs.getBoolean("FIRST_LOAD_SAMPLE_DATA", true)) {

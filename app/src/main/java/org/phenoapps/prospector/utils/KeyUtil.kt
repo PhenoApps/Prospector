@@ -52,4 +52,7 @@ class KeyUtil(private val ctx: Context?) {
     val database by key(R.string.key_pref_database)
     val deleteDatabase by key(R.string.key_pref_database_delete)
 
+    //changelog version
+    val version by key(R.string.key_version)
+
 }

@@ -20,17 +20,22 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.michaelflisar.changelog.ChangelogBuilder
+import com.michaelflisar.changelog.classes.ImportanceChangelogSorter
+import com.michaelflisar.changelog.internal.ChangelogDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
+import org.phenoapps.prospector.utils.KeyUtil
 import java.util.*
 
 /**
@@ -62,6 +67,8 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
         }
     }
 
+    private val mKeys by lazy { KeyUtil(context) }
+
     private var mBinding: FragmentExperimentListBinding? = null
 
     private var mSortState = ALPHA_ASC
@@ -84,28 +91,62 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
             updateUi()
 
-            //ask the user once, otherwise use the settings to define the storage location
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            if (prefs.getBoolean("STORAGE_DEFINE", true)) {
 
-                prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+            val version = BuildConfig.VERSION_CODE
+            val savedVersion = prefs.getInt(mKeys.version, -1)
 
-                setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
+            if (version != savedVersion) {
+                prefs.edit().putInt(mKeys.version, version).apply()
+                showChangelog(managedShow = true, rateButton = true)
 
-                    if (code == REQUEST_STORAGE_DEFINER) {
+            }
 
-                        (activity as? MainActivity)?.askSampleImport()
-
-                    }
-                }
-
-                findNavController().navigate(ExperimentListFragmentDirections
-                    .actionToStorageDefiner())
-
-            } else (activity as? MainActivity)?.askSampleImport()
+            showDefiner()
         }
 
         return mBinding?.root
+    }
+
+    private fun showDefiner() {
+
+        //ask the user once, otherwise use the settings to define the storage location
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+        if (prefs.getBoolean("STORAGE_DEFINE", true)) {
+
+            prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+
+            setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
+
+                if (code == REQUEST_STORAGE_DEFINER) {
+
+                    (activity as? MainActivity)?.askSampleImport()
+
+                }
+            }
+
+            findNavController().navigate(ExperimentListFragmentDirections
+                .actionToStorageDefiner())
+
+        } else (activity as? MainActivity)?.askSampleImport()
+    }
+
+    fun showChangelog(managedShow: Boolean, rateButton: Boolean) {
+
+        (activity as? MainActivity)?.let { act ->
+            val builder =  ChangelogBuilder()
+                .withUseBulletList(true) // true if you want to show bullets before each changelog row, false otherwise
+                .withManagedShowOnStart(managedShow) // library will take care to show activity/dialog only if the changelog has new infos and will only show this new infos
+                .withRateButton(rateButton) // enable this to show a "rate app" button in the dialog => clicking it will open the play store; the parent activity or target fragment can also implement IChangelogRateHandler to handle the button click
+                .withSummary(false, true) // enable this to show a summary and a "show more" button, the second paramter describes if releases without summary items should be shown expanded or not
+                .withTitle(getString(R.string.changelog_title)) // provide a custom title if desired, default one is "Changelog <VERSION>"
+                .withOkButtonLabel(getString(android.R.string.ok)) // provide a custom ok button text if desired, default one is "OK"
+                .withSorter(ImportanceChangelogSorter())
+
+            val dialog = ChangelogDialogFragment.create(builder, false)
+            dialog.show(childFragmentManager, ChangelogDialogFragment::class.java.name)
+        }
     }
 
     /**
