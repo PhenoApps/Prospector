@@ -7,8 +7,8 @@ import org.phenoapps.prospector.activities.DefineStorageActivity
 
 class StorageDefinerFragment: PhenoLibStorageDefinerFragment() {
 
-    override val buttonColor = Color.parseColor("#FF5722")
-    override val backgroundColor = Color.parseColor("#03A9F4")
+    override val buttonColor = Color.parseColor("#03A9F4")
+    override val backgroundColor = Color.parseColor("#FFFFFF")
 
     override val actionToMigrator = StorageDefinerFragmentDirections
         .actionStorageDefinerToStorageMigrator()

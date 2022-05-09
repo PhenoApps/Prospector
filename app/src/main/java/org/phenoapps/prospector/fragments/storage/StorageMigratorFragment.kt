@@ -9,9 +9,9 @@ import org.phenoapps.prospector.activities.DefineStorageActivity
 
 class StorageMigratorFragment: PhenoLibMigratorFragment() {
 
-    override val migrateButtonColor = Color.parseColor("#FF5722")
-    override val skipButtonColor = Color.parseColor("#FF5722")
-    override val backgroundColor = Color.parseColor("#03A9F4")
+    override val migrateButtonColor = Color.parseColor("#03A9F4")
+    override val skipButtonColor = Color.parseColor("#03A9F4")
+    override val backgroundColor = Color.parseColor("#FFFFFF")
 
     override fun migrateStorage(from: DocumentFile, to: DocumentFile) {
         (activity as? DefineStorageActivity)?.enableBackButton(false)
