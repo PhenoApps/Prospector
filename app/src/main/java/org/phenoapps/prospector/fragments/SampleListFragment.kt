@@ -98,7 +98,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
                 activity?.runOnUiThread {
                     if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
                         findNavController().navigate(SampleListFragmentDirections
-                            .actionToScanList(mExpId, sample.name))
+                            .actionToScanList(experiment = mExpId, sample = sample.name))
                     }
                 }
             }
@@ -232,7 +232,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                             mBinding?.toggleProgressBar()
 
-                            (activity as? MainActivity)?.showCitationDialog()
+                            (activity as? MainActivity)?.showCitationDialog(uri)
 
                         }
                     }

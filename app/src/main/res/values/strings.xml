@@ -308,4 +308,10 @@
     <string name="database_title">Database</string>
 
     <string name="dialog_ask_location">Location must be enabled to use the Nano</string>
+    <string name="share_database_subject">Share database from Prospector</string>
+    <string name="share_database_text">Shared database from Prospector.</string>
+    <string name="share_file_subject">Share file from Prospector</string>
+    <string name="share_file_text">Shared file from Prospector.</string>
+    <string name="pref_share_file_title">Share Files</string>
+    <string name="pref_share_file_summary">Enable to share files after exporting.</string>
 </resources>

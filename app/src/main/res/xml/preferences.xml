@@ -65,6 +65,12 @@
             android:summary="@string/pref_workflow_audio_summary"
             android:title="@string/pref_workflow_audio_title" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_share"
+            android:key="@string/key_pref_share_file"
+            android:summary="@string/pref_share_file_summary"
+            android:title="@string/pref_share_file_title"/>
     </PreferenceCategory>
 
     <PreferenceCategory

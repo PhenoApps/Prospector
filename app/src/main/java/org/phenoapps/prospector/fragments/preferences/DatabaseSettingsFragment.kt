@@ -18,6 +18,8 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.contracts.OpenDocumentFancy
 import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.utils.*
+import org.phenoapps.utils.BaseDocumentTreeUtil
+import org.phenoapps.utils.IntentUtil
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
@@ -231,29 +233,39 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by M
 
                             if (databaseExport.exists() && prefExport.exists() && export.exists()) {
 
-                                    DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, prefFileName)?.use { output ->
+                                DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, prefFileName)?.use { output ->
 
-                                        ObjectOutputStream(output).use { oos ->
+                                    ObjectOutputStream(output).use { oos ->
 
-                                            oos.writeObject(prefs.all)
-                                        }
-
-                                        output.close()
+                                        oos.writeObject(prefs.all)
                                     }
 
-                                    DocumentFile.fromFile(ctx.getDatabasePath(ProspectorDatabase.DATABASE_NAME)).let { dbDoc ->
+                                    output.close()
+                                }
 
-                                        DocumentTreeUtil.copy(ctx, dbDoc, databaseExport)
+                                DocumentFile.fromFile(ctx.getDatabasePath(ProspectorDatabase.DATABASE_NAME)).let { dbDoc ->
 
-                                        DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, fileName)?.use { output ->
+                                    DocumentTreeUtil.copy(ctx, dbDoc, databaseExport)
 
-                                            ZipUtil.zip(ctx, arrayOf(databaseExport, prefExport), output)
+                                    DocumentTreeUtil.getFileOutputStream(ctx, R.string.dir_database, fileName)?.use { output ->
 
-                                        }
+                                        ZipUtil.zip(ctx, arrayOf(databaseExport, prefExport), output)
+
                                     }
+                                }
 
-                                    databaseExport.delete()
-                                    prefExport.delete()
+                                databaseExport.delete()
+                                prefExport.delete()
+
+                                context?.let { ctx ->
+
+                                    if (prefs.getBoolean(mKeyUtil.shareEnabled, false)) {
+                                        val subject = ctx.getString(R.string.share_database_subject)
+                                        val text = ctx.getString(R.string.share_database_text)
+
+                                        IntentUtil.shareFile(context, export.uri, subject, text)
+                                    }
+                                }
                             }
                         }
                     }
