@@ -1,13 +1,15 @@
 package org.phenoapps.prospector.utils
 
+import android.app.Activity
 import android.content.Context
 import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.MainActivity
 
 //wrapper for playing media that frees resources as well and checks preferences
-class MediaUtil(private val ctx: Context?) {
+class MediaUtil(private val act: Activity?) {
 
     companion object Resources {
         const val BARCODE_SCAN = R.raw.notification_simple
@@ -17,11 +19,11 @@ class MediaUtil(private val ctx: Context?) {
     }
 
     private val mPrefs by lazy {
-        PreferenceManager.getDefaultSharedPreferences(ctx)
+        PreferenceManager.getDefaultSharedPreferences(act)
     }
 
     private val mKeyUtil by lazy {
-        KeyUtil(ctx)
+        KeyUtil(act)
     }
 
     //plays a resource with the given id
@@ -31,7 +33,7 @@ class MediaUtil(private val ctx: Context?) {
 
             try {
 
-                val player = MediaPlayer.create(ctx, resId)
+                val player = MediaPlayer.create(act, resId)
 
                 if (player != null) {
 
@@ -44,7 +46,7 @@ class MediaUtil(private val ctx: Context?) {
                 }
             } catch (e: Exception) {
 
-                Toast.makeText(ctx, R.string.media_player_failed, Toast.LENGTH_SHORT).show()
+                (act as? MainActivity)?.notify(R.string.media_player_failed)
 
                 e.printStackTrace()
             }

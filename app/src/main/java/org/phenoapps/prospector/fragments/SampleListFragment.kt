@@ -133,11 +133,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
             //ensure all permissions are granted
             if (!granted.values.all { it }) {
 
-                mBinding?.root?.let { view ->
-                    mSnackbar.push(
-                        SnackbarQueue
-                            .SnackJob(view, getString(R.string.must_accept_permissions_to_export)))
-                }
+                (activity as? MainActivity)?.notify(R.string.must_accept_permissions_to_export)
 
             } else {
 
@@ -369,14 +365,12 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                     mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
 
-                    Toast.makeText(context,
-                        when (mSortState) {
-                            ALPHA_ASC -> getString(R.string.sort_alpha_ascending)
-                            ALPHA_DESC -> getString(R.string.sort_alpha_descending)
-                            DATE_ASC -> getString(R.string.sort_date_ascending)
-                            else -> getString(R.string.sort_date_descending)
-                        }, Toast.LENGTH_SHORT
-                    ).show()
+                    (activity as? MainActivity)?.notify(when (mSortState) {
+                        ALPHA_ASC -> R.string.sort_alpha_ascending
+                        ALPHA_DESC -> R.string.sort_alpha_descending
+                        DATE_ASC -> R.string.sort_date_ascending
+                        else -> R.string.sort_date_descending
+                    })
 
                     updateUi()
                 }

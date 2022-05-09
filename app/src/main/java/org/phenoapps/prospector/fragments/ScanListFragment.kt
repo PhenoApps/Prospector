@@ -82,7 +82,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
     private var mScansEnabled: Boolean = true
 
     private val mMediaUtil by lazy {
-        MediaUtil(context)
+        MediaUtil(activity)
     }
 
     private val mKeyUtil by lazy {
@@ -188,7 +188,8 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                         if (!deviceViewModel.hasActiveScan()) {
 
-                            Toast.makeText(ctx, R.string.inno_spectra_device_not_ready, Toast.LENGTH_SHORT).show()
+                            (activity as? MainActivity)?.notify(R.string.inno_spectra_device_not_ready)
+
                             mIsScanning = false
                             return
                         }
@@ -230,15 +231,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                         } else {
 
-                            mBinding?.let { ui ->
-
-                                mSnackbar.push(
-                                    SnackbarQueue.SnackJob(
-                                        ui.root,
-                                        getString(R.string.frag_scan_device_type_mismatch)
-                                    )
-                                )
-                            }
+                            (activity as? MainActivity)?.notify(R.string.frag_scan_device_type_mismatch)
                         }
                     }
                 }
@@ -426,8 +419,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
             mScansEnabled = false
 
-            Toast.makeText(context, R.string.frag_sample_list_active_config_unknown,
-                Toast.LENGTH_SHORT).show()
+            (activity as? MainActivity)?.notify(R.string.frag_sample_list_active_config_unknown)
         }
     }
 
@@ -631,11 +623,11 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                                     sViewModel.deleteFrame(scan.sid, scan.fid)
 
-                                    mSnackbar.push(SnackbarQueue.SnackJob(ui.root, scan.name, undoString) {
+                                    (activity as? MainActivity)?.notifyButton(scan.name, undoString) {
 
                                         reinsertScan(scan)
 
-                                    })
+                                    }
                                 }
                             }
 

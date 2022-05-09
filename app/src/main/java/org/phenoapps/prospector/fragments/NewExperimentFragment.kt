@@ -11,7 +11,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
@@ -94,7 +93,6 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
         val deviceType = deviceTypeSpinner.selectedItem as? String ?: ""
 
         val newExpString: String = getString(R.string.dialog_new_experiment_prefix)
-        val newExpError: String = getString(R.string.dialog_new_experiment_error)
 
         val configName = configSpinner.selectedItem as? String
 
@@ -105,19 +103,21 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
                 sViewModel.insertExperimentAsync(Experiment(experimentName,
                     deviceType = deviceType, note = experimentNotes, config = configName)).await()
 
-                activity?.runOnUiThread {
+                activity?.let { act ->
 
-                    mBinding?.let { ui ->
+                    act.runOnUiThread {
 
-                        Snackbar.make(ui.root,
-                            "$newExpString $experimentName.", Snackbar.LENGTH_SHORT).show()
+                        mBinding?.let { ui ->
 
-                        experimentNameEditText.text.clear()
+                            (act as? MainActivity)?.notify("$newExpString $experimentName.")
 
-                        experimentNoteEditText.text.clear()
+                            experimentNameEditText.text.clear()
 
-                        findNavController().popBackStack()
+                            experimentNoteEditText.text.clear()
 
+                            findNavController().popBackStack()
+
+                        }
                     }
                 }
             }
@@ -125,19 +125,8 @@ class NewExperimentFragment : Fragment(), CoroutineScope by MainScope() {
 
         } else {
 
-            displayToast(newExpError)
+            (activity as? MainActivity)?.notify(R.string.dialog_new_experiment_error)
 
-        }
-    }
-
-    private fun displayToast(text: String) {
-
-        activity?.runOnUiThread {
-
-            mBinding?.let { ui ->
-
-                Snackbar.make(ui.root, text, Snackbar.LENGTH_SHORT).show()
-            }
         }
     }
 

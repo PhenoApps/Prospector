@@ -15,7 +15,6 @@ import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -25,8 +24,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
-import com.michaelflisar.changelog.ChangelogBuilder
-import com.michaelflisar.changelog.classes.ImportanceChangelogSorter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
@@ -319,14 +316,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             if (last != mConnected) {
 
                 runOnUiThread {
-                    mSnackbar.push(
-                        SnackbarQueue
-                            .SnackJob(
-                                mBinding.actMainCoordinatorLayout,
-                                if (mConnected) getString(R.string.connected, name)
-                                else getString(R.string.disconnect, name)
-                            )
-                    )
+
+                    notify(if (mConnected) getString(R.string.connected, name)
+                    else getString(R.string.disconnect, name))
+
                 }
             }
 
@@ -340,13 +333,32 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
      */
     fun notify(message: String) {
 
-        mSnackbar.push(
-            SnackbarQueue
-                .SnackJob(
-                    mBinding.actMainCoordinatorLayout,
-                    message
-                )
-        )
+        runOnUiThread {
+            mSnackbar.push(
+                SnackbarQueue
+                    .SnackJob(
+                        mBinding.actMainCoordinatorLayout,
+                        message
+                    )
+            )
+        }
+    }
+
+    fun notify(id: Int) {
+
+        notify(getString(id))
+
+    }
+
+    fun notifyButton(text: String, undo: String, onClick: () -> Unit) {
+
+        runOnUiThread {
+            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.actMainCoordinatorLayout, text, undo) {
+
+                onClick()
+
+            })
+        }
     }
 
     private fun startLoadSampleData() {
@@ -359,7 +371,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                 runOnUiThread {
 
-                    mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root, getString(R.string.samples_loaded)))
+                    notify(R.string.samples_loaded)
 
                 }
             }
@@ -725,7 +737,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     this.doubleBackToExitPressedOnce = true
 
-                    Toast.makeText(this, getString(R.string.double_back_press), Toast.LENGTH_SHORT).show()
+                    notify(R.string.double_back_press)
 
                     Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
                 }
