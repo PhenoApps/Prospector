@@ -46,6 +46,7 @@
             android:theme="@style/AppIntroTheme"/>
 
         <activity android:name=".activities.DefineStorageActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:label="Storage Definer"/>
 
         <provider
