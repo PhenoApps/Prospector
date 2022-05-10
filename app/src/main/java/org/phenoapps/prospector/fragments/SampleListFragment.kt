@@ -248,7 +248,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
             //make other elements the current vis of the progress bar
             val elementsVis = this.fragSampleListProgressBar.visibility
 
-            arrayOf(this.toolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
+            arrayOf(this.fragSampleListSbv, this.toolbar, this.recyclerView, this.addSampleButton, this.fragSampleListSearchBtn).forEach {
                 it.visibility = elementsVis
             }
 
@@ -302,12 +302,52 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                 startObservers()
 
+                ui.fragSampleListSbv.initializeSortState(mSortState)
+
+                ui.fragSampleListSbv.onClickSortType = { _ ->
+
+                    mSortState = when (mSortState) {
+                        ALPHA_ASC -> DATE_ASC
+                        ALPHA_DESC -> DATE_DESC
+                        DATE_ASC -> ALPHA_ASC
+                        else -> ALPHA_DESC
+                    }
+
+                    notifySort()
+                }
+
+                ui.fragSampleListSbv.onClickSortOrder = { _ ->
+
+                    mSortState = when (mSortState) {
+                        ALPHA_ASC -> ALPHA_DESC
+                        ALPHA_DESC -> ALPHA_ASC
+                        DATE_ASC -> DATE_DESC
+                        else -> DATE_ASC
+                    }
+
+                    notifySort()
+                }
+
                 return ui.root
             }
 
         } else findNavController().popBackStack()
 
         return null
+    }
+
+    private fun notifySort() {
+
+        mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
+
+        (activity as? MainActivity)?.notify(when (mSortState) {
+            ALPHA_ASC -> R.string.sort_alpha_ascending
+            ALPHA_DESC -> R.string.sort_alpha_descending
+            DATE_ASC -> R.string.sort_date_ascending
+            else -> R.string.sort_date_descending
+        })
+
+        updateUi()
     }
 
     private fun FragmentSampleListBinding.setupToolbar() {
@@ -352,27 +392,6 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
                             this?.startDeviceConnection()
                         }
                     }
-                }
-
-                R.id.action_sample_list_sort -> {
-
-                    mSortState = when (mSortState) {
-                        ALPHA_ASC -> ALPHA_DESC
-                        ALPHA_DESC -> DATE_ASC
-                        DATE_ASC -> DATE_DESC
-                        else -> ALPHA_ASC
-                    }
-
-                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
-
-                    (activity as? MainActivity)?.notify(when (mSortState) {
-                        ALPHA_ASC -> R.string.sort_alpha_ascending
-                        ALPHA_DESC -> R.string.sort_alpha_descending
-                        DATE_ASC -> R.string.sort_date_ascending
-                        else -> R.string.sort_date_descending
-                    })
-
-                    updateUi()
                 }
             }
 
@@ -499,12 +518,12 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         ALPHA_DESC -> {
 
-                            indexedData.sortedByDescending { it.name }
+                            indexedData.sortedByDescending { it.name.lowercase() }
                         }
 
                         else -> {
 
-                            indexedData.sortedBy { it.name }
+                            indexedData.sortedBy { it.name.lowercase() }
                         }
                     } + listOf(dummyRow))
 

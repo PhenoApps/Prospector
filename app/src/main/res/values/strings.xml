@@ -308,4 +308,6 @@
     <string name="database_title">Database</string>
 
     <string name="dialog_ask_location">Location must be enabled to use the Nano</string>
+    <string name="sortbar_type_order">Sort by order, descending or ascending.</string>
+    <string name="sortbar_type_content">Sort by type, alphabetic or time.</string>
 </resources>

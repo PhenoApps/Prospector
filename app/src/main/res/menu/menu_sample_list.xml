@@ -3,12 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_sample_list_sort"
-        android:icon="@drawable/ic_sort_black_24dp"
-        app:showAsAction="always"
-        android:title="@string/menu_sample_list_sort_title"
-        tools:ignore="AlwaysShowAction" />
-    <item
         android:id="@+id/menu_export"
         android:icon="@drawable/ic_export_scans"
         app:showAsAction="always"
