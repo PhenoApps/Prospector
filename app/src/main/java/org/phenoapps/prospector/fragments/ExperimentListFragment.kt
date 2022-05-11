@@ -97,32 +97,6 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
             }
 
-            ui.fragExperimentListSbv.onClickSortOrder = { order ->
-                mSortState = when (mSortState) {
-                    ALPHA_ASC -> ALPHA_DESC
-                    ALPHA_DESC -> ALPHA_ASC
-                    DATE_ASC -> DATE_DESC
-                    else -> DATE_ASC
-                }
-
-                updateUi()
-
-                notifySortState()
-            }
-
-            ui.fragExperimentListSbv.onClickSortType = { type ->
-                mSortState = when (mSortState) {
-                    ALPHA_ASC -> DATE_ASC
-                    ALPHA_DESC -> DATE_DESC
-                    DATE_ASC -> ALPHA_ASC
-                    else -> ALPHA_DESC
-                }
-
-                updateUi()
-
-                notifySortState()
-            }
-
             showDefiner()
         }
 
@@ -180,6 +154,18 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
         toolbar.setOnMenuItemClickListener {
 
             when (it.itemId) {
+
+                R.id.action_experiment_list_menu_sort -> {
+
+                    (activity as? MainActivity)?.askSortType { sortType ->
+
+                        mSortState = sortType
+
+                        notifySortState()
+
+                        updateUi()
+                    }
+                }
 
                 R.id.action_connection -> {
 

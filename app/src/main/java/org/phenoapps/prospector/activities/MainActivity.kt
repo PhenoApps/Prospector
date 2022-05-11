@@ -1,6 +1,10 @@
 package org.phenoapps.prospector.activities
 
+import ALPHA_ASC
+import ALPHA_DESC
 import BULB_FRAMES
+import DATE_ASC
+import DATE_DESC
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
@@ -10,11 +14,14 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
 import android.util.Log
+import android.widget.ListAdapter
+import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -29,6 +36,8 @@ import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.adapter.TextIconAdapter
+import org.phenoapps.prospector.adapter.models.TextIcon
 import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
@@ -82,6 +91,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mFirstDeleteDatabaseDialog: AlertDialog? = null
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
     private var mAskLocationEnableDialog: AlertDialog? = null
+    private var mAskSortTypeDialog: AlertDialog? = null
+    private var mAskSortOrderDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -201,6 +212,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             .create()
 
+        mAskSortTypeDialog = AlertDialog.Builder(this)
+            .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        mAskSortOrderDialog = AlertDialog.Builder(this)
+            .setSingleChoiceItems(TextIconAdapter(this, buildSortOrderArray()), 0) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -214,6 +237,77 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         runtimeBluetoothCheck()
 
         startConnectionWatcher()
+    }
+
+    private fun buildSortTypeArray(): List<TextIcon> {
+        val alpha = getString(R.string.sort_alpha)
+        val date = getString(R.string.sort_date)
+        return listOf(
+            TextIcon(text = alpha, icon = R.drawable.sort_alphabetical_variant),
+            TextIcon(text = date, icon = R.drawable.ic_clock_outline))
+    }
+
+    private fun buildSortOrderArray(): List<TextIcon> {
+        val asc = getString(R.string.sort_ascending)
+        val desc = getString(R.string.sort_descending)
+        return listOf(
+            TextIcon(text = asc, icon = R.drawable.ic_sort_reverse_variant),
+            TextIcon(text = desc, icon = R.drawable.ic_sort_black_24dp))
+    }
+
+    fun askSortType(function: (Int) -> Unit) {
+        runOnUiThread {
+            mAskSortTypeDialog?.let { dialog ->
+
+                if (!dialog.isShowing) {
+
+                    mAskSortTypeDialog = AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_sort_type_title)
+                        .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
+                        .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { d, type ->
+
+                            askSortOrder(type, function)
+
+                            d.dismiss()
+
+                        }
+                        .create()
+
+                    mAskSortTypeDialog?.show()
+
+                }
+            }
+        }
+    }
+
+    fun askSortOrder(type: Int, function: (Int) -> Unit) {
+        runOnUiThread {
+            mAskSortOrderDialog?.let { dialog ->
+
+                if (!dialog.isShowing) {
+
+                    mAskSortOrderDialog = AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_sort_order_title)
+                        .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
+                        .setSingleChoiceItems(TextIconAdapter(this, buildSortOrderArray()), 0) { d, order ->
+
+                            val sortType = when {
+                                type == 0 && order == 0 -> ALPHA_ASC
+                                type == 0 && order == 1 -> ALPHA_DESC
+                                type == 1 && order == 0 -> DATE_ASC
+                                else -> DATE_DESC
+                            }
+
+                            function(sortType)
+
+                            d.dismiss()
+                        }
+                        .create()
+
+                    mAskSortOrderDialog?.show()
+                }
+            }
+        }
     }
 
     private fun askForLocation(success: () -> Unit) {
@@ -682,6 +776,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         stopDeviceConnection()
 
+        mAskSortTypeDialog?.dismiss()
+        mAskSortOrderDialog?.dismiss()
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()

@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_experiment_list_menu_sort"
+        android:icon="@drawable/ic_sort_black_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/menu_experiment_list_sort_title"/>
+    <item
         android:id="@+id/action_connection"
         android:icon="@drawable/ic_vector_difference_ab"
         app:showAsAction="ifRoom"

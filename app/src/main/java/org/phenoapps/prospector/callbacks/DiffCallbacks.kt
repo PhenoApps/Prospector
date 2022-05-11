@@ -2,8 +2,6 @@ package org.phenoapps.prospector.callbacks
 
 import androidx.recyclerview.widget.DiffUtil
 import org.phenoapps.prospector.adapter.ExperimentAdapter
-import org.phenoapps.prospector.data.models.SampleScanCount
-import org.phenoapps.prospector.data.models.Scan
 import org.phenoapps.prospector.fragments.SampleListFragment
 import org.phenoapps.prospector.fragments.ScanListFragment
 
