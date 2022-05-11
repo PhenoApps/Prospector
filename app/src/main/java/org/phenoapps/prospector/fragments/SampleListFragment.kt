@@ -305,6 +305,20 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
         return null
     }
 
+    private fun notifySort() {
+
+        mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
+
+        (activity as? MainActivity)?.notify(when (mSortState) {
+            ALPHA_ASC -> R.string.sort_alpha_ascending
+            ALPHA_DESC -> R.string.sort_alpha_descending
+            DATE_ASC -> R.string.sort_date_ascending
+            else -> R.string.sort_date_descending
+        })
+
+        updateUi()
+    }
+
     private fun FragmentSampleListBinding.setupToolbar() {
 
         toolbar.setNavigationOnClickListener {
@@ -316,6 +330,16 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
         toolbar.setOnMenuItemClickListener { item ->
 
             when(item.itemId) {
+
+                R.id.action_sample_list_sort -> {
+
+                    (activity as? MainActivity)?.askSortType { sortState ->
+
+                        mSortState = sortState
+
+                        notifySort()
+                    }
+                }
 
                 R.id.menu_export -> {
                     /**
@@ -347,27 +371,6 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
                             this?.startDeviceConnection()
                         }
                     }
-                }
-
-                R.id.action_sample_list_sort -> {
-
-                    mSortState = when (mSortState) {
-                        ALPHA_ASC -> ALPHA_DESC
-                        ALPHA_DESC -> DATE_ASC
-                        DATE_ASC -> DATE_DESC
-                        else -> ALPHA_ASC
-                    }
-
-                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
-
-                    (activity as? MainActivity)?.notify(when (mSortState) {
-                        ALPHA_ASC -> R.string.sort_alpha_ascending
-                        ALPHA_DESC -> R.string.sort_alpha_descending
-                        DATE_ASC -> R.string.sort_date_ascending
-                        else -> R.string.sort_date_descending
-                    })
-
-                    updateUi()
                 }
             }
 
@@ -494,12 +497,12 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         ALPHA_DESC -> {
 
-                            indexedData.sortedByDescending { it.name }
+                            indexedData.sortedByDescending { it.name.lowercase() }
                         }
 
                         else -> {
 
-                            indexedData.sortedBy { it.name }
+                            indexedData.sortedBy { it.name.lowercase() }
                         }
                     } + listOf(dummyRow))
 
