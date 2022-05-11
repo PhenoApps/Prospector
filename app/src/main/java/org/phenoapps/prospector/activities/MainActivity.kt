@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
     private var mAskLocationEnableDialog: AlertDialog? = null
     private var mAskSortTypeDialog: AlertDialog? = null
-    private var mAskSortOrderDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -218,12 +217,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             .create()
 
-        mAskSortOrderDialog = AlertDialog.Builder(this)
-            .setSingleChoiceItems(TextIconAdapter(this, buildSortOrderArray()), 0) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -240,19 +233,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun buildSortTypeArray(): List<TextIcon> {
-        val alpha = getString(R.string.sort_alpha)
-        val date = getString(R.string.sort_date)
+        val alphaAsc = getString(R.string.sort_alpha_ascending)
+        val alphaDesc = getString(R.string.sort_alpha_descending)
+        val dateAsc = getString(R.string.sort_date_ascending)
+        val dateDesc = getString(R.string.sort_date_descending)
         return listOf(
-            TextIcon(text = alpha, icon = R.drawable.sort_alphabetical_variant),
-            TextIcon(text = date, icon = R.drawable.ic_clock_outline))
-    }
-
-    private fun buildSortOrderArray(): List<TextIcon> {
-        val asc = getString(R.string.sort_ascending)
-        val desc = getString(R.string.sort_descending)
-        return listOf(
-            TextIcon(text = asc, icon = R.drawable.ic_sort_reverse_variant),
-            TextIcon(text = desc, icon = R.drawable.ic_sort_black_24dp))
+            TextIcon(text = alphaAsc, icon = R.drawable.sort_alphabetical_ascending),
+            TextIcon(text = alphaDesc, icon = R.drawable.sort_alphabetical_descending),
+            TextIcon(text = dateAsc, icon = R.drawable.sort_clock_ascending_outline),
+            TextIcon(text = dateDesc, icon = R.drawable.sort_clock_descending_outline))
     }
 
     fun askSortType(function: (Int) -> Unit) {
@@ -266,7 +255,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
                         .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { d, type ->
 
-                            askSortOrder(type, function)
+                            val sortType = when {
+                                type == 0 -> ALPHA_ASC
+                                type == 1 -> ALPHA_DESC
+                                type == 2 -> DATE_ASC
+                                else -> DATE_DESC
+                            }
+
+                            function(sortType)
 
                             d.dismiss()
 
@@ -275,36 +271,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     mAskSortTypeDialog?.show()
 
-                }
-            }
-        }
-    }
-
-    fun askSortOrder(type: Int, function: (Int) -> Unit) {
-        runOnUiThread {
-            mAskSortOrderDialog?.let { dialog ->
-
-                if (!dialog.isShowing) {
-
-                    mAskSortOrderDialog = AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_sort_order_title)
-                        .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
-                        .setSingleChoiceItems(TextIconAdapter(this, buildSortOrderArray()), 0) { d, order ->
-
-                            val sortType = when {
-                                type == 0 && order == 0 -> ALPHA_ASC
-                                type == 0 && order == 1 -> ALPHA_DESC
-                                type == 1 && order == 0 -> DATE_ASC
-                                else -> DATE_DESC
-                            }
-
-                            function(sortType)
-
-                            d.dismiss()
-                        }
-                        .create()
-
-                    mAskSortOrderDialog?.show()
                 }
             }
         }
@@ -777,7 +743,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         stopDeviceConnection()
 
         mAskSortTypeDialog?.dismiss()
-        mAskSortOrderDialog?.dismiss()
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
