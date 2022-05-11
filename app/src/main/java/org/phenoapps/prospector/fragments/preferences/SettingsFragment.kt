@@ -3,8 +3,10 @@ package org.phenoapps.prospector.fragments.preferences
 import DEVICE_INNO_SPECTRA
 import DEVICE_LINK_SQUARE
 import OPERATOR
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
 import androidx.preference.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,9 +14,11 @@ import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.DefineStorageActivity
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.utils.*
-import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.getStem
+import org.phenoapps.utils.BaseDocumentTreeUtil
+import org.phenoapps.utils.BaseDocumentTreeUtil.Companion.getStem
 
 /**
  * Simple pref fragment that listens for connected devices and can scan subnets for IoT devices. (uses activity view model)
@@ -28,6 +32,8 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
     private val mKeyUtil by lazy {
         KeyUtil(context)
     }
+
+    private val storageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
     //private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -62,8 +68,7 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         findPreference<Preference>(mKeyUtil.workflowDirectoryDefiner)?.setOnPreferenceClickListener { _ ->
 
-            findNavController().navigate(SettingsContainerFragmentDirections
-                .actionToStorageDefiner())
+            storageLauncher.launch(Intent(context, DefineStorageActivity::class.java))
 
             true
         }
@@ -115,11 +120,11 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
         context?.let { ctx ->
 
-            if (DocumentTreeUtil.isEnabled(ctx)) {
+            if (BaseDocumentTreeUtil.isEnabled(ctx)) {
 
                 findPreference<Preference>(mKeyUtil.workflowDirectoryDefiner)?.let { dirPref ->
 
-                    dirPref.summary = DocumentTreeUtil.getRoot(ctx)?.uri?.getStem(context)
+                    dirPref.summary = BaseDocumentTreeUtil.getRoot(ctx)?.uri?.getStem(context)
 
                 }
             }

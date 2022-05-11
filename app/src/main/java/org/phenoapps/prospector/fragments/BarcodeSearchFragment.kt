@@ -86,7 +86,8 @@ class BarcodeSearchFragment : Fragment() {
 
                                     if (findNavController().currentDestination?.id == R.id.barcode_search_fragment) {
                                         findNavController().navigate(BarcodeSearchFragmentDirections
-                                            .actionToScanList(mExpId, name))
+                                            .actionToScanList(experiment = mExpId,
+                                                sample = name))
                                     }
                                 }
                             } else {

@@ -216,7 +216,8 @@ class NewSampleFragment : ConnectionFragment(R.layout.fragment_new_sample), Coro
                                         if (findNavController().currentDestination?.id == R.id.new_sample_fragment) {
                                             findNavController()
                                                 .navigate(NewSampleFragmentDirections
-                                                    .actionToScanList(mExpId, name))
+                                                    .actionToScanList(experiment = mExpId,
+                                                        sample = name))
                                         }
 
                                     } else {
@@ -316,10 +317,12 @@ class NewSampleFragment : ConnectionFragment(R.layout.fragment_new_sample), Coro
                             if (startScan) {
 
                                 findNavController().navigate(NewSampleFragmentDirections
-                                    .actionToScanList(mExpId, name, startScan))
+                                    .actionToScanList(experiment = mExpId,
+                                        sample = name,
+                                        startScan = startScan))
 
                             } else findNavController().navigate(NewSampleFragmentDirections
-                                .actionToScanList(mExpId, name))
+                                .actionToScanList(experiment = mExpId, sample = name))
                         }
                     }
                 }
