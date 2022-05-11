@@ -1,161 +1,24 @@
 package org.phenoapps.prospector.fragments.storage
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
-import androidx.core.os.bundleOf
-import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.setFragmentResultListener
-import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
-import dagger.hilt.android.AndroidEntryPoint
-import org.phenoapps.prospector.R
-import org.phenoapps.prospector.fragments.ExperimentListFragment
-import org.phenoapps.prospector.utils.DocumentTreeUtil.Companion.createFolderStructure
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import android.graphics.Color
+import android.net.Uri
+import org.phenoapps.fragments.storage.PhenoLibStorageDefinerFragment
+import org.phenoapps.prospector.activities.DefineStorageActivity
 
-@AndroidEntryPoint
-class StorageDefinerFragment: Fragment(R.layout.fragment_storage_definer) {
+class StorageDefinerFragment: PhenoLibStorageDefinerFragment() {
 
-    companion object {
+    override val buttonColor = Color.parseColor("#03A9F4")
+    override val backgroundColor = Color.parseColor("#FFFFFF")
 
-        const val REQUEST_STORAGE_MIGRATOR = "org.phenoapps.prospector.requests.storage_migrator"
+    override val actionToMigrator = StorageDefinerFragmentDirections
+        .actionStorageDefinerToStorageMigrator()
 
-    }
+    //default root folder name if user choose an incorrect root on older devices
+    override val defaultAppName: String = "prospector"
 
-    private val mPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-        result?.let { permissions ->
-            if (!permissions.containsValue(false)) {
-                //input is an optional uri that would define the folder to start from
-                mDocumentTree.launch(null)
-            } else {
-
-                setFragmentResult(ExperimentListFragment.REQUEST_STORAGE_DEFINER,
-                    bundleOf("result" to false))
-
-                findNavController().popBackStack()
-            }
-        }
-    }
-
-    private val mDocumentTree = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-
-        uri?.let { nonNulluri ->
-
-            context?.let { ctx ->
-
-                val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-                with (context?.contentResolver) {
-
-                    //add new uri to persistable that the user just picked
-                    this?.takePersistableUriPermission(nonNulluri, flags)
-
-                    //release old storage directory from persistable if it exists
-                    val oldPermitted = this?.persistedUriPermissions
-                    if (oldPermitted != null && oldPermitted.isNotEmpty()) {
-                        this?.persistedUriPermissions?.forEach {
-                            if (it.uri != nonNulluri) {
-                                releasePersistableUriPermission(it.uri,
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                            }
-                        }
-                    }
-
-                    DocumentFile.fromTreeUri(ctx, nonNulluri)?.let { root ->
-
-                        val executor = Executors.newFixedThreadPool(2)
-                        executor.execute {
-                            root.createFolderStructure(context)
-                        }
-                        executor.shutdown()
-                        executor.awaitTermination(10000, TimeUnit.MILLISECONDS)
-
-                        setFragmentResult(ExperimentListFragment.REQUEST_STORAGE_DEFINER,
-                            bundleOf("result" to true))
-
-                        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-                        if (prefs.getBoolean("FIRST_MIGRATE", true)) {
-
-                            prefs.edit().putBoolean("FIRST_MIGRATE", false).apply()
-
-                            findNavController().popBackStack()
-
-                        } else {
-
-                            navigateToMigrator()
-
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun navigateToMigrator() {
-
-        setFragmentResultListener(REQUEST_STORAGE_MIGRATOR) { _, _ ->
-
-            findNavController().popBackStack()
-        }
-
-        findNavController().navigate(StorageDefinerFragmentDirections
-            .actionStorageDefinerToStorageMigrator())
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val defineButton = view.findViewById<Button>(R.id.frag_storage_definer_choose_dir_btn)
-        val skipButton = view.findViewById<Button>(R.id.frag_storage_definer_skip_btn)
-
-        skipButton?.setOnClickListener { _ ->
-
-            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-            if (prefs.getBoolean("FIRST_MIGRATE", true)) {
-
-                prefs.edit().putBoolean("FIRST_MIGRATE", false).apply()
-
-                findNavController().popBackStack()
-
-            } else navigateToMigrator()
-        }
-
-        defineButton?.setOnClickListener { _ ->
-
-            launchDefiner()
-
-        }
-    }
-
-    private fun launchDefiner() {
-        context?.let { ctx ->
-
-            //request runtime permissions for storage
-            if (ActivityCompat.checkSelfPermission(ctx,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(ctx,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-
-                //input is an optional uri that would define the folder to start from
-                mDocumentTree.launch(null)
-
-            } else {
-
-                mPermissions.launch(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
-
-            }
-        }
+    override fun onTreeDefined(treeUri: Uri) {
+        (activity as? DefineStorageActivity)?.enableBackButton(false)
+        super.onTreeDefined(treeUri)
+        (activity as? DefineStorageActivity)?.enableBackButton(true)
     }
 }

@@ -61,7 +61,9 @@ class ExperimentAdapter(
 
                     Navigation.findNavController(binding.root).navigate(
                             ExperimentListFragmentDirections
-                                .actionToSamples(experiment.id, experiment.name, experiment.deviceType))
+                                .actionToSamples(experiment = experiment.id,
+                                    name = experiment.name,
+                                    deviceType = experiment.deviceType))
 
                 }
 

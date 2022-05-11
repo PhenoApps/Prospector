@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.fragment.findNavController
@@ -18,6 +17,7 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.contracts.OpenDocumentFancy
 import org.phenoapps.prospector.data.ProspectorDatabase
 import org.phenoapps.prospector.utils.*
+import org.phenoapps.utils.BaseDocumentTreeUtil
 import java.io.File
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
@@ -83,7 +83,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by M
 
                 pref.setOnPreferenceClickListener { _ ->
 
-                    if (DocumentTreeUtil.isEnabled(ctx)) {
+                    if (BaseDocumentTreeUtil.isEnabled(ctx)) {
 
                         exportDocument(ctx)
 
@@ -213,7 +213,7 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by M
      */
     private fun exportDocument(ctx: Context) {
 
-        DocumentTreeUtil.getDirectory(ctx, R.string.dir_database)?.let { dir ->
+        BaseDocumentTreeUtil.getDirectory(ctx, R.string.dir_database)?.let { dir ->
 
             if (dir.exists()) {
 
