@@ -30,10 +30,11 @@
             app:layout_constraintEnd_toStartOf="@id/list_item_text_icon_tv"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <TextView style="@style/TextAppearance.MaterialComponents.Headline5"
+        <TextView
             android:layout_margin="8dp"
             android:id="@+id/list_item_text_icon_tv"
             android:layout_width="0dp"
+            android:textSize="20dp"
             android:layout_height="wrap_content"
             android:text="@{text}"
             tools:text="Sort text example"
@@ -44,10 +45,9 @@
 
         <View
             android:layout_width="0dp"
-            android:layout_height="2dp"
+            android:layout_height="1dp"
             android:background="@drawable/view_horizontal_separator"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_margin="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/list_item_text_icon_tv"/>

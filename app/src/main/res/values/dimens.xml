@@ -2,5 +2,5 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="text_size">22sp</dimen>
 
-    <dimen name="sort_icon_size">48dp</dimen>
+    <dimen name="sort_icon_size">24dp</dimen>
 </resources>
