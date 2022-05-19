@@ -4,8 +4,10 @@ import ALPHA_ASC
 import ALPHA_DESC
 import DATE_ASC
 import DATE_DESC
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
@@ -26,13 +28,13 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.activities.DefineStorageActivity
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.ExperimentAdapter
 import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.KeyUtil
-import java.util.*
 
 /**
  * The main data fragment that displays the top-level experiment hierarchy.
@@ -97,35 +99,9 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
                 showChangelog(managedShow = true, rateButton = true)
 
             }
-
-            showDefiner()
         }
 
         return mBinding?.root
-    }
-
-    private fun showDefiner() {
-
-        //ask the user once, otherwise use the settings to define the storage location
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-        if (prefs.getBoolean("STORAGE_DEFINE", true)) {
-
-            prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
-
-            setFragmentResultListener(REQUEST_STORAGE_DEFINER) { code, bundle ->
-
-                if (code == REQUEST_STORAGE_DEFINER) {
-
-                    (activity as? MainActivity)?.askSampleImport()
-
-                }
-            }
-
-            findNavController().navigate(ExperimentListFragmentDirections
-                .actionToStorageDefiner())
-
-        } else (activity as? MainActivity)?.askSampleImport()
     }
 
     fun showChangelog(managedShow: Boolean, rateButton: Boolean) {
@@ -158,21 +134,14 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
                 R.id.action_experiment_list_menu_sort -> {
 
-                    mSortState = when (mSortState) {
-                        ALPHA_ASC -> ALPHA_DESC
-                        ALPHA_DESC -> DATE_ASC
-                        DATE_ASC -> DATE_DESC
-                        else -> ALPHA_ASC
+                    (activity as? MainActivity)?.askSortType { sortType ->
+
+                        mSortState = sortType
+
+                        notifySortState()
+
+                        updateUi()
                     }
-
-                    (activity as? MainActivity)?.notify(when (mSortState) {
-                        ALPHA_ASC -> R.string.sort_alpha_ascending
-                        ALPHA_DESC -> R.string.sort_alpha_descending
-                        DATE_ASC -> R.string.sort_date_ascending
-                        else -> R.string.sort_date_descending
-                    })
-
-                    updateUi()
                 }
 
                 R.id.action_connection -> {
@@ -246,6 +215,15 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
         ItemTouchHelper(sItemTouch).attachToRecyclerView(recyclerView)
     }
 
+    private fun notifySortState() {
+        (activity as? MainActivity)?.notify(when (mSortState) {
+            ALPHA_ASC -> R.string.sort_alpha_ascending
+            ALPHA_DESC -> R.string.sort_alpha_descending
+            DATE_ASC -> R.string.sort_date_ascending
+            else -> R.string.sort_date_descending
+        })
+    }
+
     /**
      * Live data observer for the experiments list. This will update automatically when new experiments are added.
      * experimentCount is a live data query that also counts the number of samples in each experiment.
@@ -271,16 +249,17 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
                     ALPHA_DESC -> {
 
-                        it.sortedByDescending { x -> x.name }
+                        it.sortedByDescending { x -> x.name.lowercase() }
                     }
 
                     else -> {
 
-                        it.sortedBy { x -> x.name }
+                        it.sortedBy { x -> x.name.lowercase() }
                     }
                 })
 
             mBinding?.recyclerView?.adapter?.notifyItemRangeChanged(0, it.size)
+
         }
     }
 

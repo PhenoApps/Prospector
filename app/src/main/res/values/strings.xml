@@ -148,6 +148,10 @@
     <string name="menu_experiment_list_sort_title">Sort</string>
     <string name="sort_alpha_ascending">Alphanumeric Ascending</string>
     <string name="sort_alpha_descending">Alphanumeric Descending</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
+    <string name="sort_alpha">Name</string>
+    <string name="sort_date">Date</string>
     <string name="sort_date_ascending">Date Ascending</string>
     <string name="sort_date_descending">Date Descending</string>
     <string name="menu_sample_list_sort_title">Sort</string>
@@ -277,18 +281,6 @@
     <string name="header_serial_id">Serial ID</string>
     <string name="dialog_confirm_factory_reset">This will return the device to factory settings and it may take up to 15 seconds.</string>
 
-    <!-- storage definer and migrator fragments -->
-    <string name="frag_storage_definer_title">Storage Location Definer</string>
-    <string name="frag_storage_definer_summary">New versions of Android require the user to select or create a specific directory for individual apps to interact with. This is an optional step but will simplify subsequent file management.</string>
-    <string name="define">Define</string>
-    <string name="pref_storage_definer_title">Define storage location</string>
-    <string name="pref_storage_definer_summary">Choose the default location to save files.</string>
-    <string name="migrate">Migrate</string>
-    <string name="frag_storage_migrator_title">Storage Migrator</string>
-    <string name="frag_storage_migrator_summary">Coordinate files were not found. Choosing migrate will allow you to select your old Coordinate folder to transfer the data.</string>
-    <string name="skip">Skip</string>
-    <string name="document_tree_undefined">Would you like to define the Field Book folder?</string>
-    <string name="error_dtu_dir_not_created">Directory %s could not be created.</string>
     <string name="workflow_root_directory_title">Define Prospector Folder</string>
     <string name="pref_workflow_root_directory_summary">Migrate or define a new root directory structure. Export files will be saved here automatically.</string>
     <string name="pref_database_category_title">Database</string>
@@ -316,4 +308,8 @@
     <string name="share_file_text">Shared file from Prospector.</string>
     <string name="pref_share_file_title">Share Files</string>
     <string name="pref_share_file_summary">Enable to share files after exporting.</string>
+    <string name="sortbar_type_order">Sort by order, descending or ascending.</string>
+    <string name="sortbar_type_content">Sort by type, alphabetic or time.</string>
+    <string name="dialog_sort_order_title">Sort Order</string>
+    <string name="dialog_sort_type_title">Sort Type</string>
 </resources>

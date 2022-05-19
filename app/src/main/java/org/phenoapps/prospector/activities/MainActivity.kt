@@ -1,6 +1,10 @@
 package org.phenoapps.prospector.activities
 
+import ALPHA_ASC
+import ALPHA_DESC
 import BULB_FRAMES
+import DATE_ASC
+import DATE_DESC
 import DEVICE_TYPE_LS1
 import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
@@ -10,12 +14,16 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.location.LocationManager
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
 import android.util.Log
+import android.widget.ListAdapter
+import android.widget.ListView
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -30,6 +38,8 @@ import kotlinx.coroutines.*
 import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
+import org.phenoapps.prospector.adapter.TextIconAdapter
+import org.phenoapps.prospector.adapter.models.TextIcon
 import org.phenoapps.prospector.data.models.*
 import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
@@ -73,7 +83,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private lateinit var mSnackbar: SnackbarQueue
 
-    private lateinit var mBinding: ActivityMainBinding
+    private var mBinding: ActivityMainBinding? = null
 
     private lateinit var mNavController: NavController
 
@@ -84,6 +94,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mFirstDeleteDatabaseDialog: AlertDialog? = null
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
     private var mAskLocationEnableDialog: AlertDialog? = null
+    private var mAskSortTypeDialog: AlertDialog? = null
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -203,6 +214,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             .create()
 
+        mAskSortTypeDialog = AlertDialog.Builder(this)
+            .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -216,6 +233,52 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         runtimeBluetoothCheck()
 
         startConnectionWatcher()
+
+        showDefiner()
+    }
+
+    private fun buildSortTypeArray(): List<TextIcon> {
+        val alphaAsc = getString(R.string.sort_alpha_ascending)
+        val alphaDesc = getString(R.string.sort_alpha_descending)
+        val dateAsc = getString(R.string.sort_date_ascending)
+        val dateDesc = getString(R.string.sort_date_descending)
+        return listOf(
+            TextIcon(text = alphaAsc, icon = R.drawable.sort_alphabetical_ascending),
+            TextIcon(text = alphaDesc, icon = R.drawable.sort_alphabetical_descending),
+            TextIcon(text = dateAsc, icon = R.drawable.sort_clock_ascending_outline),
+            TextIcon(text = dateDesc, icon = R.drawable.sort_clock_descending_outline))
+    }
+
+    fun askSortType(function: (Int) -> Unit) {
+        runOnUiThread {
+            mAskSortTypeDialog?.let { dialog ->
+
+                if (!dialog.isShowing) {
+
+                    mAskSortTypeDialog = AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_sort_type_title)
+                        .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
+                        .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { d, type ->
+
+                            val sortType = when {
+                                type == 0 -> ALPHA_ASC
+                                type == 1 -> ALPHA_DESC
+                                type == 2 -> DATE_ASC
+                                else -> DATE_DESC
+                            }
+
+                            function(sortType)
+
+                            d.dismiss()
+
+                        }
+                        .create()
+
+                    mAskSortTypeDialog?.show()
+
+                }
+            }
+        }
     }
 
     private fun askForLocation(success: () -> Unit) {
@@ -236,6 +299,26 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     .show()
             }
         }
+    }
+
+    private val storageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        askSampleImport()
+
+    }
+
+    private fun showDefiner() {
+
+        //ask the user once, otherwise use the settings to define the storage location
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        if (prefs.getBoolean("STORAGE_DEFINE", true)) {
+
+            prefs.edit().putBoolean("STORAGE_DEFINE", false).apply()
+
+            storageLauncher.launch(Intent(this, DefineStorageActivity::class.java))
+
+        } else askSampleImport()
     }
 
     fun askDeleteDatabase(success: () -> Unit) {
@@ -336,13 +419,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     fun notify(message: String) {
 
         runOnUiThread {
-            mSnackbar.push(
-                SnackbarQueue
-                    .SnackJob(
-                        mBinding.actMainCoordinatorLayout,
-                        message
-                    )
-            )
+            mBinding?.let { ui ->
+                mSnackbar.push(
+                    SnackbarQueue
+                        .SnackJob(
+                            ui.actMainCoordinatorLayout,
+                            message
+                        )
+                )
+            }
         }
     }
 
@@ -354,12 +439,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun notifyButton(text: String, undo: String, onClick: () -> Unit) {
 
-        runOnUiThread {
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.actMainCoordinatorLayout, text, undo) {
+        mBinding?.let { ui ->
+            runOnUiThread {
+                mSnackbar.push(SnackbarQueue.SnackJob(ui.actMainCoordinatorLayout, text, undo) {
 
-                onClick()
+                    onClick()
 
-            })
+                })
+            }
         }
     }
 
@@ -558,11 +645,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun setToolbar(id: Int) {
 
-        mBinding.bottomNavView.menu.findItem(id).isEnabled = false
+        mBinding?.bottomNavView?.menu?.findItem(id)?.isEnabled = false
 
-        mBinding.bottomNavView.selectedItemId = id
+        mBinding?.bottomNavView?.selectedItemId = id
 
-        mBinding.bottomNavView.menu.findItem(id).isEnabled = true
+        mBinding?.bottomNavView?.menu?.findItem(id)?.isEnabled = true
     }
 
     private suspend fun loadSampleData() {
@@ -639,11 +726,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun setupBotNav() {
 
-        val botNavView = mBinding.bottomNavView
+        val botNavView = mBinding?.bottomNavView
 
-        botNavView.inflateMenu(R.menu.menu_bot_nav)
+        botNavView?.inflateMenu(R.menu.menu_bot_nav)
 
-        botNavView.setOnNavigationItemSelectedListener { menuItem ->
+        botNavView?.setOnNavigationItemSelectedListener { menuItem ->
 
             when (menuItem.itemId) {
 
@@ -693,6 +780,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         stopDeviceConnection()
 
+        mAskSortTypeDialog?.dismiss()
         mCitationDialog?.dismiss()
         mAskChangeOperatorDialog?.dismiss()
         mAskForOperatorDialog?.dismiss()
@@ -775,8 +863,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         if (ledFrames + bulbFrames < 1) {
 
-            mSnackbar.push(SnackbarQueue.SnackJob(mBinding.root,
-                    getString(R.string.settings_error_num_frames_must_exceed_zero)))
+            notify(R.string.settings_error_num_frames_must_exceed_zero)
 
         } else mNavController.popBackStack()
     }

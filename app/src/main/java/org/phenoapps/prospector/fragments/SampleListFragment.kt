@@ -6,7 +6,6 @@ import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
 import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NANO
 import DEVICE_TYPE_NIR
 import android.net.Uri
 import android.os.Bundle
@@ -15,12 +14,10 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -36,12 +33,10 @@ import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
-import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
-import java.util.*
-import kotlin.math.exp
+import org.phenoapps.utils.BaseDocumentTreeUtil
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -145,9 +140,9 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         val fileName = "${mName}_${mDeviceType}_${DateUtil().getTime()}.csv"
 
-                        if (DocumentTreeUtil.isEnabled(ctx)) {
+                        if (BaseDocumentTreeUtil.isEnabled(ctx)) {
 
-                            DocumentTreeUtil.getDirectory(ctx, R.string.dir_exports)?.let { dir ->
+                            BaseDocumentTreeUtil.getDirectory(ctx, R.string.dir_export)?.let { dir ->
 
                                 if (dir.exists()) {
 
@@ -310,6 +305,20 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
         return null
     }
 
+    private fun notifySort() {
+
+        mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
+
+        (activity as? MainActivity)?.notify(when (mSortState) {
+            ALPHA_ASC -> R.string.sort_alpha_ascending
+            ALPHA_DESC -> R.string.sort_alpha_descending
+            DATE_ASC -> R.string.sort_date_ascending
+            else -> R.string.sort_date_descending
+        })
+
+        updateUi()
+    }
+
     private fun FragmentSampleListBinding.setupToolbar() {
 
         toolbar.setNavigationOnClickListener {
@@ -321,6 +330,16 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
         toolbar.setOnMenuItemClickListener { item ->
 
             when(item.itemId) {
+
+                R.id.action_sample_list_sort -> {
+
+                    (activity as? MainActivity)?.askSortType { sortState ->
+
+                        mSortState = sortState
+
+                        notifySort()
+                    }
+                }
 
                 R.id.menu_export -> {
                     /**
@@ -352,27 +371,6 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
                             this?.startDeviceConnection()
                         }
                     }
-                }
-
-                R.id.action_sample_list_sort -> {
-
-                    mSortState = when (mSortState) {
-                        ALPHA_ASC -> ALPHA_DESC
-                        ALPHA_DESC -> DATE_ASC
-                        DATE_ASC -> DATE_DESC
-                        else -> ALPHA_ASC
-                    }
-
-                    mPrefs.edit().putInt("last_samples_sort_state", mSortState).apply()
-
-                    (activity as? MainActivity)?.notify(when (mSortState) {
-                        ALPHA_ASC -> R.string.sort_alpha_ascending
-                        ALPHA_DESC -> R.string.sort_alpha_descending
-                        DATE_ASC -> R.string.sort_date_ascending
-                        else -> R.string.sort_date_descending
-                    })
-
-                    updateUi()
                 }
             }
 
@@ -499,12 +497,12 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                         ALPHA_DESC -> {
 
-                            indexedData.sortedByDescending { it.name }
+                            indexedData.sortedByDescending { it.name.lowercase() }
                         }
 
                         else -> {
 
-                            indexedData.sortedBy { it.name }
+                            indexedData.sortedBy { it.name.lowercase() }
                         }
                     } + listOf(dummyRow))
 
