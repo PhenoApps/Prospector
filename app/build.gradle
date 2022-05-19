@@ -181,7 +181,7 @@ dependencies {
     //app intro github AndroidX Capable version
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
-    implementation 'com.github.phenoapps:phenolib:v0.9.32'
+    implementation 'com.github.phenoapps:phenolib:v0.9.34'
 
     //local
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')

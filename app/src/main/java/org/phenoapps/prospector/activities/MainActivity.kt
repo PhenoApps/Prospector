@@ -547,10 +547,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
 
             if (mPrefs.getBoolean(mKeyUtil.shareEnabled, false)) {
+                val title = getString(R.string.share_file_title)
                 val subject = getString(R.string.share_file_subject)
                 val text = getString(R.string.share_file_text)
 
-                IntentUtil.shareFile(this, uri, subject, text)
+                IntentUtil.shareFileChooser(this, uri, title, subject, text)
             }
         }
     }

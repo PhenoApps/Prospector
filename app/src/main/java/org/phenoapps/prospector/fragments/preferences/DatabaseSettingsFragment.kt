@@ -260,10 +260,11 @@ class DatabaseSettingsFragment : PreferenceFragmentCompat(), CoroutineScope by M
                                 context?.let { ctx ->
 
                                     if (prefs.getBoolean(mKeyUtil.shareEnabled, false)) {
+                                        val title = ctx.getString(R.string.share_database_title)
                                         val subject = ctx.getString(R.string.share_database_subject)
                                         val text = ctx.getString(R.string.share_database_text)
 
-                                        IntentUtil.shareFile(context, export.uri, subject, text)
+                                        IntentUtil.shareFileChooser(context, export.uri, title, subject, text)
                                     }
                                 }
                             }
