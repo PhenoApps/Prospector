@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="title"
+            type="String"/>
+        <variable
+            name="drawable"
+            type="int"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cell"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:id="@+id/list_item_spectrometer_icon_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:src="@mipmap/linksquare_logo"
+            app:imageResource="@{drawable}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/list_item_spectrometer_image_content_description" />
+
+        <TextView style="@style/TextAppearance.MaterialComponents.Headline5"
+            android:id="@+id/list_item_spectrometer_title_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="LinkSquare"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_margin="16dp"
+            android:text="@{title}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/list_item_spectrometer_icon_iv"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

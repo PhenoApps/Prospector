@@ -175,10 +175,26 @@
     </fragment>
 
     <fragment
-        android:id="@+id/connect_instructions_fragment"
-        android:name="org.phenoapps.prospector.fragments.ConnectInstructionsFragment"
-        android:label="@string/nav_label_connect_instructions"
-        tools:layout="@layout/fragment_connect_instructions" />
+        android:id="@+id/connect_instructions_index_fragment"
+        android:name="org.phenoapps.prospector.fragments.tutorials.ConnectionInstructionsFragment"
+        android:label="Tutorial index">
+        <action android:id="@+id/action_from_index_to_linksquare_tutorial"
+            app:popUpToInclusive="true"
+            app:destination="@id/linksquare_connect_instructions_fragment"/>
+        <action android:id="@+id/action_from_index_to_inno_spectra_tutorial"
+            app:popUpToInclusive="true"
+            app:destination="@id/inno_spectra_connect_instructions_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/linksquare_connect_instructions_fragment"
+        android:name="org.phenoapps.prospector.fragments.tutorials.LinkSquareInstructionsFragment"
+        android:label="LinkSquare tutorial" />
+
+    <fragment
+        android:id="@+id/inno_spectra_connect_instructions_fragment"
+        android:name="org.phenoapps.prospector.fragments.tutorials.InnoSpectraInstructionsFragment"
+        android:label="Inno Spectra tutorial"/>
 
     <fragment
         android:id="@+id/new_sample_fragment"
@@ -270,7 +286,7 @@
 
     <action
         android:id="@+id/action_to_connect_instructions"
-        app:destination="@id/connect_instructions_fragment"
+        app:destination="@id/connect_instructions_index_fragment"
         app:launchSingleTop="true">
     </action>
 

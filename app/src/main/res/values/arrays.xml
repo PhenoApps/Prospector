@@ -89,4 +89,5 @@
     <string name="linksquare">LinkSquare</string>
     <string name="linksquare_nir">LinkSquareNIR</string>
     <string name="innospectra_nano">InnoSpectra Nano</string>
+    <string name="innospectra">InnoSpectra</string>
 </resources>

@@ -1,6 +1,7 @@
 <changelog>
     <release versionCode="9" versionName="v1.4.0" date="2022-06-01">
         <new>Updated sorting interface</new>
+        <new>Updated connection tutorials</new>
     </release>
 
     <release versionCode="9" versionName="v1.3.0" date="2022-03-01">
