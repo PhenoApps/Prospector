@@ -25,6 +25,9 @@ class KeyUtil(private val ctx: Context?) {
 
     val sampleScanEnabled by key(R.string.key_pref_workflow_new_sample_by_scan)
 
+    //workflow
+    val shareEnabled by key(R.string.key_pref_share_file)
+
     //keys for device manufacturer type
     val deviceMaker by key(R.string.key_device_maker)
 

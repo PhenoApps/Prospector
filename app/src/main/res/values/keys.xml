@@ -19,6 +19,7 @@
     <string name="key_operator">&package;OPERATOR</string>
     <string name="key_pref_profile_verify_operator">&package;VERIFY_OPERATOR</string>
     <string name="key_pref_workflow_root_directory">&package;DEFINE_DIRECTORY</string>
+    <string name="key_pref_share_file">&package;SHARE_FILE</string>
 
     <string name="key_device_maker">&package;DEVICE_MAKER</string>
 

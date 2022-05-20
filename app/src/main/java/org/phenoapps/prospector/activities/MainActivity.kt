@@ -17,6 +17,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.location.LocationManager
+import android.net.Uri
 import android.os.*
 import android.provider.Settings
 import android.util.Log
@@ -46,6 +47,7 @@ import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
 import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
+import org.phenoapps.utils.IntentUtil
 import java.io.File
 
 /**
@@ -469,7 +471,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         if (permissions.all { it.value }) {
 
-            if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+            val adapter = BluetoothAdapter.getDefaultAdapter()
+            if (adapter != null && adapter.isEnabled) {
 
                 startActivityLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
 
@@ -624,10 +627,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    fun showCitationDialog() {
+    fun showCitationDialog(uri: Uri) {
         runOnUiThread {
             if (mCitationDialog != null && mCitationDialog?.isShowing != true) {
                 mCitationDialog?.show()
+            }
+
+            if (mPrefs.getBoolean(mKeyUtil.shareEnabled, false)) {
+                val title = getString(R.string.share_file_title)
+                val subject = getString(R.string.share_file_subject)
+                val text = getString(R.string.share_file_text)
+
+                IntentUtil.shareFileChooser(this, uri, title, subject, text)
             }
         }
     }

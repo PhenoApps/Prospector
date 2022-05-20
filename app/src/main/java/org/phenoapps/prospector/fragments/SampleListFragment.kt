@@ -227,7 +227,7 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                             mBinding?.toggleProgressBar()
 
-                            (activity as? MainActivity)?.showCitationDialog()
+                            (activity as? MainActivity)?.showCitationDialog(uri)
 
                         }
                     }
