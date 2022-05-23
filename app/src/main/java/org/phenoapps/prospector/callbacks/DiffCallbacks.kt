@@ -2,6 +2,7 @@ package org.phenoapps.prospector.callbacks
 
 import androidx.recyclerview.widget.DiffUtil
 import org.phenoapps.prospector.adapter.ExperimentAdapter
+import org.phenoapps.prospector.adapter.SpectrometerAdapter
 import org.phenoapps.prospector.fragments.SampleListFragment
 import org.phenoapps.prospector.fragments.ScanListFragment
 
@@ -44,6 +45,17 @@ class DiffCallbacks {
 
             override fun areContentsTheSame(oldItem: ScanListFragment.ScanFrames, newItem: ScanListFragment.ScanFrames): Boolean {
                 return oldItem.sid == newItem.sid && oldItem.fid == newItem.fid
+            }
+        }
+
+        class SpectrometerDiffCallback : DiffUtil.ItemCallback<SpectrometerAdapter.SpectrometerListItem>() {
+
+            override fun areItemsTheSame(oldItem: SpectrometerAdapter.SpectrometerListItem, newItem: SpectrometerAdapter.SpectrometerListItem): Boolean {
+                return oldItem == newItem && oldItem == newItem
+            }
+
+            override fun areContentsTheSame(oldItem: SpectrometerAdapter.SpectrometerListItem, newItem: SpectrometerAdapter.SpectrometerListItem): Boolean {
+                return oldItem == newItem && oldItem == newItem
             }
         }
     }

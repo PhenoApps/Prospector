@@ -91,6 +91,17 @@
     <string name="frag_instructions_step_four">Click the bottom-right button to start creating Experiments. Once an experiment is made, you can similarly make Samples and start using your spectrometer.</string>
     <string name="frag_instructions_step_five">(Optional) To connect via IoT, go to the app settings and enter the SSID and password for your network. You can manually set what IP-address to connect to in the settings, or search for local devices.</string>
 
+    <string name="frag_is_instructions_step_one">Ensure your device is on, a blue light should be solid or flashing if already connected.</string>
+    <string name="frag_is_instructions_step_two">In Prospector, create a new experiment and select InnoSpectra Nano. This will initiate a device connection, please wait a moment.</string>
+    <string name="frag_is_instructions_step_three">Wait until the configurations are read, indicated by the progress bar.</string>
+    <string name="frag_is_instructions_step_four">(Advanced) Create new scan configurations in the settings. It is highly recommended to use the default scan configurations.</string>
+
+    <string name="instructions_step_one_content_description">Step One</string>
+    <string name="instructions_step_two_content_description">Step Two</string>
+    <string name="instructions_step_three_content_description">Step Three</string>
+    <string name="instructions_step_four_content_description">Step Four</string>
+    <string name="instructions_step_five_content_description">Step Five</string>
+
     <string name="nav_label_connect_instructions">Instructions for connecting the device using AP mode.</string>
     <string name="pref_iot_title">IoT Settings</string>
     <string name="pref_iot_summary">You can use IoT Mode when there is an available Wi-Fi network.</string>
@@ -142,7 +153,7 @@
     <string name="iot_compatible">IoT Compatible</string>
     <string name="check_connection">Check connection</string>
     <string name="accept_permissions">App Permissions</string>
-    <string name="frag_instructions_step_zero">Prospector requires camera permissions for scanning barcodes, and external storage permissions for saving files.</string>
+    <string name="frag_instructions_step_zero">Prospector requires camera permissions for scanning barcodes, location permissions for connecting to nearby devices and media permissions to save and export files.</string>
     <string name="must_accept_permissions_to_export">Permissions must be accepted to export.</string>
     <string name="samples_loaded">Samples loaded.</string>
     <string name="menu_experiment_list_sort_title">Sort</string>
@@ -312,4 +323,7 @@
     <string name="sortbar_type_content">Sort by type, alphabetic or time.</string>
     <string name="dialog_sort_order_title">Sort Order</string>
     <string name="dialog_sort_type_title">Sort Type</string>
+    <string name="frag_device_connection_tutorial_index_tv">Choose your device for instructions.</string>
+    <string name="frag_device_connection_tutorial_title_tv">Connection Guide</string>
+    <string name="list_item_spectrometer_image_content_description">Spectrometer Company</string>
 </resources>

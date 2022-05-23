@@ -41,34 +41,6 @@ class IntroActivity : AppIntro() {
             title = getString(R.string.accept_permissions),
             description = getString(R.string.frag_instructions_step_zero),
         ))
-        // Call addSlide passing your Fragments.
-        // You can use AppIntroFragment to use a pre-built fragment
-        addSlide(AppIntroFragment.newInstance(
-            title = getString(R.string.welcome),
-            description = getString(R.string.frag_instructions_step_one),
-            imageDrawable = R.drawable.icon_device_ap
-
-        ))
-        addSlide(AppIntroFragment.newInstance(
-            title = getString(R.string.choose_network),
-            description = getString(R.string.frag_instructions_step_two),
-            imageDrawable = R.drawable.choose_ap_wifi_network
-        ))
-        addSlide(AppIntroFragment.newInstance(
-            title = getString(R.string.check_connection),
-            description = getString(R.string.frag_instructions_step_three),
-            imageDrawable = R.drawable.icon_ap
-        ))
-        addSlide(AppIntroFragment.newInstance(
-            title = getString(R.string.prospector_workflow),
-            description = getString(R.string.frag_instructions_step_four),
-            imageDrawable = R.drawable.instructions_create_button
-        ))
-        addSlide(AppIntroFragment.newInstance(
-            title = getString(R.string.iot_compatible),
-            description = getString(R.string.frag_instructions_step_five),
-            imageDrawable = R.drawable.iot_instructions
-        ))
     }
 
     override fun onSkipPressed(currentFragment: Fragment?) {

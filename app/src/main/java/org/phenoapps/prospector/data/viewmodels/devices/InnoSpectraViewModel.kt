@@ -164,6 +164,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
         override fun onServiceDisconnected(name: ComponentName?) {
             mConnected = false
+            mNanoSdk?.sdk?.disconnect()
+            mNanoSdk?.sdk?.close()
         }
     }
 
