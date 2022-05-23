@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -12,40 +12,40 @@
             android:layout_height="match_parent"
             android:background="@color/colorPrimary">
 
-            <ImageView
-                android:background="@drawable/cell"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/frag_device_connection_tutorial_index_iv"
-                android:src="@mipmap/ic_launcher"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_margin="16dp"
-                android:contentDescription="@string/app_intro_image_content_description" />
-
-            <TextView style="@style/TextAppearance.MaterialComponents.Headline5"
+            <TextView
+                android:id="@+id/frag_device_connection_tutorial_title_tv"
+                style="@style/TextAppearance.MaterialComponents.Headline5"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/frag_device_connection_tutorial_index_tv"
-                app:layout_constraintStart_toStartOf="parent"
+                android:layout_margin="8dp"
+                android:text="@string/frag_device_connection_tutorial_title_tv"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/frag_device_connection_tutorial_index_iv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/frag_device_connection_tutorial_index_tv"
+                style="@style/TextAppearance.MaterialComponents.Headline6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:text="@string/frag_device_connection_tutorial_index_tv"
-                android:layout_margin="16dp"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_device_connection_tutorial_title_tv" />
 
             <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/frag_device_connection_tutorial_index_rv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/frag_device_connection_tutorial_index_tv"
-                android:layout_margin="16dp"
+                android:layout_margin="8dp"
                 android:orientation="vertical"
-                android:id="@+id/frag_device_connection_tutorial_index_rv"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/list_item_spectrometer"
-                tools:itemCount="2"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_device_connection_tutorial_index_tv"
+                tools:itemCount="2"
+                tools:listitem="@layout/list_item_spectrometer" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
