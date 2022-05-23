@@ -315,6 +315,7 @@
     <string name="sortbar_type_content">Sort by type, alphabetic or time.</string>
     <string name="dialog_sort_order_title">Sort Order</string>
     <string name="dialog_sort_type_title">Sort Type</string>
-    <string name="frag_device_connection_tutorial_index_tv">Choose your device from the list below to start a connection tutorial.</string>
+    <string name="frag_device_connection_tutorial_index_tv">Choose your device for instructions.</string>
+    <string name="frag_device_connection_tutorial_title_tv">Connection Guide</string>
     <string name="list_item_spectrometer_image_content_description">Spectrometer Company</string>
 </resources>
