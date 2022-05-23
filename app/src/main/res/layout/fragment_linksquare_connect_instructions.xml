@@ -8,24 +8,36 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="16dp">
+            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/stepOneTextView"
-                android:layout_width="wrap_content"
+            <androidx.appcompat.widget.Toolbar style="@style/Text.Header"
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:text="@string/frag_instructions_step_one"
+                android:background="@color/colorPrimary"
+                app:navigationIcon="@drawable/ic_back_arrow"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
+            <TextView
+                android:layout_margin="16dp"
+                android:id="@+id/stepOneTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/frag_instructions_step_one"
+                app:layout_constraintTop_toBottomOf="@id/toolbar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
             <ImageView
+                android:padding="16dp"
+                android:background="@drawable/picture_border"
+                android:layout_margin="16dp"
+                android:drawable="@drawable/picture_border"
                 android:id="@+id/stepOneImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
                 android:src="@drawable/icon_device_ap"
                 app:layout_constraintTop_toBottomOf="@id/stepOneTextView"
                 app:layout_constraintStart_toStartOf="parent"
@@ -33,16 +45,19 @@
                 android:contentDescription="@string/instructions_step_one_content_description" />
 
             <TextView
+                android:layout_margin="16dp"
                 android:id="@+id/stepTwoTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/frag_instructions_step_two"
                 app:layout_constraintTop_toBottomOf="@id/stepOneImageView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageView
+                android:background="@drawable/picture_border"
+                android:layout_margin="16dp"
+                android:drawable="@drawable/picture_border"
                 android:id="@+id/stepTwoImageView"
                 android:layout_width="0dp"
                 android:layout_height="256dp"
@@ -53,16 +68,20 @@
                 android:contentDescription="@string/instructions_step_two_content_description"/>
 
             <TextView
+                android:layout_margin="16dp"
                 android:id="@+id/stepThreeTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/frag_instructions_step_three"
                 app:layout_constraintTop_toBottomOf="@id/stepTwoImageView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageView
+                android:padding="16dp"
+                android:background="@drawable/picture_border"
+                android:layout_margin="16dp"
+                android:drawable="@drawable/picture_border"
                 android:id="@+id/stepThreeImageView"
                 android:layout_width="0dp"
                 android:layout_height="256dp"
@@ -74,20 +93,23 @@
                 app:layout_constraintTop_toBottomOf="@id/stepThreeTextView" />
 
             <TextView
+                android:layout_margin="16dp"
                 android:id="@+id/stepFourTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/frag_instructions_step_four"
                 app:layout_constraintTop_toBottomOf="@id/stepThreeImageView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageView
+                android:padding="16dp"
+                android:background="@drawable/picture_border"
+                android:layout_margin="16dp"
+                android:drawable="@drawable/picture_border"
                 android:id="@+id/stepFourImageView"
                 android:layout_width="0dp"
                 android:layout_height="256dp"
-                android:layout_marginTop="16dp"
                 android:src="@drawable/instructions_create_button"
                 android:contentDescription="@string/instructions_step_four_content_description"
                 app:layout_constraintTop_toBottomOf="@id/stepFourTextView"
@@ -95,20 +117,23 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
+                android:layout_margin="16dp"
                 android:id="@+id/stepFiveTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/frag_instructions_step_five"
                 app:layout_constraintTop_toBottomOf="@id/stepFourImageView"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageView
+                android:padding="16dp"
+                android:background="@drawable/picture_border"
+                android:layout_margin="16dp"
+                android:drawable="@drawable/picture_border"
                 android:id="@+id/stepFiveImageView"
                 android:layout_width="0dp"
                 android:layout_height="256dp"
-                android:layout_marginTop="16dp"
                 android:src="@drawable/iot_instructions"
                 android:contentDescription="@string/instructions_step_five_content_description"
                 app:layout_constraintTop_toBottomOf="@id/stepFiveTextView"

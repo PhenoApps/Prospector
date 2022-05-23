@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.databinding.FragmentLinksquareConnectInstructionsBinding
@@ -26,6 +27,10 @@ class LinkSquareInstructionsFragment : Fragment() {
         val localInflater = inflater.cloneInContext(contextThemeWrapper)
 
         mBinding = DataBindingUtil.inflate(localInflater, R.layout.fragment_linksquare_connect_instructions, null, false)
+
+        mBinding?.toolbar?.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
 
         return mBinding?.root
 

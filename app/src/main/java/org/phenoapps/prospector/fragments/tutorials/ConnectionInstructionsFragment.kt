@@ -45,6 +45,10 @@ class ConnectionInstructionsFragment : Fragment(), OnModelClickListener {
 
         }
 
+        mBinding?.toolbar?.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
+
         return mBinding?.root
 
     }
