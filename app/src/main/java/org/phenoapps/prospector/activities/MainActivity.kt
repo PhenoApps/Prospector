@@ -95,6 +95,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
     private var mAskLocationEnableDialog: AlertDialog? = null
     private var mAskSortTypeDialog: AlertDialog? = null
+    private var mAskWarnBatteryLevelDialog: AlertDialog? = null
+
+    private var mWarnedBatteryOnce = false
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -218,6 +221,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .setSingleChoiceItems(TextIconAdapter(this, buildSortTypeArray()), 0) { dialog, _ ->
                 dialog.dismiss()
             }
+            .create()
+
+        mAskWarnBatteryLevelDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_warn_battery_title)
+            .setMessage(getString(R.string.dialog_warn_battery_message))
+            .setPositiveButton(android.R.string.ok) { _, _ -> }
             .create()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -377,6 +386,35 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     startLoadSampleData()
 
                 }
+            }
+        }
+    }
+
+    private fun askWarnBatteryLevel() {
+
+        if (!mWarnedBatteryOnce) {
+
+            mWarnedBatteryOnce = true
+
+            runOnUiThread {
+
+                mAskWarnBatteryLevelDialog?.let { dialog ->
+
+                    if (!dialog.isShowing) {
+
+                        mAskWarnBatteryLevelDialog?.show()
+
+                    }
+                }
+            }
+        }
+    }
+
+    fun checkStatus() {
+        if (sDeviceViewModel is InnoSpectraViewModel) {
+            (sDeviceViewModel as? InnoSpectraViewModel)?.getDeviceBattery()?.let { battery ->
+
+                if (battery < 15) askWarnBatteryLevel()
             }
         }
     }
@@ -788,6 +826,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mFirstDeleteDatabaseDialog?.dismiss()
         mSecondDeleteDatabaseDialog?.dismiss()
         mAskLocationEnableDialog?.dismiss()
+        mAskWarnBatteryLevelDialog?.dismiss()
 
         mConnectionHandlerThread.quit()
 
