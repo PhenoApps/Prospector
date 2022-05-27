@@ -1,8 +1,8 @@
 package org.phenoapps.prospector.data.models
 
-import DEVICE_TYPE_NIR
 import androidx.annotation.Keep
 import androidx.room.*
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.utils.DateUtil
 
 @Keep

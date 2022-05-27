@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:key="org.phenoapps.prospector.DEVICE_INFO"
+        android:summary=""
+        android:title="@string/pref_indigo_scanning_title"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:defaultValue=""
+            android:icon="@drawable/ic_settings_input_antenna_black_18dp"
+            android:key="@string/key_pref_indigo_address"
+            android:summary="@string/pref_indigo_device_address_summary"
+            android:title="@string/pref_indigo_device_address_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

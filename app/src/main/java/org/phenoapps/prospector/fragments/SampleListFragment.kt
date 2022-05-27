@@ -5,8 +5,6 @@ import ALPHA_DESC
 import CONVERT_TO_WAVELENGTHS
 import DATE_ASC
 import DATE_DESC
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NIR
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -28,15 +26,21 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
+import org.phenoapps.interfaces.spectrometers.Spectrometer
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
 import org.phenoapps.prospector.adapter.SampleAdapter
 import org.phenoapps.prospector.data.models.Sample
 import org.phenoapps.prospector.data.viewmodels.SampleViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
+import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.FragmentSampleListBinding
 import org.phenoapps.prospector.interfaces.SampleListClickListener
 import org.phenoapps.prospector.utils.*
 import org.phenoapps.utils.BaseDocumentTreeUtil
+import org.phenoapps.viewmodels.spectrometers.Indigo
 
 /**
  * Similar to the experiment fragment, this displays lists of samples for a given experiment.
@@ -268,16 +272,20 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
             mDeviceType = deviceType
             mName = name
 
-            val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1) ?: DEVICE_TYPE_LS1
-            if (maker !in deviceType) {
-
-                if (DEVICE_TYPE_LS1 in deviceType) {
+            when (mDeviceType) {
+                in setOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR) -> {
 
                     (activity as MainActivity).switchLinkSquare()
 
-                } else {
+                }
+                Spectrometer.DEVICE_TYPE_NANO -> {
 
                     (activity as MainActivity).switchInnoSpectra()
+
+                }
+                else -> {
+
+                    (activity as MainActivity).switchIndigo()
                 }
             }
 
@@ -354,19 +362,26 @@ class SampleListFragment : ConnectionFragment(R.layout.fragment_sample_list), Co
 
                 R.id.action_connection -> {
 
-                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
-
                     with (activity as? MainActivity) {
 
                         if (this?.mConnected == true) {
 
-                            deviceViewModel?.reset(context)
+                            if (sDeviceViewModel is Indigo) {
+                                (sDeviceViewModel as? Indigo)?.let { indigo ->
+                                    advisor.withNearby { adapter ->
+
+                                        indigo.reset(adapter, context)
+
+                                    }
+                                }
+                            } else {
+                                sDeviceViewModel?.reset(context)
+                            }
+
                         } else {
 
-                            if (findNavController().currentDestination?.id == R.id.sample_list_fragment) {
-                                findNavController().navigate(SampleListFragmentDirections
-                                    .actionToConnectInstructions())
-                            }
+                            findNavController().navigate(SampleListFragmentDirections
+                                .actionToConnectInstructions())
 
                             this?.startDeviceConnection()
                         }

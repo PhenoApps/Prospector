@@ -3,6 +3,7 @@ package org.phenoapps.prospector.interfaces
 import com.ISCSDK.ISCNIRScanSDK
 import org.phenoapps.prospector.fragments.preferences.InnoSpectraSettingsFragment
 import org.phenoapps.prospector.receivers.DeviceInfoReceiver
+import org.phenoapps.viewmodels.spectrometers.Frame
 
 interface NanoEventListener {
 
@@ -10,7 +11,7 @@ interface NanoEventListener {
 
     fun onRefDataReady() = Unit
 
-    fun onScanDataReady(spectral: Spectrometer.Frame) = Unit
+    fun onScanDataReady(spectral: Frame) = Unit
 
     fun onScanStarted() = Unit
 

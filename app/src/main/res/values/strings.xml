@@ -96,6 +96,11 @@
     <string name="frag_is_instructions_step_three">Wait until the configurations are read, indicated by the progress bar.</string>
     <string name="frag_is_instructions_step_four">(Advanced) Create new scan configurations in the settings. It is highly recommended to use the default scan configurations.</string>
 
+    <string name="frag_indigo_instructions_step_one">Ensure your device is on, the top-most middle LED should be green, or red if already connected. Navigate to the settings in Prospector, choose Indigo, then Find a device.</string>
+    <string name="frag_indigo_instructions_step_two">Wait for BLE devices to appear, click on your Indigo device.</string>
+    <string name="frag_indigo_instructions_step_three">In the data tab, create a new experiment and select Indigo. This will initiate a device connection, please wait a moment.</string>
+    <string name="frag_indigo_instructions_step_four">If you can\'t find your device or scans are not completing, try to reset the device.</string>
+
     <string name="instructions_step_one_content_description">Step One</string>
     <string name="instructions_step_two_content_description">Step Two</string>
     <string name="instructions_step_three_content_description">Step Three</string>
@@ -199,6 +204,7 @@
     <string name="pref_compatible_devices">Device Settings</string>
     <string name="pref_device_type_link_square">LinkSquare</string>
     <string name="pref_device_type_inno_spectra">InnoSpectra</string>
+    <string name="pref_device_type_indigo">Indigo</string>
     <string name="linksquare_settings_fragment_label">LinkSquare Settings Fragment</string>
     <string name="inno_spectra_settings_fragment_label">InnoSpectra Fragment</string>
     <string name="pref_cat_inno_spectra_device_info">InnoSpectra</string>
@@ -245,7 +251,7 @@
     <string name="frag_new_config_repeats_range_failed">Scans can only be repeated 1 to 65535 times.</string>
     <string name="pref_key_inno_spectra_restore_config_title">Restore Default Configs</string>
     <string name="frag_settings_inno_spectra_reset_app">Resetting device to load default configurations. Please wait.</string>
-    <string name="inno_spectra_device_not_ready">Please wait, device initializing.</string>
+    <string name="device_not_ready">Please wait, device initializing.</string>
     <string name="loading_configurations">Loading configs…</string>
     <string name="conflicting_configs">You cannot choose this configuration, please manage saved configurations in the settings.</string>
     <string name="new_section_button">Add new section to config</string>
@@ -326,4 +332,9 @@
     <string name="frag_device_connection_tutorial_index_tv">Choose your device for instructions.</string>
     <string name="frag_device_connection_tutorial_title_tv">Connection Guide</string>
     <string name="list_item_spectrometer_image_content_description">Spectrometer Company</string>
+    <string name="pref_indigo_scanning_title">Indigo Settings</string>
+    <string name="pref_indigo_device_address_summary">Click to search for an Indigo device to pair with.</string>
+    <string name="pref_indigo_device_address_title">Find a device</string>
+    <string name="pref_indigo_device_search_selected">Selected device %s.</string>
+    <string name="scan_failed">Scan failed, refreshing device connection.</string>
 </resources>

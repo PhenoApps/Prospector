@@ -1,5 +1,6 @@
 package org.phenoapps.prospector.fragments.preferences
 
+import DEVICE_INDIGO
 import DEVICE_INNO_SPECTRA
 import DEVICE_LINK_SQUARE
 import OPERATOR
@@ -99,6 +100,17 @@ class SettingsFragment : PreferenceFragmentCompat(), CoroutineScope by MainScope
 
                 findNavController().navigate(SettingsContainerFragmentDirections
                     .actionToInnoSpectraSettingsFragment())
+
+                true
+            }
+        }
+
+        findPreference<Preference>(DEVICE_INDIGO)?.let { devicePref ->
+
+            devicePref.setOnPreferenceClickListener {
+
+                findNavController().navigate(SettingsContainerFragmentDirections
+                    .actionToIndigoSettingsFragment())
 
                 true
             }

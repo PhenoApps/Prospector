@@ -5,25 +5,18 @@ import ALPHA_DESC
 import BULB_FRAMES
 import DATE_ASC
 import DATE_DESC
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NANO
-import DEVICE_TYPE_NIR
 import FIRST_CONNECT_ERROR_ON_LOAD
 import LED_FRAMES
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.location.LocationManager
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
 import android.util.Log
-import android.widget.ListAdapter
-import android.widget.ListView
-import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -35,6 +28,11 @@ import androidx.navigation.Navigation
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import org.phenoapps.interfaces.spectrometers.Spectrometer
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_INDIGO
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NANO
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.BuildConfig
 import org.phenoapps.prospector.NavigationRootDirections
 import org.phenoapps.prospector.R
@@ -45,8 +43,9 @@ import org.phenoapps.prospector.data.viewmodels.MainActivityViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
 import org.phenoapps.prospector.databinding.ActivityMainBinding
-import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.utils.*
+import org.phenoapps.security.Security
+import org.phenoapps.viewmodels.spectrometers.Indigo
 import org.phenoapps.utils.IntentUtil
 import java.io.File
 
@@ -73,6 +72,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private val mConnectionHandlerThread = HandlerThread("activity connection checker")
 
     private val sViewModel: MainActivityViewModel by viewModels()
+
+    val advisor by Security().secureBluetoothActivity()
 
     /**
      * This activity view model is used throughout all the fragments to update connection status.
@@ -132,13 +133,22 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
 
         val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
-        sDeviceViewModel = if (maker == DEVICE_TYPE_LS1) {
+        sDeviceViewModel = when (maker) {
+            in setOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR) -> {
 
-            LinkSquareViewModel()
+                LinkSquareViewModel()
 
-        } else {
+            }
+            DEVICE_TYPE_NANO -> {
 
-            InnoSpectraViewModel()
+                InnoSpectraViewModel()
+
+            }
+            else -> {
+
+                Indigo()
+
+            }
         }
 
         mBinding = DataBindingUtil.setContentView(this@MainActivity, R.layout.activity_main)
@@ -528,25 +538,50 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     fun switchInnoSpectra() {
 
-        stopDeviceConnection()
+        val current = mPrefs.getString(mKeyUtil.deviceMaker, null)
 
-        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_NANO).apply()
+        if (current != DEVICE_TYPE_NANO) {
 
-        sDeviceViewModel = InnoSpectraViewModel()
+            stopDeviceConnection()
 
-        runtimeBluetoothCheck()
+            mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_NANO).apply()
 
+            sDeviceViewModel = InnoSpectraViewModel()
+
+            runtimeBluetoothCheck()
+        }
     }
 
     fun switchLinkSquare() {
 
-        stopDeviceConnection()
+        val current = mPrefs.getString(mKeyUtil.deviceMaker, null)
 
-        mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1).apply()
+        if (current !in setOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR)) {
 
-        sDeviceViewModel = LinkSquareViewModel()
+            stopDeviceConnection()
 
-        startDeviceConnection()
+            mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1).apply()
+
+            sDeviceViewModel = LinkSquareViewModel()
+
+            startDeviceConnection()
+        }
+    }
+
+    fun switchIndigo() {
+
+        val current = mPrefs.getString(mKeyUtil.deviceMaker, null)
+
+        if (current != DEVICE_TYPE_INDIGO) {
+
+            stopDeviceConnection()
+
+            mPrefs.edit().putString(mKeyUtil.deviceMaker, DEVICE_TYPE_INDIGO).apply()
+
+            sDeviceViewModel = Indigo()
+
+            startDeviceConnection()
+        }
     }
 
     private fun runtimeBluetoothCheck() {
@@ -759,21 +794,53 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     fun startDeviceConnection() {
-        launch {
-            withContext(Dispatchers.IO) {
-                sDeviceViewModel?.connect(this@MainActivity.applicationContext)
+
+        val maker = mPrefs.getString(mKeyUtil.deviceMaker, DEVICE_TYPE_LS1)
+        sDeviceViewModel = when (maker) {
+            in setOf(DEVICE_TYPE_LS1, DEVICE_TYPE_NIR) -> {
+
+                LinkSquareViewModel()
+
+            }
+            DEVICE_TYPE_NANO -> {
+
+                InnoSpectraViewModel()
+
+            }
+            else -> {
+
+                Indigo()
+
+            }
+        }
+
+        if (sDeviceViewModel?.isConnected() != true) {
+
+            if (sDeviceViewModel is Indigo) {
+
+                (sDeviceViewModel as? Indigo)?.let { indigo ->
+                    advisor.withNearby { adapter ->
+                        launch {
+                            withContext(Dispatchers.IO) {
+                                indigo.connect(adapter, this@MainActivity)
+                            }
+                        }
+                    }
+                }
+
+            } else {
+                launch {
+                    withContext(Dispatchers.IO) {
+                        sDeviceViewModel?.connect(this@MainActivity.applicationContext)
+                    }
+                }
             }
         }
     }
 
     private fun stopDeviceConnection() {
-        launch {
-            withContext(Dispatchers.IO) {
-                if (sDeviceViewModel?.isConnected() == true)
-                    sDeviceViewModel?.disconnect(this@MainActivity)
-
-            }
-        }
+        if (sDeviceViewModel?.isConnected() == true)
+            sDeviceViewModel?.forceDisconnect()
     }
 
     override fun onDestroy() {
@@ -791,15 +858,27 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         mConnectionHandlerThread.quit()
 
+        cancel()
+
         super.onDestroy()
 
     }
 
     override fun onPause() {
 
-        launch {
-            withContext(Dispatchers.IO) {
-                sDeviceViewModel?.reset(this@MainActivity)
+        if (sDeviceViewModel is Indigo) {
+            (sDeviceViewModel as? Indigo)?.let { indigo ->
+                advisor.withNearby { adapter ->
+
+                    indigo.reset(adapter, this)
+
+                }
+            }
+        } else {
+            launch {
+                withContext(Dispatchers.IO) {
+                    sDeviceViewModel?.reset(this@MainActivity)
+                }
             }
         }
 
@@ -901,5 +980,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun updateLastOpenedTime() {
         mPrefs.edit().putLong(mKeyUtil.lastTimeAppOpened, System.nanoTime()).apply()
+    }
+
+    init {
+        advisor.initialize()
     }
 }

@@ -58,4 +58,7 @@ class KeyUtil(private val ctx: Context?) {
     //changelog version
     val version by key(R.string.key_version)
 
+    //indigo
+    val indigoSearchDevice by key(R.string.key_pref_indigo_address)
+
 }
