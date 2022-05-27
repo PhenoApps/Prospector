@@ -281,26 +281,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun askForLocation(success: () -> Unit) {
-
-        mAskLocationEnableDialog?.let { dialog ->
-
-            if (!dialog.isShowing) {
-
-                mAskLocationEnableDialog = AlertDialog.Builder(this)
-                    .setTitle(R.string.dialog_ask_location)
-                    .setPositiveButton(android.R.string.ok) { d, _ ->
-                        success()
-                        d.dismiss()
-                    }
-                    .setNegativeButton(android.R.string.no) { d, _ ->
-                        d.dismiss()
-                    }
-                    .show()
-            }
-        }
-    }
-
     private val storageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
         askSampleImport()
@@ -469,51 +449,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val permissionGranter = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
 
-        if (permissions.all { it.value }) {
+        if (!permissions.any { it.value == false }) {
 
-            val adapter = BluetoothAdapter.getDefaultAdapter()
-            if (adapter != null && adapter.isEnabled) {
+            startDeviceConnection()
 
-                startActivityLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-
-            } else {
-
-                startDeviceConnection()
-
-            }
-
-            val lm: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            var gps = false
-            var net = false
-
-            try {
-
-                gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-            } catch (ex: java.lang.Exception) {
-
-                ex.printStackTrace()
-
-            }
-
-            try {
-
-                net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-            } catch (e: java.lang.Exception) {
-
-                e.printStackTrace()
-
-            }
-
-            if (!(net || gps)) {
-
-                askForLocation {
-
-                    startActivityLauncher.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-
-                }
-            }
         }
     }
 
@@ -807,6 +746,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     override fun onResume() {
+
+        IntentUtil.testSystemLocation(this)
+
+        IntentUtil.testSystemBluetooth(this)
 
         startDeviceConnection()
 
