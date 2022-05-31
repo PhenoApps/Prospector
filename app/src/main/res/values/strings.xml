@@ -326,4 +326,6 @@
     <string name="frag_device_connection_tutorial_index_tv">Choose your device for instructions.</string>
     <string name="frag_device_connection_tutorial_title_tv">Connection Guide</string>
     <string name="list_item_spectrometer_image_content_description">Spectrometer Company</string>
+    <string name="dialog_warn_battery_title">Nano Battery Low</string>
+    <string name="dialog_warn_battery_message">"Scans may not be successful. "</string>
 </resources>

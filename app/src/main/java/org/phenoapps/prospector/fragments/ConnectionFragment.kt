@@ -21,7 +21,10 @@ open class ConnectionFragment(id: Int) : Fragment(id) {
 
                         this?.menu?.findItem(R.id.action_connection)
                             ?.setIcon(
-                                if (deviceViewModel?.isConnected() == true) R.drawable.ic_vector_link
+                                if (deviceViewModel?.isConnected() == true) {
+                                    (activity as? MainActivity)?.checkStatus()
+                                    R.drawable.ic_vector_link
+                                }
                                 else R.drawable.ic_vector_difference_ab
                             )
 
