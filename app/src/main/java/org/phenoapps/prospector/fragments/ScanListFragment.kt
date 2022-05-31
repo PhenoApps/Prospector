@@ -2,9 +2,6 @@ package org.phenoapps.prospector.fragments
 
 import CONVERT_TO_WAVELENGTHS
 import DEVICE_ALIAS
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NANO
-import DEVICE_TYPE_NIR
 import OPERATOR
 import android.graphics.Color
 import android.os.Bundle
@@ -16,14 +13,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import com.stratiotechnology.linksquareapi.LSFrame
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.WithFragmentBindings
 import kotlinx.coroutines.*
@@ -39,9 +34,19 @@ import org.phenoapps.prospector.utils.*
 import java.lang.IllegalStateException
 import java.util.*
 import com.github.mikephil.charting.components.XAxis
+import org.phenoapps.interfaces.iot.Device
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_INDIGO
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NANO
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.data.viewmodels.devices.InnoSpectraViewModel
 import org.phenoapps.prospector.data.viewmodels.devices.LinkSquareViewModel
-import org.phenoapps.prospector.interfaces.Spectrometer
+import org.phenoapps.security.Security
+import org.phenoapps.viewmodels.spectrometers.Frame
+import org.phenoapps.viewmodels.spectrometers.Indigo
+import org.phenoapps.viewmodels.spectrometers.IndigoViewModel
+import org.phenoapps.viewmodels.spectrometers.IndigoViewModel.Companion.SAMPLE_SERVICE
+import org.phenoapps.viewmodels.spectrometers.IndigoViewModel.Companion.SAMPLE_TRANSMIT
 
 
 /**
@@ -117,7 +122,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
         }
     }
 
-    private suspend fun insertScan(name: String, frames: List<LSFrame>) {
+    private suspend fun insertScan(name: String, frames: List<Frame>) {
 
         val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
@@ -146,26 +151,41 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
         val sid = sViewModel.insertScanAsync(scan).await()
 
-        if (deviceViewModel is LinkSquareViewModel) {
-            frames.forEach { frame ->
+        when (deviceViewModel) {
+            is LinkSquareViewModel -> {
+                frames.forEach { frame ->
 
-                sViewModel.insertFrame(sid, SpectralFrame(
-                    sid,
-                    frame.frameNo,
-                    frame.raw_data.joinToString(" ") { value -> value.toString() },
-                    frame.lightSource.toInt())
-                )
+                    sViewModel.insertFrame(sid, SpectralFrame(
+                        sid,
+                        frame.frameIndex ?: 0,
+                        frame.rawData ?: String(),
+                        frame.lightSource ?: 0)
+                    )
+                }
             }
-        } else {
-            frames.forEach { frame ->
+            is InnoSpectraViewModel -> {
+                frames.forEach { frame ->
 
-                sViewModel.insertFrame(sid, SpectralFrame(
-                    sid,
-                    frame.frameNo,
-                    frame.raw_data.joinToString(" ") { value -> value.toString() },
-                    frame.lightSource.toInt(),
-                    wavelengths = frame.data.joinToString(" ") { value -> value.toString() }
-                ))
+                    sViewModel.insertFrame(sid, SpectralFrame(
+                        sid,
+                        frame.frameIndex ?: 0,
+                        frame.rawData ?: String(),
+                        frame.lightSource ?: 0,
+                        wavelengths = frame.data?.joinToString(" ") { value -> value.toString() }
+                    ))
+                }
+            }
+            else -> {
+                frames.forEach { frame ->
+
+                    sViewModel.insertFrame(sid, SpectralFrame(
+                        sid,
+                        frame.frameIndex ?: 0,
+                        frame.rawData ?: String(),
+                        frame.lightSource ?: 0,
+                        wavelengths = frame.wavelengths
+                    ))
+                }
             }
         }
     }
@@ -174,7 +194,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
      * Dialog is only called if the current connected deviceType matches the experiment deviceType.
      * If they match, the dialog begins which displays the status of the scan (indeterminately)
      */
-    private fun callScanDialog(device: Spectrometer.DeviceInfo, manual: Boolean? = false) {
+    private fun callScanDialog(device: Device.DeviceInfo, manual: Boolean? = false) {
 
         if (mScansEnabled) {
 
@@ -188,7 +208,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                         if (!deviceViewModel.hasActiveScan()) {
 
-                            (activity as? MainActivity)?.notify(R.string.inno_spectra_device_not_ready)
+                            (activity as? MainActivity)?.notify(R.string.device_not_ready)
 
                             mIsScanning = false
                             return
@@ -212,7 +232,16 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
                                 it?.let { frames ->
 
-                                    sDeviceScope.launch {
+                                    if (frames.first().length == -1) { //failed
+
+                                        activity?.runOnUiThread {
+                                            dialogInterface.dismiss()
+                                            loadGraph()
+                                            mIsScanning = false
+                                            (activity as? MainActivity)?.notify(R.string.scan_failed)
+                                        }
+
+                                    } else sDeviceScope.launch {
 
                                         withContext(Dispatchers.IO) {
 
@@ -322,6 +351,15 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
             ui.fragScanListLineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
 
             ui.scanOnClick = sOnClickScan
+            if (deviceViewModel is Indigo) {
+                deviceViewModel.isConnectedLive().observe(viewLifecycleOwner) { connected ->
+                    ui.scanOnClick = if (!connected) {
+                        View.OnClickListener {
+                            (activity as? MainActivity)?.notify(R.string.device_not_ready)
+                        }
+                    } else sOnClickScan
+                }
+            }
 
             //check if experiment id is included in the arguments.
             mExpId = arguments?.getLong("experiment", -1L) ?: -1L
@@ -427,47 +465,21 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-        tabLayout.getTabAt(if (prefs.getBoolean(mKeyUtil.lastSelectedGraph, false)) { 1 } else 0)
-            ?.select()
-
+        tabLayout.getTabAt(
+            when {
+                (activity as? MainActivity)?.sDeviceViewModel is Indigo -> 1
+                prefs.getBoolean(mKeyUtil.lastSelectedGraph, false) -> 1
+                else -> 0
+            }
+        )?.select()
     }
 
     private fun FragmentScanListBinding.setupToolbar() {
-
-        val deviceViewModel = (activity as MainActivity).sDeviceViewModel
 
         scanToolbar.setNavigationOnClickListener {
 
             findNavController().popBackStack()
 
-        }
-
-        toolbar.setOnMenuItemClickListener {
-
-            when(it.itemId) {
-
-                R.id.action_connection -> {
-
-                    with (activity as? MainActivity) {
-
-                        if (this?.mConnected == true) {
-
-                            deviceViewModel?.reset(context)
-
-                        } else {
-
-                            if (findNavController().currentDestination?.id == R.id.scan_list_fragment) {
-                                findNavController().navigate(ScanListFragmentDirections
-                                    .actionToConnectInstructions())
-                            }
-
-                            this?.startDeviceConnection()
-                        }
-                    }
-                }
-            }
-
-            true
         }
 
         scanToolbar.setOnMenuItemClickListener {
@@ -560,6 +572,8 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
                                     DEVICE_TYPE_NIR -> LinkSquareNIRRange.max
 
                                     DEVICE_TYPE_LS1 -> LinkSquareRange.max
+
+                                    DEVICE_TYPE_INDIGO -> IndigoRange.max
 
                                     else -> InnoSpectraRange.max
 
@@ -702,6 +716,42 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
                 }
             }
         }
+
+        mBinding?.toolbar?.setOnMenuItemClickListener { item ->
+
+            when(item.itemId) {
+
+                R.id.action_connection -> {
+
+                    with (activity as? MainActivity) {
+
+                        if (this?.mConnected == true) {
+
+                            if (sDeviceViewModel is Indigo) {
+                                (sDeviceViewModel as? Indigo)?.let { indigo ->
+                                    advisor.withNearby { adapter ->
+
+                                        indigo.reset(adapter, context)
+
+                                    }
+                                }
+                            } else {
+                                sDeviceViewModel?.reset(context)
+                            }
+
+                        } else {
+
+                            findNavController().navigate(ScanListFragmentDirections
+                                .actionToConnectInstructions())
+
+                            this?.startDeviceConnection()
+                        }
+                    }
+                }
+            }
+
+            true
+        }
     }
 
     /**
@@ -729,7 +779,7 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
                     }
                 }
 
-            }?.observe(viewLifecycleOwner, {})
+            }?.observe(viewLifecycleOwner) {}
 
         } catch (e: IllegalStateException) {
 
@@ -781,6 +831,11 @@ class ScanListFragment : ConnectionFragment(R.layout.fragment_scan_list), Corout
     override fun onPause() {
         super.onPause()
 
+        //sDeviceScope.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         sDeviceScope.cancel()
     }
 }

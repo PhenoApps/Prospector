@@ -5,6 +5,7 @@
         <item>@string/linksquare_nir</item>
         <item>@string/linksquare</item>
         <item>@string/innospectra_nano</item>
+        <item>@string/indigo</item>
     </string-array>
     <string-array name="inno_spectra_widths">
         <item>2.34</item>
@@ -90,4 +91,5 @@
     <string name="linksquare_nir">LinkSquareNIR</string>
     <string name="innospectra_nano">InnoSpectra Nano</string>
     <string name="innospectra">InnoSpectra</string>
+    <string name="indigo">Indigo</string>
 </resources>

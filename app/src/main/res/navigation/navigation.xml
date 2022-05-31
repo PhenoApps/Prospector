@@ -21,6 +21,10 @@
             app:destination="@id/inno_spectra_settings_fragment"
             app:popUpTo="@id/settings_fragment"
             app:launchSingleTop="true"/>
+        <action android:id="@+id/action_to_indigo_settings_fragment"
+            app:destination="@id/indigo_settings_fragment"
+            app:popUpTo="@id/settings_fragment"
+            app:launchSingleTop="true"/>
         <action android:id="@+id/action_to_storage_definer"
             app:destination="@+id/storage_definer_graph"
             app:popUpTo="@id/settings_fragment"/>
@@ -80,6 +84,22 @@
                 app:nullable="true"
                 app:argType="string[]"/>
         </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/indigo_settings_fragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.indigo.IndigoSettingsContainerFragment"
+        android:label="Indigo Settings">
+        <action android:id="@+id/action_indigo_settings_to_device_search"
+            app:destination="@id/bluetooth_device_fragment"
+            app:popUpTo="@id/indigo_settings_fragment"
+            app:launchSingleTop="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/bluetooth_device_fragment"
+        android:name="org.phenoapps.prospector.fragments.preferences.indigo.DeviceSearchFragment"
+        android:label="Indigo Device Search">
     </fragment>
 
     <fragment
@@ -184,6 +204,9 @@
         <action android:id="@+id/action_from_index_to_inno_spectra_tutorial"
             app:popUpToInclusive="true"
             app:destination="@id/inno_spectra_connect_instructions_fragment"/>
+        <action android:id="@+id/action_from_index_to_indigo_tutorial"
+            app:popUpToInclusive="true"
+            app:destination="@id/indigo_connect_instructions_fragment"/>
     </fragment>
 
     <fragment
@@ -195,6 +218,11 @@
         android:id="@+id/inno_spectra_connect_instructions_fragment"
         android:name="org.phenoapps.prospector.fragments.tutorials.InnoSpectraInstructionsFragment"
         android:label="Inno Spectra tutorial"/>
+
+    <fragment
+        android:id="@+id/indigo_connect_instructions_fragment"
+        android:name="org.phenoapps.prospector.fragments.tutorials.IndigoInstructionsFragment"
+        android:label="Indigo tutorial"/>
 
     <fragment
         android:id="@+id/new_sample_fragment"
@@ -271,6 +299,11 @@
             app:popUpTo="@id/sample_list_fragment"/>
 
     </fragment>
+
+    <fragment
+        android:id="@+id/connect_fragment"
+        android:name="org.phenoapps.prospector.fragments.ConnectionFragment"
+        android:label="Connection Toolbar"/>
 
     <action
         android:id="@+id/action_to_settings"

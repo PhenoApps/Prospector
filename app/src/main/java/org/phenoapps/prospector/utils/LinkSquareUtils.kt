@@ -1,23 +1,22 @@
 package org.phenoapps.prospector.utils
 
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NIR
 import android.content.Context
 import android.graphics.Color
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import com.ISCSDK.ISCNIRScanSDK
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import org.apache.commons.math.stat.StatUtils
+import org.phenoapps.interfaces.iot.Device
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.DeviceTypeExport
 import org.phenoapps.prospector.fragments.ScanListFragment
-import org.phenoapps.prospector.interfaces.Spectrometer
 
 class LinkSquareLightSources {
     companion object {
@@ -68,6 +67,20 @@ class InnoSpectraExportRange {
     companion object {
         const val min: Double = 899.0
         const val max: Double = 1701.0
+    }
+}
+
+class IndigoRange {
+    companion object {
+        const val min: Double = 700.0
+        const val max: Double = 1100.0
+    }
+}
+
+class IndigoExportRange {
+    companion object {
+        const val min: Double = 700.0
+        const val max: Double = 1100.0
     }
 }
 
@@ -335,7 +348,7 @@ fun buildLinkSquareDeviceInfo(context: Context, data: LinkSquareAPI.LSDeviceInfo
  * Used to translate the device id to a device type.
  * TODO: with the new LinkSquare 1.15 api, there is a DeviceType, must confirm that NIR=1 and LS=0
  */
-fun resolveDeviceType(context: Context, data: Spectrometer.DeviceInfo): String =
+fun resolveDeviceType(context: Context, data: Device.DeviceInfo): String =
 
     if (data.deviceId.startsWith("NIR")) {
 

@@ -1,12 +1,3 @@
-/**
- * Device Types (internal unique strings used to classify which device was used for a given experiment/scan)
- */
-const val DEVICE_TYPE_LS1 = "LinkSquare"
-
-const val DEVICE_TYPE_NIR = "LinkSquareNIR"
-
-const val DEVICE_TYPE_NANO = "InnoSpectra Nano"
-
 const val packageId = "org.phenoapps.prospector"
 
 /***
@@ -45,6 +36,8 @@ const val DEVICE_MANUFACTURER = "$packageId.DEVICE_MANUFACTURERS"
 const val DEVICE_LINK_SQUARE = "$packageId.DEVICE_TYPE_LINK_SQUARE"
 
 const val DEVICE_INNO_SPECTRA = "$packageId.DEVICE_TYPE_INNO_SPECTRA"
+
+const val DEVICE_INDIGO = "$packageId.DEVICE_TYPE_INDIGO"
 
 const val EXPORT_TYPE = "$packageId.EXPORT_TYPE"
 

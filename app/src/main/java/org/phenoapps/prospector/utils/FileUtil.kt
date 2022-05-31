@@ -1,15 +1,17 @@
 package org.phenoapps.prospector.utils
 
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NIR
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_INDIGO
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.data.models.DeviceTypeExport
+import kotlin.math.min
 
 /**
  * handles file io for exporting and importing data; although this application currently doesn't import data.
@@ -89,6 +91,8 @@ open class FileUtil(private val ctx: Context) {
 
                         DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
 
+                        DEVICE_TYPE_INDIGO -> IndigoExportRange.max
+
                         else -> InnoSpectraExportRange.max
                     }
 
@@ -97,6 +101,8 @@ open class FileUtil(private val ctx: Context) {
                         DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
                         DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
+
+                        DEVICE_TYPE_INDIGO -> IndigoExportRange.min
 
                         else -> InnoSpectraExportRange.min
                     }
@@ -119,7 +125,7 @@ open class FileUtil(private val ctx: Context) {
                             export.sample,
                             export.date,
                             export.deviceType,
-                            export.deviceId,
+                            export.deviceId.replace("[\" ]", ""),
                             export.serial,
                             export.humidity,
                             export.temperature,
@@ -136,6 +142,8 @@ open class FileUtil(private val ctx: Context) {
 
                                 DEVICE_TYPE_LS1 -> LinkSquareExportRange.max
 
+                                DEVICE_TYPE_INDIGO -> IndigoExportRange.max
+
                                 else -> InnoSpectraExportRange.max
                             }
 
@@ -144,6 +152,8 @@ open class FileUtil(private val ctx: Context) {
                                 DEVICE_TYPE_NIR -> LinkSquareNIRExportRange.min
 
                                 DEVICE_TYPE_LS1 -> LinkSquareExportRange.min
+
+                                DEVICE_TYPE_INDIGO -> IndigoExportRange.min
 
                                 else -> InnoSpectraExportRange.min
                             }
@@ -180,7 +190,7 @@ open class FileUtil(private val ctx: Context) {
                             e.sample,
                             e.date,
                             e.deviceType,
-                            e.deviceId,
+                            export.deviceId.replace("[\" ]", ""),
                             e.serial,
                             e.humidity,
                             e.temperature,

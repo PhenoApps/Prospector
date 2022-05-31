@@ -36,13 +36,15 @@ class ConnectionInstructionsFragment : Fragment(), OnModelClickListener {
             val lsIcon = R.mipmap.linksquare_logo
             val isTitle = ctx.getString(R.string.innospectra_nano)
             val isIcon = R.mipmap.isc_logo
+            val indigoTitle = getString(R.string.indigo)
+            val indigoIcon = R.drawable.indigo
             mBinding?.fragDeviceConnectionTutorialIndexRv?.adapter = SpectrometerAdapter(this).also {
                 it.submitList(mutableListOf(
                     SpectrometerAdapter.SpectrometerListItem(0, isTitle, isIcon),
-                    SpectrometerAdapter.SpectrometerListItem(1, lsTitle, lsIcon))
+                    SpectrometerAdapter.SpectrometerListItem(1, lsTitle, lsIcon),
+                    SpectrometerAdapter.SpectrometerListItem(2, indigoTitle, indigoIcon))
                 )
             }
-
         }
 
         mBinding?.toolbar?.setNavigationOnClickListener {
@@ -71,6 +73,9 @@ class ConnectionInstructionsFragment : Fragment(), OnModelClickListener {
 
                 1 -> findNavController().navigate(ConnectionInstructionsFragmentDirections
                     .actionFromIndexToLinksquareTutorial())
+
+                2 -> findNavController().navigate(ConnectionInstructionsFragmentDirections
+                    .actionFromIndexToIndigoTutorial())
             }
         }
     }

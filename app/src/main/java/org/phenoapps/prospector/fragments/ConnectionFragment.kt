@@ -4,8 +4,11 @@ import android.os.Handler
 import android.os.HandlerThread
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.activities.MainActivity
+import org.phenoapps.security.Security
+import org.phenoapps.viewmodels.spectrometers.Indigo
 
 open class ConnectionFragment(id: Int) : Fragment(id) {
 
@@ -27,7 +30,6 @@ open class ConnectionFragment(id: Int) : Fragment(id) {
                                 }
                                 else R.drawable.ic_vector_difference_ab
                             )
-
                     }
                 }
             }

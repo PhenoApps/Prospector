@@ -1,6 +1,5 @@
 package org.phenoapps.prospector.data.viewmodels.devices
 
-import DEVICE_TYPE_NANO
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -22,17 +21,20 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import com.ISCSDK.ISCNIRScanSDK
 import com.ISCSDK.ISCNIRScanSDK.*
-import com.stratiotechnology.linksquareapi.LSFrame
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.phenoapps.interfaces.iot.Device
+import org.phenoapps.interfaces.spectrometers.Spectrometer
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NANO
 import org.phenoapps.prospector.R
 import org.phenoapps.prospector.fragments.preferences.InnoSpectraSettingsFragment
 import org.phenoapps.prospector.fragments.nano_configuration_creator.models.Config
 import org.phenoapps.prospector.interfaces.NanoEventListener
-import org.phenoapps.prospector.interfaces.Spectrometer
 import org.phenoapps.prospector.receivers.DeviceInfoReceiver
 import org.phenoapps.prospector.utils.KeyUtil
+import org.phenoapps.viewmodels.spectrometers.Frame
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -64,7 +66,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
     private var mNanoReceiver: InnoSpectraBase? = null
 
     //live data that receivers will produce and listeners will consume
-    private var mSpectralData: Spectrometer.Frame? = null
+    private var mSpectralData: Frame? = null
 
     private var OnDeviceButtonClicked: (() -> Unit)? = null
 
@@ -72,7 +74,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     private var mUiScan = false
 
-    private var mDeviceInfo: Spectrometer.DeviceInfo? = null
+    private var mDeviceInfo: Device.DeviceInfo? = null
 
     private var mDeviceStatus: InnoSpectraSettingsFragment.DeviceStatus? = null
 
@@ -164,6 +166,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
         override fun onServiceDisconnected(name: ComponentName?) {
             mConnected = false
+            mConnectionStarting = false
             mNanoSdk?.sdk?.disconnect()
             mNanoSdk?.sdk?.close()
         }
@@ -238,6 +241,10 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     private fun isRefDataReady() = mRefDataReady
 
+    override fun forceDisconnect() {
+        onCleared()
+    }
+
     override fun reset(context: Context?) {
 
         context?.let { ctx ->
@@ -245,6 +252,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
             disconnect(ctx)
 
             viewModelScope.launch {
+
+                delay(3000L)
 
                 connect(ctx)
 
@@ -254,7 +263,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun getDeviceError(): String { return "None" }
 
-    override fun getDeviceInfo() = mDeviceInfo ?: Spectrometer.DeviceInfo("?", "?", "?", "?", "?", DEVICE_TYPE_NANO)
+    override fun getDeviceInfo() = mDeviceInfo ?: Device.DeviceInfo("?", "?", "?", "?", "?", DEVICE_TYPE_NANO)
 
     override fun setEventListener(onClick: () -> Unit): LiveData<String> = liveData {
 
@@ -264,7 +273,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     }
 
-    override fun scan(context: Context, manual: Boolean?): LiveData<List<LSFrame>?> = liveData {
+    override fun scan(context: Context, manual: Boolean?): LiveData<List<Frame>?> = liveData {
 
         if (isConnected() && isRefDataReady()) {
 
@@ -295,12 +304,12 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
                 mUiScan = false
 
                 emit(listOf(frame).map {
-                    LSFrame().apply {
+                    Frame().apply {
                         this.lightSource = it.lightSource
                         this.length = it.length
-                        this.frameNo = it.frameNo
+                        this.frameIndex = it.frameIndex
                         this.deviceType = it.deviceType
-                        this.raw_data = it.raw_data
+                        this.rawData = it.rawData
                         this.data = it.data
                     }
                 })
@@ -351,7 +360,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         }
     }
 
-    override fun onScanDataReady(spectral: Spectrometer.Frame) {
+    override fun onScanDataReady(spectral: Frame) {
 
         if (isGattStateConnected()) {
 
@@ -362,17 +371,6 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
 
     override fun onGetUuid(uuid: String) {
 
-        mDeviceInfo?.let { info ->
-//            mDeviceInfo = Spectrometer.DeviceInfo(
-//                info.softwareVersion,
-//                info.hardwareVersion,
-//                uuid,
-//                info.alias,
-//                info.opMode,
-//                info.deviceType
-//            )
-        }
-
         GetDeviceStatus()
 
     }
@@ -380,7 +378,7 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
     override fun onGetDeviceInfo(info: DeviceInfoReceiver.NanoDeviceInfo) {
 
         mDeviceInfo = with(info) {
-            Spectrometer.DeviceInfo(
+            Device.DeviceInfo(
                 this.spec,
                 this.hardware,
                 this.model,
@@ -592,4 +590,14 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         """.trimIndent()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        try {
+            //viewModelScope.cancel()
+            mNanoSdk?.sdk?.disconnect()
+            mNanoSdk?.sdk?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

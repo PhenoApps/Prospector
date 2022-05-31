@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.ISCSDK.ISCNIRScanSDK
+import com.stratiotechnology.linksquareapi.LSFrame
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NANO
 import org.phenoapps.prospector.interfaces.NanoEventListener
-import org.phenoapps.prospector.interfaces.Spectrometer
+import org.phenoapps.viewmodels.spectrometers.Frame
 
 class ScanDataReadyReceiver(private val listener: NanoEventListener) : BroadcastReceiver() {
 
@@ -39,12 +41,14 @@ class ScanDataReadyReceiver(private val listener: NanoEventListener) : Broadcast
             intensityData[i] = intensity.toFloat()
         }
 
-        listener.onScanDataReady(Spectrometer.Frame(
+        //TODO replace device type with string
+        listener.onScanDataReady(Frame(
             length = size,
             lightSource = 0,
-            frameNo = 1,
-            deviceType = 3,
+            frameIndex = 1,
+            deviceType = DEVICE_TYPE_NANO,
             data = reflectanceData,
-            raw_data = intensityData))
+            rawData = intensityData.joinToString(" ") { "$it" })
+        )
     }
 }

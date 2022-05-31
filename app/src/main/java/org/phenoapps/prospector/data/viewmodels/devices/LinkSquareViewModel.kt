@@ -3,8 +3,6 @@ package org.phenoapps.prospector.data.viewmodels.devices
 import BULB_FRAMES
 import DEVICE_IP
 import DEVICE_PORT
-import DEVICE_TYPE_LS1
-import DEVICE_TYPE_NIR
 import LED_FRAMES
 import android.content.Context
 import android.util.Log
@@ -15,7 +13,11 @@ import com.stratiotechnology.linksquareapi.LSFrame
 import com.stratiotechnology.linksquareapi.LinkSquareAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import org.phenoapps.prospector.interfaces.Spectrometer
+import org.phenoapps.interfaces.iot.Device
+import org.phenoapps.interfaces.spectrometers.Spectrometer
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_LS1
+import org.phenoapps.interfaces.spectrometers.Spectrometer.Companion.DEVICE_TYPE_NIR
+import org.phenoapps.viewmodels.spectrometers.Frame
 import java.io.BufferedReader
 import java.io.FileReader
 import java.lang.IndexOutOfBoundsException
@@ -61,6 +63,10 @@ class LinkSquareViewModel @Inject constructor() : ViewModel(), Spectrometer {
         }
     }
 
+    override fun forceDisconnect() {
+        onCleared()
+    }
+
     override fun reset(context: Context?) {
 
         sDevice?.Close()
@@ -74,7 +80,7 @@ class LinkSquareViewModel @Inject constructor() : ViewModel(), Spectrometer {
 
     override fun getDeviceError() = sDevice?.GetLSError()
     override fun getDeviceInfo() = with(sDevice?.GetDeviceInfo()) {
-        Spectrometer.DeviceInfo(
+        Device.DeviceInfo(
             this?.SWVersion ?: "?",
             this?.HWVersion ?: "?",
             this?.DeviceID ?: "-1",
@@ -116,7 +122,7 @@ class LinkSquareViewModel @Inject constructor() : ViewModel(), Spectrometer {
         emit("DONE")
     }
 
-    override fun scan(context: Context, manual: Boolean?): LiveData<List<LSFrame>?> = liveData {
+    override fun scan(context: Context, manual: Boolean?): LiveData<List<Frame>?> = liveData {
 
         with (manager(context)) {
 
@@ -126,7 +132,14 @@ class LinkSquareViewModel @Inject constructor() : ViewModel(), Spectrometer {
 
             val frames = scan(ledFrames, bulbFrames)
 
-            emit(frames)
+            emit(frames.map {
+                Frame(length = it.length,
+                    deviceType = if (it.deviceType == 0) DEVICE_TYPE_LS1 else DEVICE_TYPE_NIR,
+                    data = it.data,
+                    lightSource = it.lightSource.toInt(),
+                    frameIndex = it.frameNo,
+                    rawData = it.raw_data.joinToString(" ") { f -> "$f" })
+            })
         }
     }
 

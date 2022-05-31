@@ -35,6 +35,7 @@ import org.phenoapps.prospector.data.viewmodels.ExperimentViewModel
 import org.phenoapps.prospector.databinding.FragmentExperimentListBinding
 import org.phenoapps.prospector.utils.Dialogs
 import org.phenoapps.prospector.utils.KeyUtil
+import org.phenoapps.viewmodels.spectrometers.Indigo
 
 /**
  * The main data fragment that displays the top-level experiment hierarchy.
@@ -146,20 +147,29 @@ class ExperimentListFragment : ConnectionFragment(R.layout.fragment_experiment_l
 
                 R.id.action_connection -> {
 
-                    val deviceViewModel = (activity as MainActivity).sDeviceViewModel
+                    with (activity as? MainActivity) {
 
-                    if (deviceViewModel?.isConnected() == true) {
+                        if (this?.mConnected == true) {
 
-                        deviceViewModel.reset(context)
+                            if (sDeviceViewModel is Indigo) {
+                                (sDeviceViewModel as? Indigo)?.let { indigo ->
+                                    advisor.withNearby { adapter ->
 
-                    } else {
+                                        indigo.reset(adapter, context)
 
-                        if (findNavController().currentDestination?.id == R.id.experiment_list_fragment) {
+                                    }
+                                }
+                            } else {
+                                sDeviceViewModel?.reset(context)
+                            }
+
+                        } else {
+
                             findNavController().navigate(ExperimentListFragmentDirections
                                 .actionToConnectInstructions())
-                        }
 
-                        (activity as? MainActivity)?.startDeviceConnection()
+                            this?.startDeviceConnection()
+                        }
                     }
                 }
             }

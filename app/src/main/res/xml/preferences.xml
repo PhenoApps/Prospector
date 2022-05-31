@@ -38,6 +38,11 @@
             android:key="org.phenoapps.prospector.DEVICE_TYPE_INNO_SPECTRA"
             android:title="@string/pref_device_type_inno_spectra" />
 
+        <Preference
+            android:icon="@drawable/indigo"
+            android:key="org.phenoapps.prospector.DEVICE_TYPE_INDIGO"
+            android:title="@string/pref_device_type_indigo" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
