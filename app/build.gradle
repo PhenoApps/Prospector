@@ -185,7 +185,5 @@ dependencies {
 
     //local
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-
-    implementation project(path: ':PhenoIcons')
 }
 

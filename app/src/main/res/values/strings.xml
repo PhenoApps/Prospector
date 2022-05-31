@@ -337,4 +337,6 @@
     <string name="pref_indigo_device_address_title">Find a device</string>
     <string name="pref_indigo_device_search_selected">Selected device %s.</string>
     <string name="scan_failed">Scan failed, refreshing device connection.</string>
+    <string name="dialog_warn_battery_title">Nano Battery Low</string>
+    <string name="dialog_warn_battery_message">Scans may not be successful.</string>
 </resources>

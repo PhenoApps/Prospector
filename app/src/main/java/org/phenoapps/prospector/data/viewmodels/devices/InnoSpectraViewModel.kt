@@ -571,6 +571,8 @@ class InnoSpectraViewModel @Inject constructor() : ViewModel(), Spectrometer, Na
         """.trimIndent()
     }
 
+    fun getDeviceBattery() = mDeviceStatus?.battery?.toDoubleOrNull()
+
     fun getDeviceInfo(context: Context): String {
 
         val softwareHeader = context.getString(R.string.header_software_version)

@@ -96,6 +96,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var mSecondDeleteDatabaseDialog: AlertDialog? = null
     private var mAskLocationEnableDialog: AlertDialog? = null
     private var mAskSortTypeDialog: AlertDialog? = null
+    private var mAskWarnBatteryLevelDialog: AlertDialog? = null
+
+    private var mWarnedBatteryOnce = false
 
     private val mPrefs by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -230,6 +233,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             .create()
 
+        mAskWarnBatteryLevelDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_warn_battery_title)
+            .setMessage(getString(R.string.dialog_warn_battery_message))
+            .setPositiveButton(android.R.string.ok) { _, _ -> }
+            .create()
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         prefs.edit().putBoolean(FIRST_CONNECT_ERROR_ON_LOAD, true).apply()
@@ -287,26 +296,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     mAskSortTypeDialog?.show()
 
                 }
-            }
-        }
-    }
-
-    private fun askForLocation(success: () -> Unit) {
-
-        mAskLocationEnableDialog?.let { dialog ->
-
-            if (!dialog.isShowing) {
-
-                mAskLocationEnableDialog = AlertDialog.Builder(this)
-                    .setTitle(R.string.dialog_ask_location)
-                    .setPositiveButton(android.R.string.ok) { d, _ ->
-                        success()
-                        d.dismiss()
-                    }
-                    .setNegativeButton(android.R.string.no) { d, _ ->
-                        d.dismiss()
-                    }
-                    .show()
             }
         }
     }
@@ -387,6 +376,35 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     startLoadSampleData()
 
                 }
+            }
+        }
+    }
+
+    private fun askWarnBatteryLevel() {
+
+        if (!mWarnedBatteryOnce) {
+
+            mWarnedBatteryOnce = true
+
+            runOnUiThread {
+
+                mAskWarnBatteryLevelDialog?.let { dialog ->
+
+                    if (!dialog.isShowing) {
+
+                        mAskWarnBatteryLevelDialog?.show()
+
+                    }
+                }
+            }
+        }
+    }
+
+    fun checkStatus() {
+        if (sDeviceViewModel is InnoSpectraViewModel) {
+            (sDeviceViewModel as? InnoSpectraViewModel)?.getDeviceBattery()?.let { battery ->
+
+                if (battery < 15) askWarnBatteryLevel()
             }
         }
     }
@@ -479,51 +497,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val permissionGranter = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
 
-        if (permissions.all { it.value }) {
+        if (!permissions.any { it.value == false }) {
 
-            val adapter = BluetoothAdapter.getDefaultAdapter()
-            if (adapter != null && adapter.isEnabled) {
+            startDeviceConnection()
 
-                startActivityLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-
-            } else {
-
-                startDeviceConnection()
-
-            }
-
-            val lm: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            var gps = false
-            var net = false
-
-            try {
-
-                gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-            } catch (ex: java.lang.Exception) {
-
-                ex.printStackTrace()
-
-            }
-
-            try {
-
-                net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-            } catch (e: java.lang.Exception) {
-
-                e.printStackTrace()
-
-            }
-
-            if (!(net || gps)) {
-
-                askForLocation {
-
-                    startActivityLauncher.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-
-                }
-            }
         }
     }
 
@@ -855,6 +832,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         mFirstDeleteDatabaseDialog?.dismiss()
         mSecondDeleteDatabaseDialog?.dismiss()
         mAskLocationEnableDialog?.dismiss()
+        mAskWarnBatteryLevelDialog?.dismiss()
 
         mConnectionHandlerThread.quit()
 
@@ -886,6 +864,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     override fun onResume() {
+
+        IntentUtil.testSystemLocation(this)
+
+        IntentUtil.testSystemBluetooth(this)
 
         startDeviceConnection()
 
